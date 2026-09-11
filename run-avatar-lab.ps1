@@ -39,6 +39,12 @@ try {
     if ($Diagnose) { $taskExtra += '--landmarks' }
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
     if ($taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
+    if ($taskGazeSettings.head_pose_mode) { $taskExtra += @('--head-pose-mode',$taskGazeSettings.head_pose_mode) }
+    if ($taskGazeSettings.PSObject.Properties.Name -contains 'head_pitch_gain') {
+        $taskPitchGain=[double]$taskGazeSettings.head_pitch_gain
+        if ([double]::IsNaN($taskPitchGain) -or $taskPitchGain -lt .5 -or $taskPitchGain -gt 3) { throw 'head_pitch_gain must be 0.5..3' }
+        $taskExtra += @('--head-pitch-gain',$taskPitchGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
     & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --body3d --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }

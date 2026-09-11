@@ -46,3 +46,7 @@
 - ONNXのSHA256：4a289c0e99d47eb595e99679d9d4a2d1def1b4241f9adcbafba44b9ff585ebcd
 - カード表記Apache-2.0。原モデル・学習データを含めた製品への同梱判断は未完了。公式ONNX配布物と混同しない。
 - 深度復元の根拠はMMPoseのSimCC3DLabelとrtmw3d-x_8xb32_cocktail14-384x288.py。入力の深度軸は288、z_range=2.1744869。深度は相対メートル、画像XYはピクセル。
+
+## 標準顔幾何点（2026-09-12）
+
+Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。capture_lab/data/face_template.jsonに出典URL/SHA256と近似対応の注記、face_template.LICENSEにライセンス全文。頭ピッチと口角投影補正の幾何テンプレートで学習済み推論モデルではない。詳細docs/HEAD_PITCH_MOUTH.md。

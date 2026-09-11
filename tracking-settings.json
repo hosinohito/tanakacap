@@ -6,5 +6,7 @@
   "gaze_gain": 4.0,
   "gaze_reference": "contour",
   "face_distance_enabled": true,
-  "face_distance_mode": "framed"
+  "face_distance_mode": "framed",
+  "head_pose_mode": "pnp",
+  "head_pitch_gain": 1.8
 }

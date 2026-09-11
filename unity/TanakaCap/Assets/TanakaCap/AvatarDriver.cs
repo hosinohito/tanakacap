@@ -37,6 +37,7 @@ namespace TanakaCap
         [Serializable] class BoneDiagnostics
         {
             public float gazeYawApplied,gazePitchApplied;
+            public float headPitchApplied;
             public float faceDistanceRatioApplied;
             public float seatedLeanDegrees;
             public bool seatedLeanLimited;
@@ -1473,6 +1474,7 @@ namespace TanakaCap
             var rightFrame = right.hand.rotation*Quaternion.Inverse(right.handFrameCorrection);
             File.WriteAllText(path+".bones.json",JsonUtility.ToJson(new BoneDiagnostics {
                 gazeYawApplied=gazeAngles.x,gazePitchApplied=gazeAngles.y,
+                headPitchApplied=Mathf.DeltaAngle(0,(Quaternion.Inverse(transform.rotation)*head.rotation*Quaternion.Inverse(headRootRest)).eulerAngles.x),
                 faceDistanceRatioApplied=faceDistanceRatio,avatarDisplacement=transform.position-rootRestPosition,
                 seatedLeanDegrees=seatedLeanDegrees,seatedLeanLimited=seatedLeanLimited,
                 leftHandForward=transform.InverseTransformDirection(leftFrame*Vector3.forward),
