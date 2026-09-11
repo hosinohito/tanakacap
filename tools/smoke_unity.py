@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--gaze-bones',action='store_true',help='Compare original eye-bone gaze rendering')
     parser.add_argument('--no-face-distance',action='store_true',help='Disable relative avatar depth')
     parser.add_argument('--face-distance-translate',action='store_true',help='Use previous whole-avatar translation')
-    parser.add_argument('--gaze-gain',type=float,default=2.,help='Gaze display gain, 1 restores the previous sensitivity')
+    parser.add_argument('--gaze-gain',type=float,default=4.,help='Gaze display gain, 1 restores the previous sensitivity')
     parser.add_argument('--replay-file',type=Path,help='Numeric packet JSONL for actual-bone audit after snapshot')
     parser.add_argument('--packet-file',type=Path,help='Hold one recorded/reprocessed packet to verify bone transfer, not capture accuracy')
     parser.add_argument('--output',type=Path,help='Explicit snapshot output for automated comparisons')

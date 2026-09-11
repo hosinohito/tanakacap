@@ -9,9 +9,10 @@ output=root/'results/gaze-render'/('pixel-check-'+str(time.time_ns()))
 output.mkdir(parents=True,exist_ok=True)
 base=dict(version=1,tracked=True,faceTracked=True,body3d=True,torsoTracked=True,
           gazeTracked=True,leftBlink=0,rightBlink=0)
-poses={'center':(0,0),'left':(-10,0),'right':(10,0),'up':(0,-6),'down':(0,6)}
+small='--small-motion' in sys.argv
+poses={'center':(0,0),'left':(-4 if small else -10,0),'right':(4 if small else 10,0),'up':(0,-3 if small else -6),'down':(0,3 if small else 6)}
 report={}
-for gain in (1,2):
+for gain in ((2,4) if small else (1,2)):
     rows={}
     for name,(yaw,pitch) in poses.items():
         packet=output/f'{gain}-{name}.json'; image=output/f'{gain}-{name}.png'
@@ -33,9 +34,12 @@ for gain in (1,2):
     vertical=(np.array(rows['down'])-np.array(rows['up']))[:,1]
     assert np.all(horizontal>0) and np.all(vertical>0),rows
     report[str(gain)]=dict(centers=rows,horizontal_span_px=horizontal.tolist(),vertical_span_px=vertical.tolist())
-assert np.min(report['2']['horizontal_span_px'])>8,report
-assert np.min(report['2']['vertical_span_px'])>5,report
-report['scope']='Synthetic gaze +/-10 yaw, +/-6 pitch; fixed head. Visible green iris pixels, not landmark or BakeMesh displacement. Capture accuracy unverified.'
+strong='4' if small else '2'
+assert np.min(report[strong]['horizontal_span_px'])>(7 if small else 8),report
+assert np.min(report[strong]['vertical_span_px'])>5,report
+if small:
+    assert np.all(np.array(report['4']['horizontal_span_px'])>np.array(report['2']['horizontal_span_px'])*1.7),report
+report['scope']=('Synthetic gaze +/-4 yaw, +/-3 pitch' if small else 'Synthetic gaze +/-10 yaw, +/-6 pitch')+'; fixed head. Visible iris pixels; capture accuracy unverified.'
 (output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
 print(json.dumps(report,indent=2))
 print(output)

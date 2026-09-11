@@ -562,3 +562,10 @@
 - 214959記録で接近536frame中右腕無効323、yaw最大観測差64.45度を確認。前傾のyaw方向への回り込み、前腕のworldキャッシュ残留を修正。ArmHeldのUnity読み取りも追加、ローカル保持へ。
 - 新実骨検査はyaw±45固定の接近で横変位数値誤差、保持肘/前腕cacheの親追従を確認。Unityビルド/既存motion等成功、results/seated-coupling/verified.log。生yaw急変は残り、実人物改善は未確認。
 - docs/SEATED_COUPLING.md、SPEC0.37、引き継ぎ/進捗/変更前ZIP/Desktop bat更新。Python/顔/目モデルは変更なし。
+
+## 2026-09-12 — Git開始・目線強調・顔高さ維持
+
+- ローカルGit基準a762348作成、今後適宜コミット。生成シーンをignoreへ。sandbox起動障害で昇格手順を使用、権限回避ではない。
+- 813/1003frame目線有効。gain4へ、実画像で小入力水平端間4.2→8.3px。ロストはカメラ方向へ緩やかに復帰、頭を向けた状態の実方向検査成功。
+- framed接近：軽い前傾＋全体移動で画面内顔高さ維持。腰完全固定から見せ方を変更しseated設定で戻せる。「口角」は「広角」の訂正、口角は不変。
+- Unityビルド/実Player回帰、顔高さ/距離/保持、Spout登録成功。実人物改善未確認。docs/FRAMED_GAZE.md、SPEC0.38/引き継ぎ/Desktop bat更新。

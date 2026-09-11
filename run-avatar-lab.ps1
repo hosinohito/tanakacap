@@ -26,12 +26,13 @@ try {
     if (-not (Test-Path -LiteralPath $taskExe)) { throw 'Run build-unity-lab.ps1 first.' }
     # This is the interactive avatar window requested by this launcher.
     $taskGazeSettings=Get-Content (Join-Path $PSScriptRoot 'tracking-settings.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    $taskGazeGain=2.0
+    $taskGazeGain=4.0
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
-    if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 3 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..3' }
+    if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
     if ($taskGazeSettings.gaze_render_mode -eq 'bones') { $taskPlayerArgs+='--gaze-bones' }
     if ($taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }
+    if ($taskGazeSettings.face_distance_mode -eq 'seated') { $taskPlayerArgs+='--face-distance-seated' }
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @()
