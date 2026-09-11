@@ -54,3 +54,5 @@
 - 保存性能の追加確認：高エントロピー1280×720の合成30frameでFFV1約20.7fpsだったため採用撤回。HuffYUVは約150.5fps、復号後の全画素一致を確認し採用。容量は大きくなる（合成最大寄りで約130MB/秒相当）ため開始時30GB以上の空きを要求する。既存FFV1の合成テイクもmanifest互換で読める。
 
 - results/comparison-setup/unity-replay.png：生成したreplay.jsonlを実Unityが受信・描画することを確認。
+
+- 未撮影で解析用を開いた場合はエラーにせず、tanakacap-compare-capture.batを案内して終了する。
