@@ -50,3 +50,8 @@
 ## 標準顔幾何点（2026-09-12）
 
 Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。capture_lab/data/face_template.jsonに出典URL/SHA256と近似対応の注記、face_template.LICENSEにライセンス全文。頭ピッチと口角投影補正の幾何テンプレートで学習済み推論モデルではない。詳細docs/HEAD_PITCH_MOUTH.md。
+
+
+## 2026-09-12 RTMW-X 2D比較候補
+
+公式OpenMMLab ONNX SDK配布のrtmw-x_simcc-cocktail13_pt-ucoco_270e-384x288-0949e3a9_20230925.zipを取得。ONNX SHA256 b2dd00cce207d3c1503e35cc77a82ecd7092dcbdfe4a3c692ec4cdc3cf40c804、アーカイブSHA256 e2635599f6d14152af4bb3e97f90881a782b003857514c76cc341794364ffbdd。models/rtmw-x-384/model.receipt.json。ローカル測定ハッシュで署名検証ではない。出典は[RTMlib公式モデル一覧](https://github.com/Tau-J/rtmlib)とmodels/catalog.json。配布可否の最終判断は既存モデルと同様に別途行う。新たなSAM/HaMeR/MANO素材は今回取得していない。

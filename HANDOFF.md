@@ -1,6 +1,16 @@
 # 引き継ぎ：現在の状態
 
 
+## 最新：2026-09-12 — 比較用撮影・固定入力ランナー
+
+- ユーザーが一括実装を指示、準備後に自分で撮影する。SAM/MANOは未取得と回答、登録・申請手順を案内。撮影は開始ボタンからで、今回こちらは実カメラ録画を行っていない。
+- capture_lab/comparison_capture.py：日本語の約3分ガイド、開始前プレビュー、3秒カウントダウン、中断/エラー、元映像＋実取得時刻＋動作ラベル/設定/ハッシュ保存。保存はHuffYUV AVI可逆、音声なし、プレビューのみ鏡像。開始時30GB空き要求。FFV1は合成720p約20.7fpsで撤回、HuffYUV約150.5fps・全画素一致で採用。容量が大きいことを案内。
+- capture_lab/comparison.py：同じ素材/時刻/ROI/顔・目線・口・距離を固定し、既存BodyRetargetへ接続。baseline＋DWPose-l＋新規RTMW-Xの2D対照、指理由/肘/距離/yawを動作別集計。2D対照では3Dは現行のまま、3D交換済みと扱わない。設定と制御コードのハッシュ、素材整合/中断拒否、CUDA実行イベント確認あり。
+- tools/compare_external_model.py：SAM/HaMeRの独立CUDA生出力ワーカーを準備。重み/環境不足で実行未検証。共通補正への3Dアダプターは実出力の単位/関節/信頼度を確認してから接続する未完了項目。ViTPose未導入、WiLoR条件確認待ち。全候補の比較完成と誤報しない。
+- 171pytest成功、Tk PPM表示（カメラなし）、合成18frameのbaseline/DWPose/RTMW-X CUDA＋虹彩検証とレポート生成、Unityでreplay.jsonl実受信成功。results/comparison-setup/gpu-smoke、unity-replay.png。人物品質/実カメラ録画は未検証。初回の文字コード/試験親dir不足は修正済み。
+- 最新既存621frameで左指有効203/168/164/145/141、右324/297/291/299/317。左palm_basis停止1910指判定分。基準不成立が多いが、区間正解なしで原因確定/修正済みとはしない。
+- デスクトップtanakacap-compare-capture.batで撮影、tanakacap-compare-analyze.batで最新完了テイクを解析。従来tanakacap-test.batも更新・維持。docs/COMPARISON_CAPTURE.mdに操作/素材/取得待ち/未完了範囲。次は撮影された素材の品質・指/肘の停止段階を監査し、SAM/MANO取得後に独立環境・3D接続を検証する。
+
 ## 最新：2026-09-12 — 顔距離安定化とモデル比較計画
 
 - 最新評価：目線/口/掌はおおむね良い。顔距離は静止時ガタつき、胴体yaw不良、腕の暴れ、左指停止、右手を顔横で開閉すると肘が前後へ動く。全追跡合格とはしない。
