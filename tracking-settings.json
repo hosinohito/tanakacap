@@ -3,8 +3,8 @@
   "observation_stride": 1,
   "gaze_enabled": true,
   "gaze_render_mode": "iris",
-  "gaze_gain": 2.0,
+  "gaze_gain": 4.0,
   "gaze_reference": "contour",
   "face_distance_enabled": true,
-  "face_distance_mode": "seated"
+  "face_distance_mode": "framed"
 }

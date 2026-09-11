@@ -73,7 +73,7 @@ namespace TanakaCap
         bool obsMode;
         bool gazeEnabled=true;
         bool gazeIrisMode=true;
-        float gazeGain=2f;
+        float gazeGain=4f;
         SkinnedMeshRenderer gazeMesh;
         Transform leftEye,rightEye;
         Quaternion leftEyeRest,rightEyeRest;
@@ -84,6 +84,8 @@ namespace TanakaCap
         bool seatedDistance=true,distanceEstablished,seatedLeanLimited;
         float seatedLeanDegrees;
         Vector3 seatedHeadOffset,lastTorso;
+        bool framedDistance=true;
+        float initialHeadCameraY;
         float mouth, mouthWidth,mouthRound,mouthSmile,blinkLeft, blinkRight;
         float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
         bool detailedMouth;
@@ -182,6 +184,7 @@ namespace TanakaCap
             {
                 depthDirection=outputCamera.transform.forward;
                 initialFaceDepth=Vector3.Dot(head.position-outputCamera.transform.position,depthDirection);
+                initialHeadCameraY=Vector3.Dot(head.position-outputCamera.transform.position,outputCamera.transform.up);
             }
             var eyeL=animator.GetBoneTransform(HumanBodyBones.LeftEye);
             var eyeR=animator.GetBoneTransform(HumanBodyBones.RightEye);
@@ -213,10 +216,11 @@ namespace TanakaCap
             var args = Environment.GetCommandLineArgs();
             faceDistanceEnabled=Array.IndexOf(args,"--no-face-distance")<0;
             seatedDistance=Array.IndexOf(args,"--face-distance-translate")<0;
+            framedDistance=seatedDistance && Array.IndexOf(args,"--face-distance-seated")<0;
             gazeIrisMode=Array.IndexOf(args,"--gaze-bones")<0;
             int gazeGainArg=Array.IndexOf(args,"--gaze-gain");
             if(gazeGainArg>=0 && gazeGainArg+1<args.Length && float.TryParse(args[gazeGainArg+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var requestedGazeGain) && !float.IsNaN(requestedGazeGain))
-                gazeGain=Mathf.Clamp(requestedGazeGain,.5f,3f);
+                gazeGain=Mathf.Clamp(requestedGazeGain,.5f,6f);
             if(Array.IndexOf(args,"--obs")>=0)SetObsMode(true);
             int portArg=Array.IndexOf(args,"--port");
             if(portArg>=0 && portArg+1<args.Length && int.TryParse(args[portArg+1],out var testPort) && testPort>0 && testPort<=65535) port=testPort;
@@ -320,6 +324,7 @@ namespace TanakaCap
                 headYaw=25*Mathf.Sin(Time.time), headRoll=10*Mathf.Sin(Time.time*.6f),
                 mouth=.5f+.5f*Mathf.Sin(Time.time*3), leftBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16),
                 rightBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16) };
+            if(framedDistance && faceDistanceEnabled && distanceEstablished && p.faceTracked && p.faceDistanceTracked)transform.position=rootRestPosition;
             var leftParentBefore=left.lower.parent.rotation;
             var rightParentBefore=right.lower.parent.rotation;
             DriveFaceDistance(p,live,FrameDelta);
@@ -346,6 +351,7 @@ namespace TanakaCap
             // Face orientation is camera-relative: do not add torso rotation a second time.
             float faceT=p.faceTracked ? 1-Mathf.Exp(-FrameDelta*45) : t;
             if (p.faceTracked) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
+            ApplyFaceFraming(p,live);
             DriveGaze(p,live,FrameDelta);
 
             left.handBeforeSolve=left.hand.rotation; right.handBeforeSolve=right.hand.rotation;
@@ -413,11 +419,23 @@ namespace TanakaCap
             distanceEstablished=true;
             if(seatedDistance)
             {
-                seatedLeanDegrees=SolveSeatedLean(faceDistanceRatio,out seatedLeanLimited);
+                seatedLeanDegrees=SolveSeatedLean(framedDistance?1+(faceDistanceRatio-1)*.35f:faceDistanceRatio,out seatedLeanLimited);
+                if(framedDistance)seatedLeanDegrees=Mathf.Clamp(seatedLeanDegrees,-15,35);
                 return;
             }
             // Translate the entire hierarchy; retain mesh scale and local joint geometry.
             transform.position=rootRestPosition+depthDirection*(initialFaceDepth*(faceDistanceRatio-1));
+        }
+
+        void ApplyFaceFraming(TrackingPacket packet,bool live)
+        {
+            if(!framedDistance || !faceDistanceEnabled || !distanceEstablished || !live || !packet.faceTracked || !packet.faceDistanceTracked || !Camera.main)return;
+            var camera=Camera.main.transform;
+            float wantedDepth=initialFaceDepth*Mathf.Clamp(faceDistanceRatio,.5f,2f);
+            float actualDepth=Vector3.Dot(head.position-camera.position,depthDirection);
+            transform.position+=depthDirection*(wantedDepth-actualDepth);
+            float wantedY=initialHeadCameraY*wantedDepth/initialFaceDepth;
+            transform.position+=camera.up*(wantedY-Vector3.Dot(head.position-camera.position,camera.up));
         }
 
         static Quaternion TorsoRotation(Vector3 angles,bool seated)
@@ -452,6 +470,7 @@ namespace TanakaCap
             float savedRatio=faceDistanceRatio,savedLean=seatedLeanDegrees;
             bool enabled=faceDistanceEnabled,mode=seatedDistance,established=distanceEstablished,limit=seatedLeanLimited;
             var torso=lastTorso;var root=transform.position;
+            bool savedFramed=framedDistance;framedDistance=false;
             var leftCache=left.lowerUntwisted;var rightCache=right.lowerUntwisted;
             var hips=animator.GetBoneTransform(HumanBodyBones.Hips);
             var hipPosition=hips.position;var hipRotation=hips.rotation;
@@ -494,7 +513,41 @@ namespace TanakaCap
             current=saved;lastReceived=received;probeDelta=delta;faceDistanceRatio=savedRatio;seatedLeanDegrees=savedLean;
             faceDistanceEnabled=enabled;seatedDistance=mode;distanceEstablished=established;seatedLeanLimited=limit;lastTorso=torso;
             left.lowerUntwisted=leftCache;right.lowerUntwisted=rightCache;
+            framedDistance=savedFramed;
             Debug.Log("SEATED_POSE_OK fixed_pelvis/head_arc/head_orientation/loss approach="+approach);
+        }
+
+        void CheckFramedPose()
+        {
+            var bones=GetComponentsInChildren<Transform>(true);
+            var rotations=Array.ConvertAll(bones,b=>b.localRotation);
+            var saved=current;float received=lastReceived,delta=probeDelta;
+            float ratio=faceDistanceRatio,lean=seatedLeanDegrees;var root=transform.position;
+            var torso=lastTorso;var lc=left.lowerUntwisted;var rc=right.lowerUntwisted;
+            bool enabled=faceDistanceEnabled,mode=seatedDistance,framed=framedDistance,established=distanceEstablished,limited=seatedLeanLimited;
+            faceDistanceEnabled=true;seatedDistance=true;framedDistance=true;probeDelta=1f/60;
+            current=new TrackingPacket{tracked=true,faceTracked=true,body3d=true,torsoTracked=true,faceDistanceTracked=true,faceDistanceRatio=1};
+            for(int i=0;i<120;i++){lastReceived=Time.unscaledTime;LateUpdate();}
+            float baseY=Camera.main.WorldToViewportPoint(head.position).y;
+            foreach(float target in new[]{.8f,.55f,1.25f})
+            {
+                current.faceDistanceRatio=target;
+                for(int i=0;i<120;i++){lastReceived=Time.unscaledTime;LateUpdate();}
+                float y=Camera.main.WorldToViewportPoint(head.position).y;
+                float depth=Vector3.Dot(head.position-Camera.main.transform.position,depthDirection);
+                if(Mathf.Abs(y-baseY)>.001f || Mathf.Abs(depth/initialFaceDepth-target)>.002f || Mathf.Abs(seatedLeanDegrees)>35.01f)
+                    throw new Exception("Framed approach failed stable face height/depth/modest lean");
+                var held=transform.position;var pos=head.position;
+                current.faceDistanceTracked=false;
+                for(int i=0;i<30;i++){lastReceived=Time.unscaledTime;LateUpdate();}
+                if(Vector3.Distance(held,transform.position)>.00001f || Vector3.Distance(pos,head.position)>.0001f)throw new Exception("Framed approach drifted during distance loss");
+                current.faceDistanceTracked=true;
+            }
+            for(int i=0;i<bones.Length;i++)bones[i].localRotation=rotations[i];
+            transform.position=root;current=saved;lastReceived=received;probeDelta=delta;faceDistanceRatio=ratio;seatedLeanDegrees=lean;
+            faceDistanceEnabled=enabled;seatedDistance=mode;framedDistance=framed;distanceEstablished=established;seatedLeanLimited=limited;
+            lastTorso=torso;left.lowerUntwisted=lc;right.lowerUntwisted=rc;
+            Debug.Log("FRAMED_POSE_OK stable_screen_height/depth/loss/modest_lean");
         }
 
         void CheckFaceDistance()
@@ -533,10 +586,20 @@ namespace TanakaCap
             Debug.Log("FACE_DISTANCE_OK approach/retreat/loss/disabled/scale");
         }
 
+        Vector2 CameraGazeTarget()
+        {
+            if(!Camera.main || !head)return Vector2.zero;
+            var frame=head.rotation*Quaternion.Inverse(headRootRest);
+            var center=head.TransformPoint(faceCenterLocal);
+            var local=Quaternion.Inverse(frame)*(Camera.main.transform.position-center).normalized;
+            return new Vector2(Mathf.Clamp(Mathf.Atan2(local.x,local.z)*Mathf.Rad2Deg,-20,20),
+                Mathf.Clamp(-Mathf.Atan2(local.y,Mathf.Sqrt(local.x*local.x+local.z*local.z))*Mathf.Rad2Deg,-12,12));
+        }
+
         void DriveGaze(TrackingPacket packet,bool live,float dt)
         {
             bool valid=gazeEnabled && live && packet!=null && packet.faceTracked && packet.gazeTracked;
-            var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain,-12,12)):Vector2.zero;
+            var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain,-12,12)):(gazeEnabled?CameraGazeTarget():Vector2.zero);
             gazeAngles=Vector2.Lerp(gazeAngles,target,1-Mathf.Exp(-Mathf.Max(0,dt)*(valid?22f:2f)));
             if(gazeAngles.sqrMagnitude<.0001f)gazeAngles=Vector2.zero;
             bool translate=gazeIrisMode && gazeMesh;
@@ -683,12 +746,25 @@ namespace TanakaCap
                     var direction=Quaternion.Inverse(frame)*(delta*(frame*Vector3.forward));
                     if((!gazeIrisMode || !gazeMesh) && (direction.x*sign<.20f || direction.y*sign>-.10f))throw new Exception("Gaze bone direction mismatch");
                 }
-                var before=gazeAngles;DriveGaze(null,false,1f/60);
-                if(gazeAngles.magnitude<before.magnitude*.95f || gazeAngles.magnitude>=before.magnitude)
+                var targetCamera=CameraGazeTarget();var before=gazeAngles-targetCamera;DriveGaze(null,false,1f/60);
+                if((gazeAngles-targetCamera).magnitude<before.magnitude*.95f || (gazeAngles-targetCamera).magnitude>=before.magnitude)
                     throw new Exception("Lost gaze snapped instead of slowly returning");
                 for(int i=0;i<180;i++)DriveGaze(null,false,1f/60);
-                if(gazeAngles.magnitude>before.magnitude*.003f)throw new Exception("Lost gaze failed to decay by 99.7% in three seconds");
+                if((gazeAngles-targetCamera).magnitude>before.magnitude*.003f)throw new Exception("Lost gaze failed to converge to camera in three seconds");
             }
+            var savedHead=head.rotation;
+            foreach(float yaw in new[]{-10f,10f})
+            {
+                head.rotation=Quaternion.LookRotation(Camera.main.transform.position-head.position,Vector3.up)*Quaternion.Euler(0,yaw,0)*headRootRest;
+                for(int i=0;i<240;i++)DriveGaze(null,false,1f/60);
+                var frame=head.rotation*Quaternion.Inverse(headRootRest);
+                float x=gazeAngles.x*Mathf.Deg2Rad,y=gazeAngles.y*Mathf.Deg2Rad;
+                var direction=frame*new Vector3(Mathf.Sin(x)*Mathf.Cos(y),-Mathf.Sin(y),Mathf.Cos(x)*Mathf.Cos(y));
+                var wanted=(Camera.main.transform.position-head.TransformPoint(faceCenterLocal)).normalized;
+                if(Vector3.Angle(direction,wanted)>.1f)throw new Exception("Lost gaze is not aimed at camera after head turn");
+            }
+            head.rotation=savedHead;
+            Debug.Log("CAMERA_GAZE_OK head_turn/world_direction/slow_return");
             gazeAngles=new Vector2(15,8);gazeEnabled=false;
             for(int i=0;i<180;i++)DriveGaze(new TrackingPacket{faceTracked=true,gazeTracked=true,gazeYaw=20},true,1f/60);
             if(gazeAngles.magnitude>.05f)throw new Exception("Disabled gaze still tracked");
@@ -1006,7 +1082,7 @@ namespace TanakaCap
             GUI.Label(new Rect(24,86,430,22),"F4: gaze "+(!gazeEnabled?"OFF":current!=null && current.gazeTracked && Time.unscaledTime-lastReceived<.3f?"tracking":"returning")+" / "+(gazeIrisMode && gazeMesh?"iris":"bones")+" / "+gazeAngles.ToString("F1"));
             bool distanceLive=current!=null && current.tracked && current.faceTracked && current.faceDistanceTracked && Time.unscaledTime-lastReceived<.3f;
             string distanceState=!faceDistanceEnabled?"OFF":!distanceLive?(distanceEstablished?"HOLD (lost)":"waiting for face"):seatedDistance && seatedLeanLimited?"ANGLE LIMIT":"tracking";
-            GUI.Label(new Rect(24,110,430,22),"Distance: "+distanceState+" / "+(seatedDistance?"seated "+seatedLeanDegrees.ToString("F1")+" deg":"translate")+" / ratio "+faceDistanceRatio.ToString("F2"));
+            GUI.Label(new Rect(24,110,430,22),"Distance: "+distanceState+" / "+(seatedDistance?(framedDistance?"framed ":"seated ")+seatedLeanDegrees.ToString("F1")+" deg":"translate")+" / ratio "+faceDistanceRatio.ToString("F2"));
         }
 
         public void SetObsMode(bool enabled)
@@ -1066,6 +1142,7 @@ namespace TanakaCap
             CheckGaze();
             CheckFaceDistance();
             CheckSeatedPose();
+            CheckFramedPose();
             var reports=new System.Collections.Generic.List<MotionPath>();
             probeDelta=1f/60;
             foreach(bool isLeft in new[]{true,false}) foreach(bool wrap in new[]{false,true})
