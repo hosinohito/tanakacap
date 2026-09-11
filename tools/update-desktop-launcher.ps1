@@ -8,3 +8,11 @@ $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass 
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget
+
+$taskComparisonScript = Join-Path $taskRoot 'run-comparison-lab.ps1'
+foreach ($taskMode in @('capture','analyze')) {
+    $taskComparisonTarget = Join-Path $taskDesktop ("tanakacap-compare-$taskMode.bat")
+    $taskComparisonContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode $taskMode`r`npause`r`n"
+    [IO.File]::WriteAllText($taskComparisonTarget,$taskComparisonContents,[Text.Encoding]::Default)
+    Write-Output $taskComparisonTarget
+}
