@@ -97,7 +97,7 @@ def benchmark(args):
     body_retarget = BodyRetarget(args.observation_block,args.observation_stride)
     face_filter = FaceFilter(args.observation_block,args.observation_stride)
     from .face_distance import FaceDistance
-    face_distance=FaceDistance(args.observation_block,args.observation_stride)
+    face_distance=FaceDistance(args.observation_block,args.observation_stride,args.face_distance_filter)
     from .head_pose import HeadPose
     head_pose=HeadPose(args.head_pitch_gain,args.mouth_lip_depth_scale) if args.head_pose_mode=="pnp" else None
     rows = []
@@ -398,6 +398,7 @@ def main():
             sub.add_argument('--head-pose-mode',choices=['pnp','legacy'],default='pnp')
             sub.add_argument('--head-pitch-gain',type=float,default=1.8)
             sub.add_argument('--mouth-lip-depth-scale',type=float,default=1.5)
+            sub.add_argument('--face-distance-filter',choices=['stable','legacy'],default='stable')
             sub.add_argument('--gaze',action='store_true',help='Experimental CUDA iris-driven eye rotation')
             sub.add_argument('--gaze-reference',choices=['contour','legacy'],default='contour',help='Legacy restores the previous ROI reference and eye flips')
             sub.add_argument('--integer-body-peaks',action='store_true',help='Restore integer body coordinate decoding for comparison')
