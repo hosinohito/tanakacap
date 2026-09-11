@@ -604,3 +604,8 @@
 - 171pytest成功、Tk PPM表示（カメラなし）、合成18frameのbaseline/DWPose/RTMW-X CUDA＋虹彩検証とレポート生成、Unityでreplay.jsonl実受信成功。results/comparison-setup/gpu-smoke、unity-replay.png。人物品質/実カメラ録画は未検証。初回の文字コード/試験親dir不足は修正済み。
 - 最新既存621frameで左指有効203/168/164/145/141、右324/297/291/299/317。左palm_basis停止1910指判定分。基準不成立が多いが、区間正解なしで原因確定/修正済みとはしない。
 - デスクトップtanakacap-compare-capture.batで撮影、tanakacap-compare-analyze.batで最新完了テイクを解析。従来tanakacap-test.batも更新・維持。docs/COMPARISON_CAPTURE.mdに操作/素材/取得待ち/未完了範囲。次は撮影された素材の品質・指/肘の停止段階を監査し、SAM/MANO取得後に独立環境・3D接続を検証する。
+
+## 2026-09-12 — 撮影前の解析起動を案内へ変更
+
+- 撮影フォルダーがまだない状態で解析用バッチを開き、Get-ChildItemエラーになった。存在確認を追加し、未撮影/完了テイクなしでは撮影用tanakacap-compare-capture.batの案内を出して正常終了する。カメラや録画は自動開始しない。
+- 実際の未撮影状態でanalyze起動の案内・正常終了を確認。推論/補正/録画形式は変更なし。デスクトップbat更新。
