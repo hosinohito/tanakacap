@@ -41,18 +41,20 @@ def fit_pose(points,scores,image_size):
     except cv2.error:return None
 
 
-def frontal_landmarks(points,rotation,translation,image_size):
+def frontal_landmarks(points,rotation,translation,image_size,lip_depth_scale=1.):
     # Intersect each image ray with its generic facial depth in head space.
     # Using different lip depths removes tilt-induced apparent corner elevation.
     output=np.array(points,dtype=float,copy=True)
     inverse=np.linalg.inv(camera_matrix(image_size))
     center=-rotation.T@translation
+    lip_center_depth=float(np.mean([TEMPLATE[i][2] for i in range(48,68)]))
     for i,template in TEMPLATE.items():
         point=output[23+i]
         if not np.isfinite(point).all():return None
         ray=rotation.T@(inverse@np.r_[point,1.])
         if abs(ray[2])<.15:return None
-        length=(template[2]-center[2])/ray[2]
+        depth=lip_center_depth+(template[2]-lip_center_depth)*lip_depth_scale if 48<=i<68 else template[2]
+        length=(depth-center[2])/ray[2]
         if length<=0:return None
         recovered=center+ray*length
         output[23+i]=recovered[:2]*1000+[320,240]
@@ -60,7 +62,9 @@ def frontal_landmarks(points,rotation,translation,image_size):
 
 
 class HeadPose:
-    def __init__(self,gain=1.8):
+    def __init__(self,gain=1.8,lip_depth_scale=1.5):
+        self.lip_depth_scale=float(lip_depth_scale)
+        if not np.isfinite(self.lip_depth_scale) or not .5<=self.lip_depth_scale<=2:raise ValueError("lip depth scale must be 0.5..2")
         self.gain=float(gain)
         if not np.isfinite(self.gain) or not .5<=self.gain<=3:raise ValueError("head pitch gain must be 0.5..3")
         self.reference=None
@@ -71,7 +75,7 @@ class HeadPose:
     def update(self,points,scores,packet,image_size):
         legacy_pitch=packet.get('headPitch',0.)
         pose=fit_pose(points,scores,image_size) if packet.get('faceTracked') else None
-        self.diagnostics=dict(tracked=pose is not None,legacy_pitch=legacy_pitch)
+        self.diagnostics=dict(tracked=pose is not None,legacy_pitch=legacy_pitch,lip_depth_scale=self.lip_depth_scale)
         if pose is None:
             if self.reference is None:self.samples=[]
             packet['headPitch']=self.last_pitch
@@ -84,7 +88,7 @@ class HeadPose:
                 self.reference=float(np.median(self.samples))
         self.last_pitch=0. if self.reference is None else float(np.clip((angles[0]-self.reference)*self.gain,-40,40))
         packet['headPitch']=self.last_pitch
-        frontal=frontal_landmarks(points,rotation,translation,image_size)
+        frontal=frontal_landmarks(points,rotation,translation,image_size,self.lip_depth_scale)
         detail=contour_controls(frontal,scores) if frontal is not None else None
         packet['mouthContourTracked']=detail is not None
         if detail is not None:packet.update(detail)

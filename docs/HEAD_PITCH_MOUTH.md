@@ -33,3 +33,10 @@
 - [OpenCV PnP公式資料](https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html)：3D/2D対応とカメラ行列から回転/並進を求める。
 - [Google公式標準顔形状](https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj)：必要な29点だけcapture_lab/data/face_template.jsonへ抽出。68点とFaceMeshの意味対応はこの実装の近似。元ファイルSHA256と出典をJSONへ記録。
 - Apache-2.0ライセンスをface_template.LICENSEに同梱。新しい学習モデル/依存ライブラリの追加はない。
+
+
+## 2026-09-12 追試
+
+頭ピッチ改善はユーザー確認済み。残る口角連動に対し、口の平均奥行きを固定して各唇点の奥行き差だけを1.5倍にする。鼻/眼端で解く頭姿勢は変更しない。tracking-settings.json の mouth_lip_depth_scale（CLI --mouth-lip-depth-scale）、1.0で前回に戻る。範囲0.5〜2、head_pose_mode=legacyでは未使用。
+
+最新223024の935観測（正面寄り/閉口）の相関は左0.442/右0.488→−0.109/0.012。2倍は逆方向に補正しすぎる傾向。これは固定仮説の記録比較であり、個人形状の真値や正解表情ではない。ライブで表情を学習して引き去る処理はない。合成投影で向き/左右別表情の分離、設定復元、頭pitch不変を検証し162pytest成功。Unity変更なし。実人物品質未確認。

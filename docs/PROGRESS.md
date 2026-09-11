@@ -575,3 +575,10 @@
 - 鼻/両目比だけのpitchを鼻/眼端9点のPnPへ、口角は標準奥行きへの逆投影後の正面座標で計算。既存顔yaw/roll/GPUモデル/口モーフは維持、legacy設定で戻せる。
 - 同じ開始条件/観測間隔で696frame再生、口角上限付近は左217→0/右262→88。初回の左210は実送信記録との比較で条件が異なる。実人物正解精度ではない。
 - 154pytest、Unityビルドと既存motion、実Headの上下25度受信反映を確認。幾何中央値0.52ms。results/head-pose、docs/HEAD_PITCH_MOUTH.md、SPEC0.39/引き継ぎ/ライセンス/Desktop bat更新、Git保存。
+
+## 2026-09-12 — 残る口角ピッチ連動・動画再生診断
+
+- ユーザーが頭ピッチ改善を確認。下向き口角上昇/上向き下降は残る。頭推定を維持し、唇テンプレートの平均奥行きを固定して奥行き差のみ1.5倍にする試行。mouth_lip_depth_scale=1.0で前回へ、範囲0.5〜2。顔/目モデルと口モーフは不変。
+- 223024記録1210frame、正面寄り/閉口935frameで口角とsin(pitch)相関が左0.442/右0.488から−0.109/0.012へ。tools/audit_lip_depth.py、results/lip-depth/comparison.json。正解表情はなく、相関低下は精度保証ではない。162pytest成功、実人物の見た目未確認。
+- 再生：RTX4090 driver595.71、状態正常。録画1080p60 H264、CPU復号約380fps。MPC再生中GPU Decode約17%、全体約21%、MPCVR D3D11使用。GPU飽和/未導入ではない。EVR変更後も遅いとユーザー確認、設定DSVidRen=11を読み取り確認。1440p165Hz、直近6時間に確認できたDisplay/nvlddmkm/WHEAイベントなし。根本原因未確定。
+- OBS終了でMPC単独比較を質問中。ドライバー/OS/仮想モニター設定は変更していない。詳細docs/VIDEO_PLAYBACK_DIAGNOSIS.md。再生不具合を解決済みにしない。

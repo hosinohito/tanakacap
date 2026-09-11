@@ -45,6 +45,11 @@ try {
         if ([double]::IsNaN($taskPitchGain) -or $taskPitchGain -lt .5 -or $taskPitchGain -gt 3) { throw 'head_pitch_gain must be 0.5..3' }
         $taskExtra += @('--head-pitch-gain',$taskPitchGain.ToString([Globalization.CultureInfo]::InvariantCulture))
     }
+    if ($taskGazeSettings.PSObject.Properties.Name -contains 'mouth_lip_depth_scale') {
+        $taskLipDepth=[double]$taskGazeSettings.mouth_lip_depth_scale
+        if ([double]::IsNaN($taskLipDepth) -or $taskLipDepth -lt .5 -or $taskLipDepth -gt 2) { throw 'mouth_lip_depth_scale must be 0.5..2' }
+        $taskExtra += @('--mouth-lip-depth-scale',$taskLipDepth.ToString([Globalization.CultureInfo]::InvariantCulture))
+    }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
     & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --body3d --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }
