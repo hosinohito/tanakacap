@@ -98,6 +98,8 @@ def benchmark(args):
     face_filter = FaceFilter(args.observation_block,args.observation_stride)
     from .face_distance import FaceDistance
     face_distance=FaceDistance(args.observation_block,args.observation_stride)
+    from .head_pose import HeadPose
+    head_pose=HeadPose(args.head_pitch_gain) if args.head_pose_mode=="pnp" else None
     rows = []
     try:
         if args.unity_port:
@@ -181,6 +183,12 @@ def benchmark(args):
                 if sender:
                     timing['gaze_ms']=0.
                     packet = packet_from_landmarks(points, scores, index, args.threshold)
+                    timing["head_pose_ms"]=0.
+                    if head_pose:
+                        pose_start=time.perf_counter()
+                        head_pose.update(points,scores,packet,(image.shape[1],image.shape[0]))
+                        timing["head_pose_ms"]=(time.perf_counter()-pose_start)*1000
+                        timing["pipeline_ms"]+=timing["head_pose_ms"]
                     if gaze:
                         gaze.update(image,points,scores,packet,time.perf_counter())
                         timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
@@ -206,6 +214,7 @@ def benchmark(args):
                 if sender and body_model:
                     if gaze: row['gaze']=gaze.diagnostics
                     row['face_distance']=face_distance.diagnostics
+                    if head_pose:row['head_pose']=head_pose.diagnostics
                     row['mouth_corner_reference']=None if face_filter.corner_neutral is None else face_filter.corner_neutral.tolist()
                     row['mouth_bow_reference']=face_filter.bow_neutral
                     row['body_decode']=body_model.decode_diagnostics if body_xy is not None else None
@@ -386,6 +395,8 @@ def main():
             sub.add_argument('--observation-stride',type=int,choices=(1,3),default=1,help='1: overlapping means, 3: disjoint means (block size 3 only)')
             sub.add_argument('--observation-block',type=int,choices=(1,3),default=3,help='1: original confirmation; 3: three-frame means (stride controls overlap)')
             sub.add_argument('--body3d', action='store_true', help='Add RTMW3D body inference; keep the existing face model')
+            sub.add_argument('--head-pose-mode',choices=['pnp','legacy'],default='pnp')
+            sub.add_argument('--head-pitch-gain',type=float,default=1.8)
             sub.add_argument('--gaze',action='store_true',help='Experimental CUDA iris-driven eye rotation')
             sub.add_argument('--gaze-reference',choices=['contour','legacy'],default='contour',help='Legacy restores the previous ROI reference and eye flips')
             sub.add_argument('--integer-body-peaks',action='store_true',help='Restore integer body coordinate decoding for comparison')
