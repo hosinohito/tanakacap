@@ -1,0 +1,33 @@
+{
+  "rtmw3d-x-384": {
+    "url": "https://huggingface.co/Soykaf/RTMW3D-x/resolve/main/onnx/rtmw3d-x_8xb64_cocktail14-384x288-b0a0eab7_20240626.onnx",
+    "format": "onnx",
+    "input_wh": [288, 384],
+    "keypoints": 133,
+    "layout": "coco-wholebody",
+    "dimensions": 3,
+    "color_order": "RGB",
+    "z_range": 2.1744869,
+    "purpose": "Monocular relative depth experiment. Community ONNX conversion linked by RTMlib; not a depth sensor or final model selection."
+  },
+  "yolox-m-human": {
+    "url": "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip",
+    "input_wh": [640, 640],
+    "kind": "detector",
+    "purpose": "Human detection gate and single-person ROI, not identity tracking"
+  },
+  "rtmw-l-384": {
+    "url": "https://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip",
+    "input_wh": [288, 384],
+    "keypoints": 133,
+    "layout": "coco-wholebody",
+    "purpose": "2D whole-body baseline, including face and hands; not 3D or ARKit blendshapes"
+  },
+  "dwpose-l-384": {
+    "url": "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/rtmpose-l_simcc-ucoco_dw-ucoco_270e-384x288-2438fd99_20230728.zip",
+    "input_wh": [288, 384],
+    "keypoints": 133,
+    "layout": "coco-wholebody",
+    "purpose": "Independent weights for same-input replay comparison; not final model selection"
+  }
+}
