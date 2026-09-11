@@ -50,6 +50,7 @@ try {
         if ([double]::IsNaN($taskLipDepth) -or $taskLipDepth -lt .5 -or $taskLipDepth -gt 2) { throw 'mouth_lip_depth_scale must be 0.5..2' }
         $taskExtra += @('--mouth-lip-depth-scale',$taskLipDepth.ToString([Globalization.CultureInfo]::InvariantCulture))
     }
+    if ($taskGazeSettings.face_distance_filter) { $taskExtra += @('--face-distance-filter',$taskGazeSettings.face_distance_filter) }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
     & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --body3d --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }
