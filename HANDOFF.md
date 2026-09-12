@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 口角強調度完了、J/K/Lは比較後すべてrevert
+
+口角強調度0〜1、既定0（追跡OFFではなく追加モーフ増幅なし）、1は従来。5085cb5、mouth_corner_emphasis/両launcher -MouthCornerEmphasis/Player --mouth-corner-emphasis/将来UI用プロパティを追加。実モーフ0/0.5/1・左右/腕/透過回帰成功。ガンマ・口閉じ校正・開口時上げ抑制・横寄せは維持。実人物の新しい口角の見た目は未確認。
+
+J/K/Lを各独立実装・Full HD60＋OBSで比較し全部revert。基準2回45.419/45.199Hz、J45.395（座標差0だが改善確認できずbacbc07でrevert）、K48.395（80録画観測で高信頼XY最大差38.49px/Z0.8834mのため96af046でrevert）、L45.162（5,187観測の制御完全一致だが両基準より僅かに遅くfc9a905でrevert）。Jは明確な遅化と断言せず、利点が確認できないため撤回。モデルの推定差を人体の実距離誤差と呼ばない。全て約60fps、透過/合成/変化/正常終了成功。実カメラ/映像目視なし。推論コードは5085cb5と同じ、G+Iを維持、試行フラグは残さない。
+
+詳細docs/MOUTH_EMPHASIS_AND_OPTIMIZATION_JKL.md、結果results/optimization-{jkl-baseline,J-fullhd,K-fullhd,L-fullhd,jkl-baseline-repeat}、compact-simcc-audit/gpu-preprocess-audit/reuse-buffers-audit.json。試行J2713bfe/K482c79c/L69f1b4a。最終228 tests、Unity実Player検証済み。フェーズ残件表はIMPLEMENTATION_PHASES先頭へ更新。今回の高速化は終了、次は既存品質/長時間/配布UI等の残件をユーザー優先で進める。UIの推論Hz・描画4択・上限待機・口角強調度は予定、UI自体は未実装。A/E保留、H復活なし、揺れ物終了、録画検証を維持。
+
 ## 2026-09-13 — UIの推論速度表示を追加予定
 
 ユーザー指定で将来の推論切替UIに実測推論速度表示を追加。描画fps/Player受信Hzと区別する。SPEC0.63/SHARED_PREVIEW/AGENTSへ記録、UIは未実装。次の高速化候補はRTMW3D出力の点への復号をGPU上で済ませCPU転送を小さくする案、切り出し/正規化のGPU化、CPU補正の割り当て削減。いずれも提案のみ、効果未測定。前回H並行は復活させず、A/Eは保留、モデル/補正・揺れ物は変更しない。
