@@ -108,6 +108,8 @@ namespace TanakaCap.Editor
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(.06f, .07f, .09f);
             var output=camera.gameObject.AddComponent<AlphaOutput>();
+            output.edgeShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/TanakaCap/EdgeAntialiasing.shader");
+            if(!output.edgeShader || !output.edgeShader.isSupported)throw new Exception("Edge AA shader unavailable");
             output.resources=AssetDatabase.LoadAssetAtPath<Klak.Spout.SpoutResources>("Packages/jp.keijiro.klak.spout/Editor/SpoutResources.asset");
             if(!output.resources)throw new Exception("Spout resources missing");
             var light = new GameObject("Key Light").AddComponent<Light>();
@@ -118,6 +120,7 @@ namespace TanakaCap.Editor
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 60;
+            PlayerSettings.enableFrameTimingStats=true; // GPU recorder activated only by explicit diagnostics.
             PlayerSettings.companyName = "tanakacap";
             PlayerSettings.productName = "tanakacap lab";
             PlayerSettings.defaultScreenWidth = 1280;

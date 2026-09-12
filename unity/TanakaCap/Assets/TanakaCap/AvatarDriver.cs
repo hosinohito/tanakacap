@@ -12,6 +12,7 @@ namespace TanakaCap
     {
         public int version;
         public long sequence;
+        public double inputReadTime,inputSentTime;
         public bool tracked, faceTracked, leftArmTracked, rightArmTracked, body3d, torsoTracked;
         public float headPitch, headYaw, headRoll, mouth, mouthWidth,mouthRound,mouthSmile,leftBlink, rightBlink, torsoRoll, torsoPitch, torsoYaw;
         public bool mouthContourTracked;
@@ -290,6 +291,7 @@ namespace TanakaCap
                     // A sender may restart at sequence 0 after the old stream expires.
                     if (packet.sequence <= lastSequence && Time.unscaledTime-lastReceived < 1) continue;
                     lastSequence = packet.sequence;
+                    ReceivedPackets++;
                     current = packet;
                     lastReceived = Time.unscaledTime;
                 }
@@ -299,6 +301,7 @@ namespace TanakaCap
 
         static bool Finite(TrackingPacket p)
         {
+            if(double.IsNaN(p.inputReadTime)||double.IsInfinity(p.inputReadTime)||double.IsNaN(p.inputSentTime)||double.IsInfinity(p.inputSentTime))return false;
             if(float.IsNaN(p.faceDistanceRatio)||float.IsInfinity(p.faceDistanceRatio))return false;
             if(float.IsNaN(p.gazeYaw)||float.IsInfinity(p.gazeYaw)||float.IsNaN(p.gazePitch)||float.IsInfinity(p.gazePitch))return false;
             float[] values = {p.headPitch,p.headYaw,p.headRoll,p.mouth,p.mouthWidth,p.mouthRound,p.mouthSmile,p.mouthLeftCorner,p.mouthRightCorner,p.mouthBow,p.leftBlink,p.rightBlink,p.torsoRoll,p.torsoPitch,p.torsoYaw,
@@ -318,6 +321,12 @@ namespace TanakaCap
             foreach(float v in flex) if(float.IsNaN(v) || float.IsInfinity(v) || v<0 || v>180) return false;
             return true;
         }
+
+        public long ReceivedPackets { get; private set; }
+        public long AppliedSequence { get { return current==null ? -1 : current.sequence; } }
+        public double InputReadTime { get { return current==null ? 0 : current.inputReadTime; } }
+        public double InputSentTime { get { return current==null ? 0 : current.inputSentTime; } }
+        public float PacketAgeMilliseconds { get { return current==null ? -1 : (Time.unscaledTime-lastReceived)*1000; } }
 
         void LateUpdate()
         {
@@ -1084,10 +1093,11 @@ namespace TanakaCap
                 current != null && Time.unscaledTime-lastReceived<.3f ? (current.tracked ? "Tracking" : "Holding last pose (no person)") : (current==null?"Waiting for capture":"Holding last pose (stream stopped)");
             if(current!=null && (current.leftOutOfView || current.rightOutOfView))
                 state+=" / Hand outside frame: "+(current.leftOutOfView?"L ":"")+(current.rightOutOfView?"R":"");
-            GUI.Box(new Rect(12,12,450,130),"tanakacap development lab");
+            GUI.Box(new Rect(12,12,450,154),"tanakacap development lab");
             GUI.Label(new Rect(24,38,430,22),error ?? state);
             GUI.Label(new Rect(24,62,430,22),"F1: status  F2: demo  F3: OBS  F6: hair/cloth  C: neutral torso  " + (current != null && current.body3d ? "3D body" : "2D body"));
             GUI.Label(new Rect(24,86,430,22),"F4: gaze "+(!gazeEnabled?"OFF":current!=null && current.gazeTracked && Time.unscaledTime-lastReceived<.3f?"tracking":"returning")+" / "+(gazeIrisMode && gazeMesh?"iris":"bones")+" / "+gazeAngles.ToString("F1"));
+            GUI.Label(new Rect(24,134,430,22),"F7: edge AA "+(EdgeAntialiasing.Active?"ON":"OFF"));
             bool distanceLive=current!=null && current.tracked && current.faceTracked && current.faceDistanceTracked && Time.unscaledTime-lastReceived<.3f;
             string distanceState=!faceDistanceEnabled?"OFF":!distanceLive?(distanceEstablished?"HOLD (lost)":"waiting for face"):seatedDistance && seatedLeanLimited?"ANGLE LIMIT":"tracking";
             GUI.Label(new Rect(24,110,430,22),"Distance: "+distanceState+" / "+(seatedDistance?(framedDistance?"framed ":"seated ")+seatedLeanDegrees.ToString("F1")+" deg":"translate")+" / ratio "+faceDistanceRatio.ToString("F2"));

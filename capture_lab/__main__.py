@@ -169,6 +169,9 @@ def benchmark(args):
                     image, acquired = frame.image, frame.acquired
                 elif video:
                     ok, image = video.read()
+                    if not ok and getattr(args,'loop_video',False):
+                        video.set(cv2.CAP_PROP_POS_FRAMES,0)
+                        ok, image = video.read()
                     if not ok:
                         break
                     acquired = time.perf_counter()
@@ -219,11 +222,18 @@ def benchmark(args):
                     face_distance.update(points,scores,packet,distance_start)
                     timing['face_distance_ms']=(time.perf_counter()-distance_start)*1000
                     timing['pipeline_ms']+=timing['face_distance_ms']
+                    retarget_start=time.perf_counter()
                     if body_model:
                         packet = body_retarget.update(packet,body_xy,body_scores,
                             body_model.depth if body_xy is not None else None,body_model.depth_scores,
                             image_size=(image.shape[1],image.shape[0]),
                             reference_xy=points,reference_scores=scores)
+                    timing['retarget_ms']=(time.perf_counter()-retarget_start)*1000
+                    timing['pipeline_ms']+=timing['retarget_ms']
+                    # Windows 3.11 perf_counter is system-wide QPC, shared with
+                    # the Player's diagnostic-only QueryPerformanceCounter.
+                    packet['inputReadTime']=acquired
+                    packet['inputSentTime']=time.perf_counter()
                     sender.send(packet)
                 done = time.perf_counter()
                 row = {'frame': index, 'sequence': last_sequence if camera else index,
@@ -408,6 +418,7 @@ def main():
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')
             sub.add_argument('--source', choices=['synthetic', 'camera', 'video'], default='synthetic')
             sub.add_argument('--video')
+            sub.add_argument('--loop-video',action='store_true',help='Diagnostic stress loop; requires source=video and --no-log, no capture or recording')
             sub.add_argument('--roi', nargs=4, type=int, metavar=('X', 'Y', 'W', 'H'))
             sub.add_argument('--fixed-roi', action='store_true', help='Skip person detection; diagnostic only, may predict on an empty scene')
             sub.add_argument('--warmup', type=int, default=20)
@@ -433,6 +444,8 @@ def main():
         parser.error('--frames must be at least 2; 0 is unlimited with benchmark --no-log')
     if getattr(args,'no_log',False) and (args.landmarks or args.snapshot):
         parser.error('--no-log cannot be combined with --landmarks or --snapshot')
+    if getattr(args,'loop_video',False) and (args.source!='video' or not args.no_log):
+        parser.error('--loop-video requires --source video --no-log')
     if hasattr(args, 'warmup') and args.warmup < 0:
         parser.error('--warmup must be non-negative')
     if args.command == 'fetch':
