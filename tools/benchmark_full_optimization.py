@@ -11,12 +11,12 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--stage',choices=('B','C','D','face','F','G','H'),default='B')
+    parser.add_argument('--stage',choices=('B','C','D','face','F','G'),default='B')
     parser.add_argument('--frames',type=int,default=900)
     parser.add_argument('--landmarks',action='store_true')
     args=parser.parse_args()
     out=ROOT/'results'/('full-optimization-'+args.stage+'-'+str(time.time_ns()));out.mkdir()
-    modes={'H':{'baseline':['--preprocess-mode','crop'], 'parallel':['--preprocess-mode','crop','--parallel-gaze'], 'baseline-repeat':['--preprocess-mode','crop']},'G':{'baseline':[], 'crop':['--preprocess-mode','crop']},'F':{'baseline':[], 'split':['--detector-graph']},'B':{'run':['--inference-mode','run'],'binding':['--inference-mode','binding'],
+    modes={'G':{'baseline':[], 'crop':['--preprocess-mode','crop']},'F':{'baseline':[], 'split':['--detector-graph']},'B':{'run':['--inference-mode','run'],'binding':['--inference-mode','binding'],
                 'graph':['--inference-mode','graph']},
            'C':{'every-frame':['--inference-mode','graph','--detector-interval','1'],
                 'interval3':['--inference-mode','graph','--detector-interval','3']},
@@ -30,7 +30,7 @@ def main():
             str(ROOT/'results/comparison-takes/20260911T235327-031115Z/camera.avi'),
             '--frames',str(args.frames),'--warmup','30','--body3d','--gaze','--unity-port','39549',
             '--no-ort-profile','--arm-depth-mode','front_projection','--shoulder-yaw-mode','face_ratio',*extra]
-        if args.stage in ('F','G','H'): command+=['--inference-mode','graph','--detector-interval','3','--face-source','body3d','--head-pose-mode','pnp_depthmouth']
+        if args.stage in ('F','G'): command+=['--inference-mode','graph','--detector-interval','3','--face-source','body3d','--head-pose-mode','pnp_depthmouth']
         if args.landmarks: command+=['--landmarks']
         with (out/(name+'.log')).open('wb') as log:
             subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=600)
