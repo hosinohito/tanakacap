@@ -1,5 +1,19 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — F通常採用、CUDA FP16比較、TensorRT条件確認待ち
+
+ユーザーがF採用を指定し`detector_graph=true`へ変更。コミットdf63f74。`-NoDetectorGraph`で戻せる。G/I・全部ON・body3d/pnp・3/1・口角0・揺れ物は維持。通常精度はgraph/FP32のまま。
+
+CUDA混合FP16を`-InferenceMode graph-fp16`で可逆実装。YOLOX固定部分/RTMW3D-X/batch2虹彩が対象、入出力・Softmax/一部集約・NMS後段はFP32。元ONNXを保持、既存ORT同梱変換器で派生モデルを作成。`graph`で復帰、頭専用は対象外。通常採用/見た目同等の判断はまだしていない。
+
+全5,187観測を2方式の独立ROI/推論/補正で処理、results/comparisons/cuda-precisionにreplay/frames/report/difference。主要計算CUDA確認、32/16で推論＋CPU補正の参考平均17.794/16.267ms。Full HD60/全機能/隔離OBS透過合成の各90秒試験は受信46.170/49.396Hz（約7%向上）、描画59.976/59.998fps。透過/背景合成/動き/正常終了成功。results/precision-{fp32,fp16}-fullhd。results/avatar-videos/cuda-precisionの動画4本（単独2/左右/顔拡大）は完成・全編decode検査成功。各185.03秒/30fps/5551描画、左FP32/右FP16。詳細docs/PRECISION_COMPARISON.md。実カメラ・エージェントの映像目視は行わない。
+
+FP16のXY差p95約1.65pxだが大きな外れもあり、補正後の胴体yaw差p95約29度、口角にも差がある。精度改善/劣化を正解付きで判定した結果ではない。ユーザーが比較動画で評価する。desktop tanakacap-compare-fp16.bat（比較動画の場所）/tanakacap-test-fp16.bat（ユーザー用実カメラ試験）追加、通常test/liveも更新。検証232 tests成功。
+
+重大な保留：ユーザーはTensorRTを「CUDAと同条件なら」実装と指定。通常版10.16.1.11/cu13はORT実DLLのnvinfer_10/CUDA13と一致するため開発venvへ導入し版/契約を確認した。しかし実wheel契約は最新Web SDK SLAと異なり、1年自動更新/更新終了・競合技術制限・狭い再配布対象記述がある。同条件と確定できないためasyncで確認中。返信があるまではTensorRTのモデル実行/engine構築を行わない。これまでTRT推論は一切未実行。`trt-fp32/trt-fp16`接続とrequirements-tensorrt.txtは未検証の準備段階、通常依存ではない。TensorRT for RTXではない。CUDA FP16はTensorRTを呼ばない。
+
+次の作業：ユーザーのFP16動画評価とTensorRT条件への回答を受ける。許容回答があればTRT EP実行/ビルド時間/キャッシュ/CPUフォールバック検査/同録画速度と動画比較を実施。CUDA FP16の通常採用を勝手に決めない。TensorRT Web契約だけで実wheel再配布条件を解決済みにしない。棚卸しはresults/distribution-audit-precision-20260913（25packages/51通知/19ONNX）、docs/DISTRIBUTION_LICENSES.md。README/SPEC0.66も更新。動画・重み・実写はGitへ追加しない。
+
 ## 2026-09-13 — FのOFF/ON全編比較動画完成
 
 Fの通常OFFはユーザー指定ではなく、初回実装b3d583fで改善幅が小さいためエージェントが決めたと履歴確認。ユーザーはF〜I実装、Hのみ独立コミット/遅ければrevertを指定していた。OFF指定の発言があったと扱わない。

@@ -92,6 +92,16 @@ $taskFCompareContents = "@echo off`r`nexplorer.exe /select,`"$taskFVideo`"`r`n"
 [IO.File]::WriteAllText($taskFCompareTarget,$taskFCompareContents,[Text.Encoding]::Default)
 Write-Output $taskFCompareTarget
 
+$taskPrecisionTarget = Join-Path $taskDesktop 'tanakacap-compare-fp16.bat'
+$taskPrecisionVideo = Join-Path $taskRoot 'results/avatar-videos/cuda-precision/side-by-side.mp4'
+$taskPrecisionContents = "@echo off`r`nexplorer.exe /select,`"$taskPrecisionVideo`"`r`n"
+[IO.File]::WriteAllText($taskPrecisionTarget,$taskPrecisionContents,[Text.Encoding]::Default)
+Write-Output $taskPrecisionTarget
+
+$taskFp16TestTarget = Join-Path $taskDesktop 'tanakacap-test-fp16.bat'
+[IO.File]::WriteAllText($taskFp16TestTarget,$taskContents.Replace(' -Diagnose',' -InferenceMode graph-fp16 -Diagnose'),[Text.Encoding]::Default)
+Write-Output $taskFp16TestTarget
+
 $taskFacePnpTarget = Join-Path $taskDesktop 'tanakacap-test-face-pnp.bat'
 $taskFacePnpContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
 [IO.File]::WriteAllText($taskFacePnpTarget,$taskFacePnpContents,[Text.Encoding]::Default)

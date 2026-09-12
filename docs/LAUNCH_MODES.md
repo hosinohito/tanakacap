@@ -30,6 +30,10 @@
 
 追加検証：モーション版の4秒起動で既定Player.logとresultsフォルダーが増えないことを確認（results/secondary-motion/no-log-smoke.json）。モーションの実描画と終了code0はmotion-final.png/log。
 
+## 2026-09-13 CUDA FP16比較
+
+通常test/liveはFをON、精度はgraph/FP32。`tanakacap-test-fp16.bat`は同じ通常構成に`-InferenceMode graph-fp16`だけを指定するユーザー起動用。設定ファイルは変更しない。比較動画の場所は`tanakacap-compare-fp16.bat`。実カメラ試験はユーザーの明示指示があるまでエージェントが実行しない。頭専用モードの精度は変更しない。
+
 ## 2026-09-12 描画の追加設定
 
 全起動で追加の軽量AAを既定ON。F7で切替、両PowerShell起動スクリプトの-NoEdgeAAで起動OFF（元のMSAAは維持）。Spout出力はFull HD（1920×1080）既定。-OutputWidth/-OutputHeightで各64〜4096の自由指定、幅省略は16:9。-NoPreview/F8でプレビューだけ非表示、-LegacyPreviewで旧二重描画へ復帰。通常はOBS画像をプレビューに共有。ウインドウサイズ/カメラ入力は独立。非記録・無期限・モーション専用の挙動はそのまま。[詳細](SHARED_PREVIEW.md)。

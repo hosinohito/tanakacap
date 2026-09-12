@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新指定（2026-09-13）：Fを通常ONへ採用。CUDA FP16は可逆実装・速度/動画比較、通常精度はgraph/FP32を維持。TensorRTはCUDAと同条件ならという条件付き。10.16.1実wheel契約がWeb版と異なり実行確認待ち、docs/PRECISION_COMPARISON.mdとHANDOFF先頭を参照。A一括保留の旧記述より優先。E/揺れ物は触らない。
+
 最新（2026-09-13）：Fの通常OFFはユーザー指定ではなく初回b3d583fでのエージェント判断だったと履歴確認。FをOFFにするユーザー発言があったと扱わない。ユーザー指定でF-OFF/ON全編動画比較を追加、docs/FURTHER_OPTIMIZATION.mdとHANDOFF先頭参照。
 
 最新（2026-09-13）：口輪郭の推定Zを外す試行を通常pnpへ設定。固定テンプレート/PnPによる顔向き補正は維持、直前pnp_depthmouthへ可逆。3平均/stride1、口角追加強調0。動画はresults/avatar-videos/mouth-no-z、見た目はユーザー評価。docs/MOUTH_NO_Z_TRIAL.md。配布棚卸しはdocs/DISTRIBUTION_LICENSES.md。TensorRTは今回見送り、通常版も再配布自体は可能、RTX版特有の性能開示制限と区別し既存CUDAにも同種の配布義務があることを隠さない。実装・性能検証済みと扱わない。

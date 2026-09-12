@@ -86,10 +86,15 @@ class IrisGaze:
         if self.batch_eyes:
             from .onnx_variants import iris_batch_model
             model_path=iris_batch_model(MODEL)
-        self.session=ort.InferenceSession(str(model_path),sess_options=options,providers=provider_options(execution_mode))
+        if execution_mode=='graph-fp16':
+            from .onnx_variants import fp16_model
+            model_path=fp16_model(model_path)
+        self.session=ort.InferenceSession(str(model_path),sess_options=options,providers=provider_options(execution_mode,model_path=model_path))
         self.runner=GpuRunner(self.session,execution_mode)
         self.session.disable_fallback()
-        if self.session.get_providers()[0]!='CUDAExecutionProvider': raise RuntimeError('Iris requires CUDA')
+        from .tensorrt_backend import require_provider
+        require_provider(self.session,execution_mode)
+        self.tensorrt_required=execution_mode in ('trt-fp32','trt-fp16')
         self.gate=DirectionGate(.35,float('inf'),block,stride)
         self.calls=0
         self.diagnostics={}
@@ -150,6 +155,8 @@ class IrisGaze:
         if not self.profiling: return dict(profiling=False,providers=self.session.get_providers(),calls=self.calls,batch_size=2 if self.batch_eyes else 1)
         profile=Path(self.session.end_profiling()); result=provider_summary(profile)
         result.update(profile=str(profile),calls=self.calls,sha256=MODEL_HASH,batch_size=2 if self.batch_eyes else 1)
-        if self.calls and (not result['cuda_executed'] or result['cpu_compute_ops']):
+        if self.calls and (not result['gpu_executed'] or result['cpu_compute_ops']):
             raise RuntimeError('Iris core compute did not execute exclusively on CUDA')
+        if self.calls and self.tensorrt_required and not result['tensorrt_executed']:
+            raise RuntimeError('No measured TensorRT iris execution')
         return result

@@ -926,3 +926,13 @@ F〜I実行とH独立コミット/遅ければrevertをユーザー指定。Fは
 Fの通常OFFはユーザーの指示ではなく、初回b3d583fでエージェントが改善幅を理由に決めたと確認。ユーザー指定はF〜I実装とHの独立コミット/遅ければrevertだった。ユーザーが比較動画を要求。既存F動画はなく、tools/compare_detector_graph.pyで既存録画5187観測をON/OFF各々の独立ROI追跡・推論・補正へ通し、ROIと全送信packetの差0を確認。通常body3d/pnp・3平均stride1・G/I・口角0を共通使用。有効は両側顔5145、目線4951、胴体5183、左腕4571、右腕4558。結果results/comparisons/detector-graph-f。
 
 既存Unity Playerでresults/avatar-videos/detector-graph-fへF-OFF/F-ON/side-by-sideの3動画を生成。各185.03秒/30fps/5551frame、全編decode検査成功。左OFF/右ON、同期表示比較であり速度/実遅延比較ではない。desktop tanakacap-compare-f.bat追加、README/起動モード/高速化文書/AGENTS/HANDOFF更新。実カメラ/動画目視/Unity変更なし。通常F設定は変更しない。実写/動画/重みはGit除外を維持。
+
+## 2026-09-13 — F採用、CUDA FP16実装と速度/動画比較
+
+ユーザーがF採用を指定しdetector_graph=trueへ変更、df63f74で独立コミット。FP16はCUDAで可逆試行を実装（graph-fp16、graphで復元）、YOLOX固定部分/RTMW3D-X/batch2虹彩が対象。入出力・Softmax/集約・NMS後段はFP32、モデル原本は保持。変換直後のノード順序検査失敗はtopological_sortで修正し、全モデル実行成功。CUDAの主要計算をprofileで確認。通常精度はFP32を維持、人体補正や揺れ物・更新頻度は変更しない。
+
+既存録画5187観測を独立ROI/推論/補正で比較。results/comparisons/cuda-precision。点のXY差p95約1.65px、画面内限定約1.57pxだが大きな外れもあり、補正後の胴体yaw差p95約29度、左右口角差p95約.527/.446。品質同等や劣化の正解判定とは扱わない。参考CPU補正込み平均17.794→16.267ms。別途Full HD60/全部ON/隔離OBS透過合成、各90秒（30〜90秒集計）で受信46.170→49.396Hz、約7%向上、描画約60fps維持。透過/背景合成/動き/正常終了成功。results/precision-fp32-fullhd、precision-fp16-fullhd。実カメラ不使用、配信/録画エンコード負荷は含めない。
+
+同一Playerで単独2本/左右比較/顔拡大の計4動画をresults/avatar-videos/cuda-precisionへ生成。各185.03秒/30fps/5551frame、全編decode成功。左FP32/右FP16、目視はユーザー。desktop compare-fp16/test-fp16を追加し既存起動bat更新。232 tests、PowerShell構文検査成功。Unity変更/再ビルドなし。
+
+TensorRTは「CUDAと同条件なら」という条件付き指定。通常版10.16.1.11/cu13をORT実DLLのABIに合わせ開発venvへ導入したが、実wheel契約とWeb版の相違（1年自動更新/更新終了、競合制限、狭い再配布対象）を確認。ユーザーへasyncで確認し実行は保留、エンジン構築/推論/速度比較は未実施。trt-fp32/trt-fp16接続は未検証の準備段階で通常依存に含めない。CUDA FP16はTRT不使用。追加棚卸しresults/distribution-audit-precision-20260913は25packages/51通知/19ONNX。README/SPEC0.66/HANDOFF/ライセンス/精度形式比較を更新。次はFP16動画評価とTensorRT条件の回答。実写/動画/重みをGitへ入れず、外部pushなし。

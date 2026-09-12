@@ -4,6 +4,21 @@ import onnx
 from .models import sha256
 
 
+def fp16_model(path):
+    """Mixed FP16 compute, FP32 IO/softmax/reductions; original stays untouched."""
+    from onnxruntime.transformers.float16 import convert_float_to_float16, DEFAULT_OP_BLOCK_LIST
+    from onnxruntime.transformers.onnx_model import OnnxModel
+    path=Path(path)
+    target=path.parent/('fp16-v1-'+sha256(path)[:16]+'.onnx')
+    if target.exists(): return target
+    model=convert_float_to_float16(onnx.load(path),keep_io_types=True,
+        op_block_list=sorted(set(DEFAULT_OP_BLOCK_LIST)|{'Softmax','ReduceMean','ReduceSum'}))
+    OnnxModel(model).topological_sort()
+    onnx.checker.check_model(model)
+    temp=target.with_suffix('.tmp');onnx.save(model,temp);temp.replace(target)
+    return target
+
+
 def split_detector(path):
     path=Path(path)
     folder=path.parent / ('split-v1-'+sha256(path)[:16])
