@@ -86,6 +86,12 @@ $taskFaceCompareContents = "@echo off`r`nexplorer.exe /select,`"$taskFaceVideo`"
 [IO.File]::WriteAllText($taskFaceCompareTarget,$taskFaceCompareContents,[Text.Encoding]::Default)
 Write-Output $taskFaceCompareTarget
 
+$taskFCompareTarget = Join-Path $taskDesktop 'tanakacap-compare-f.bat'
+$taskFVideo = Join-Path $taskRoot 'results/avatar-videos/detector-graph-f/side-by-side.mp4'
+$taskFCompareContents = "@echo off`r`nexplorer.exe /select,`"$taskFVideo`"`r`n"
+[IO.File]::WriteAllText($taskFCompareTarget,$taskFCompareContents,[Text.Encoding]::Default)
+Write-Output $taskFCompareTarget
+
 $taskFacePnpTarget = Join-Path $taskDesktop 'tanakacap-test-face-pnp.bat'
 $taskFacePnpContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
 [IO.File]::WriteAllText($taskFacePnpTarget,$taskFacePnpContents,[Text.Encoding]::Default)

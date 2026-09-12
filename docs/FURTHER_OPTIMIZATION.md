@@ -4,11 +4,28 @@
 
 ## F 人物検出の固定部分Graph化
 
+経緯の訂正（2026-09-13）：通常OFFはユーザーの指示ではなく、初回実装b3d583fでエージェントが改善幅の小ささを理由に決めた。ユーザーの当時の指定はF〜Iの実装と、Hのみ独立コミット・遅ければrevert。FをOFFにする明示指示は確認できなかった。ユーザーからFの比較動画作成を依頼され、既存録画で独立したON/OFF経路の比較を追加する。通常採用の判断と動画作成は分ける。
+
 元YOLOX-MのNMSより前390ノードと後25ノードをONNXで分割し、元の重み/しきい値/ソート/NMSを保持。3つの固定境界テンソルはGPU上で直接渡す。可変長のNMS側はGraphにせず毎回出力bindingを更新。原本を変更せず、元SHA別のmodels内キャッシュへ生成。既存ONNX1.22.0を使用、依存追加なし。
 
 80入力（録画全域を60フレーム間隔で抽出＋空画像）で最終ROI差0・信頼度差0、両経路の主要計算CUDAを確認。results/detector-graph-audit/report.json。全部ON/録画900観測/30warmup/Player・OBSなしではループ平均22.248→22.028ms、p95 34.303→33.669ms。人物処理平均6.689→6.445ms。results/full-optimization-F-1789235965349655900/summary.json。効果は小さいため通常既定へまだ入れず選択可能にする。
 
 `run-avatar-lab.ps1 -DetectorGraph`、`-NoDetectorGraph`で解除。Pythonは`--detector-graph`、省略で旧経路。設定detector_graphも利用できる。225 tests成功。
+
+### Fの全編比較動画の再現
+
+```powershell
+.\.venv\Scripts\python.exe tools/compare_detector_graph.py --output results/comparisons/detector-graph-f
+.\.venv\Scripts\python.exe tools/render_comparison_videos.py --comparison results/comparisons/detector-graph-f --output results/avatar-videos/detector-graph-f
+```
+
+再実行には新しい保存先を指定する。現在の設定を共通にして、各観測でF-OFF/F-ONの人物検出・ROI追跡を独立実行し、各々のROIで顔/体の推論と補正を実行する。モデル重みは同じ。頭/口は通常のbody3d/pnp、3平均/stride1、口角強調0。片側の制御をもう片側へコピーしない。描画は同じ録画時刻へ同期するため、処理速度/実時間の遅延比較ではない。
+
+動画は`results/avatar-videos/detector-graph-f/side-by-side.mp4`（左F-OFF・右F-ON）と各方式単独。デスクトップ`tanakacap-compare-f.bat`で保存先を開く。実写・生成動画はGit除外、見た目はユーザーが評価する。今回の動画作成で通常設定をF-ONへ変更したわけではない。
+
+全5,187観測の再推論でROI差のある観測0、送信packet差のある観測0。この録画/設定の制御データは完全一致した。初期未検出だけを比べた結果ではなく、有効追跡と動きを含む全編の比較。異なる人物/全環境での品質保証や、Fに高速化効果がないという意味ではない。結果は`results/comparisons/detector-graph-f/report.json`。
+
+動画3本は完成・全編デコード検査成功。各185.03秒/30fps/5,551描画フレーム。両側の有効観測は顔5,145、目線4,951、胴体5,183、左腕4,571、右腕4,558。今回の実行は表示比較のため、交互に推論した時間を通常動作の性能値として報告しない。
 
 公式根拠：[ORT CUDA Graph](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)、[ONNX部分グラフ抽出](https://onnx.ai/onnx/api/utils.html)。これは速度保証やモデル重みの配布許諾を意味しない。元の許諾監査残件を維持する。
 

@@ -920,3 +920,9 @@ F〜I実行とH独立コミット/遅ければrevertをユーザー指定。Fは
 保存済み5,187観測の口だけを現在コードで再計算し他部位制御を固定。Zあり/なし各口有効3588/5104、左口角隣接差p95 .4075/.3219、右 .4296/.2993、横寄せ .2081/.1163。対象有効区間が異なり実表情も含むので精度/揺れ解消の証明ではない。頭ピッチ差0、CPU姿勢/口平均.383/.456msで微増。結果results/comparisons/mouth-no-z。Unity同一Playerで各185.03秒/30fps/5551frame、単独2本＋左右比較＋顔拡大の4動画完成・decode成功（results/avatar-videos/mouth-no-z）。動画目視と実人物評価はユーザー、エージェントは実カメラ未使用。関連38tests成功。最初のテストは存在しないファイル名で0収集、実在名へ訂正。Unityソース変更/再ビルドなし。
 
 配布依存をdocs/DISTRIBUTION_LICENSES.mdへ整理。実venv22packages/48通知/16ローカルONNX SHAをresults/distribution-audit-20260913へ収集するtools/audit_distribution.py追加。NVIDIA/Unity条件、重みとコードの区別、MANO制限、頭専用重み未確定、HAOLAN条件付き配布許諾、FFmpeg GPLv3等を記録。TensorRT通常版は再配布可能だが義務あり、RTX版は性能開示制限あり。追加制約回避の指示を優先し今回導入見送り、通常版の義務は既存CUDAにも同種があることを明記。製品EULA/出荷ファイル全件と同梱通知の照合等は未完了。SPEC0.65/README/推論経路/フェーズ残件/HANDOFFを更新。公開・配布・pushはしない。
+
+## 2026-09-13 — Fの通常OFFの経緯確認と比較動画作成
+
+Fの通常OFFはユーザーの指示ではなく、初回b3d583fでエージェントが改善幅を理由に決めたと確認。ユーザー指定はF〜I実装とHの独立コミット/遅ければrevertだった。ユーザーが比較動画を要求。既存F動画はなく、tools/compare_detector_graph.pyで既存録画5187観測をON/OFF各々の独立ROI追跡・推論・補正へ通し、ROIと全送信packetの差0を確認。通常body3d/pnp・3平均stride1・G/I・口角0を共通使用。有効は両側顔5145、目線4951、胴体5183、左腕4571、右腕4558。結果results/comparisons/detector-graph-f。
+
+既存Unity Playerでresults/avatar-videos/detector-graph-fへF-OFF/F-ON/side-by-sideの3動画を生成。各185.03秒/30fps/5551frame、全編decode検査成功。左OFF/右ON、同期表示比較であり速度/実遅延比較ではない。desktop tanakacap-compare-f.bat追加、README/起動モード/高速化文書/AGENTS/HANDOFF更新。実カメラ/動画目視/Unity変更なし。通常F設定は変更しない。実写/動画/重みはGit除外を維持。

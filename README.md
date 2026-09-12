@@ -18,6 +18,7 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 | `tanakacap-test-face-pnp.bat` | 同じRTMW3D-Xで旧PnP補正を試す | 診断ログあり・1800フレーム |
 | `tanakacap-test-face-original.bat` | 従来のRTMW-L顔方式を試す | 診断ログあり・1800フレーム |
 | `tanakacap-compare-face.bat` | 顔方式の比較動画の保存先を開く | カメラ不使用 |
+| `tanakacap-compare-f.bat` | 高速化FのOFF／ON比較動画の保存先を開く | カメラ不使用 |
 
 通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
 
