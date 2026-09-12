@@ -15,13 +15,14 @@ SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON','face_head':'顔・頭（目線なし）','head_only':'頭のみ'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/lab/avatars/haolan.tcap'),
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
-             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.)
+             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='size2d')
 
 
 def validate(values):
     data={k:values.get(k,v) for k,v in DEFAULT.items()}
     for key,choices in dict(source=('camera','video','motion'),mode=tuple(MODES),rate=('60','sync','30','custom'),expression=('existing','auto-custom')).items():
         if data[key] not in choices:raise ValueError('Invalid '+key)
+    if data['head_pose_mode'] not in ('pnp','size2d','legacy','depth3d','pnp_depthmouth'):raise ValueError('Invalid head_pose_mode')
     for key,lo,hi in [('camera',0,31),('fps',1,240),('width',64,4096),('height',64,4096)]:
         value=float(data[key])
         if not math.isfinite(value) or value!=int(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} の整数を指定してください')
@@ -41,6 +42,7 @@ def validate(values):
 def load_settings():
     values=DEFAULT.copy()
     tracking=json.loads((ROOT/'tracking-settings.json').read_text(encoding='utf-8'))
+    values['head_pose_mode']=tracking.get('head_pose_mode','pnp')
     for key,source in [('gamma','mouth_corner_gamma'),('suppression','mouth_open_smile_suppression'),('emphasis','mouth_corner_emphasis'),('gaze_gain','gaze_gain')]:
         values[key]=tracking.get(source,values[key])
     if SETTINGS.exists():values.update(json.loads(SETTINGS.read_text(encoding='utf-8')))
@@ -77,6 +79,7 @@ def commands(config, port, status_port, player_pid=0):
                         ('shoulder_yaw_mode','face_ratio'),('gaze_reference','contour'),('preprocess_mode','crop'),
                         ('detector_interval',3),('detector_model','yolox-m-human')]:
         value=tracking.get(key,default)
+        if key=='head_pose_mode':value=c['head_pose_mode']
         if key=='head_pose_mode' and not body and value in ('depth3d','pnp_depthmouth'):value='pnp'
         infer+=['--'+key.replace('_','-'),str(value)]
     for key in ('batch_eyes','detector_graph'):
@@ -235,6 +238,11 @@ def main(test_hook=None):
     variables['mode'].trace_add('write',parts_state);parts_state()
     ttk.Label(f,text='部位設定は「全部 ON」で使用。体・腕・指は一緒に切り替わります。\n頭のみでは表情と指は動かしません。音声口パクは未対応。').grid(row=9,column=0,columnspan=2,sticky='w')
     cost=ttk.Label(f,text='負荷目安：未計測');cost.grid(row=10,column=0,columnspan=2,sticky='w',pady=14)
+    head_choice=row(f,11,'頭角度（size2d=比率試行 / pnp=従来）','head_pose_mode',['size2d','pnp','legacy','depth3d','pnp_depthmouth'])
+    def head_choice_state(*args):
+        head_choice.configure(state='disabled' if variables['mode'].get()=='head_only' else 'readonly')
+    variables['mode'].trace_add('write',head_choice_state);head_choice_state()
+    ttk.Label(f,text='比率試行は起動後に正面で短く静止。頭のみモードは別モデルです。').grid(row=12,column=0,columnspan=2,sticky='w')
     f=frames['描画・OBS']
     row(f,0,'描画レート','rate',['60','sync','30','custom'])
     ttk.Label(f,text='推論同期では新しい結果が届いたときにアバター画像を更新').grid(row=1,column=0,columnspan=2,sticky='w')

@@ -68,6 +68,9 @@ class SharedFace:
     def __init__(self,settings,output,execution_mode='run'):
         self.s=settings;b=settings['observation_block'];stride=settings['observation_stride']
         self.filter=FaceFilter(b,stride);self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
+        if settings['head_pose_mode'] == 'size2d':
+            from .head_pose_size import SizeHeadPose
+            self.pose = SizeHeadPose(settings['head_pitch_gain'], settings['mouth_lip_depth_scale'])
         if settings['head_pose_mode'] in ('depth3d','pnp_depthmouth'):
             from .head_pose3d import HeadPose3D, PnPPitchDepthMouth
             self.pose=(PnPPitchDepthMouth if settings['head_pose_mode']=='pnp_depthmouth' else HeadPose3D)(settings['head_pitch_gain'])

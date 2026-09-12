@@ -44,9 +44,9 @@ UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtki
 
 必要な場合に限り、`python -m capture_lab benchmark ...`または`python -m capture_lab.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
 
-現在の試行設定は`-FaceSource body3d -HeadPoseMode pnp`。頭はPnPを維持し、口輪郭も固定テンプレートで正面化して、モデルの推定Zを使わない。`-HeadPoseMode pnp_depthmouth`で直前のZ口輪郭へ戻せる。比較動画は`tanakacap-compare-face.bat`、旧Z方式の実カメラ起動は`tanakacap-test-mouth-z.bat`。[今回の比較と時間フィルター](docs/MOUTH_NO_Z_TRIAL.md)。ピッチもZにする過去試行`depth3d`は通常へ戻さない。
+現在の試行設定は`-FaceSource body3d -HeadPoseMode size2d`。頭角度は眼間距離に対する鼻位置の2D比率を使う。起動後に正面で短く静止する。UI「入力・推論」→「頭角度」で`pnp`を選び適用すると従来方式へ復帰（直接指定は`-HeadPoseMode pnp`）。口・眉の固定テンプレートによる正面化は維持する。頭のみモードは別モデルで変更しない。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。ピッチのガタつき改善は未確認。
 
-顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。頭専用モードは変更しない。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
+顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋2D比率の頭角度試行/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 
