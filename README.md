@@ -209,6 +209,13 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 
 口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。将来UIへ追加予定。[詳細](docs/EXPRESSION_PORTABILITY.md)。
 
+通常版の口角ガンマは既定1（直線）、開口時の上げ抑制は既定0（抑制なし）。未設定ならこの3調整は影響しない。`mouth_corner_gamma`（0.25〜4）と`mouth_open_smile_suppression`（0〜1）を設定JSONで変更できる。`null`はモード既定：通常1/0、自動独自キーは従来の2/0.9。起動引数を優先し、将来UIからも調整できる接続を保持する。
+
+```powershell
+# 通常版にも以前のガンマと開口抑制を適用する例
+.\run-motion-lab.ps1 -MouthCornerGamma 2 -MouthOpenSmileSuppression 0.9 -MouthCornerEmphasis 0
+```
+
 眉も既存顔点から追跡する。表情は通常`-ExpressionMode existing`で、機能別にPerfect Sync/ARKit→MMD→VRCの既存キーを使用し、独自キーは生成しない。目線も既存方向キー、なければ眼ボーンを使う。足りない機能は無効とし、変換レポートとPlayerログに対応表を残す。Perfect Syncの推論を再実装したものではない。
 
 `-ExpressionMode auto-custom`は実験用。既存キー優先を基本に、ARKitで不足する口角の左右分離・唇限定の横寄せ・瞳限定移動を実行時に生成する。既知の作者形状と眼ボーンが材料として必要で、任意アバターへの自動対応を保証しない。素材メッシュ原本は変更しない。

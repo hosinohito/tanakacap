@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新（2026-09-13）：通常既存キー版も口角のガンマ/開口時上げ抑制/強調を調整可能、未設定は1/0/0（追加作用なし）。自動独自キーは2/.9/0を維持。JSON/起動指定と将来UI接続を用意。Perfect Sync/ARKitのmouthLeft/Rightと左右smile/frownがあれば通常版も横寄せ/非対称を駆動する。HAOLAN通常版の不足と機能全体の未実装を混同しない。
+
 最新（2026-09-13）：眉を実装し旧表情のデモをbuilds/demos/haolan-custom-browsへ保存（ソース6806913）、上書きしない。通常はexpression-mode existing：機能別ARKit/Perfect Sync→MMD→VRC、目線を含め独自キーを生成しない。auto-customは任意の実験方式で、過去の左右口角・唇限定横寄せ・瞳限定移動を踏襲。眉専用比較動画は不要。Perfect Sync推論の再実装ではない。docs/EXPRESSION_PORTABILITY.mdとHANDOFF先頭を参照。
 
 最新指定（2026-09-13）：Fを通常ONへ採用。ユーザーがCUDA FP16を通常採用。FP32の起動引数/設定キーを削除し内部APIのみ保持する。将来UIへの追加は可能性のみで確定要件ではない。TensorRTは契約条件の説明後、ユーザーが「使わない」と明示し不採用。接続/追加依存を削除。再開を提案せず、docs/PRECISION_COMPARISON.mdとHANDOFF先頭を参照。A一括保留の旧記述より優先。E/揺れ物は触らない。
