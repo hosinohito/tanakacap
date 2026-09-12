@@ -11,6 +11,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [switch]$NoPreview,
     [switch]$LegacyPreview,
     [ValidateRange(0,1)][double]$MouthCornerEmphasis=0,
+    [ValidateSet('existing','auto-custom')][string]$ExpressionMode='existing',
     [switch]$LegacySecondaryResponse,
     [ValidateSet(30,60)][int]$RenderFps=60,
     [switch]$NoEdgeAA,
@@ -78,6 +79,7 @@ try {
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    $taskPlayerArgs+=@('--expression-mode',$ExpressionMode)
     $taskPlayerArgs+=@('--render-fps',$RenderFps.ToString())
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
     if (-not $PSBoundParameters.ContainsKey('MouthCornerEmphasis') -and $taskGazeSettings.PSObject.Properties.Name -contains 'mouth_corner_emphasis') { $MouthCornerEmphasis=[double]$taskGazeSettings.mouth_corner_emphasis }

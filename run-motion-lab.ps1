@@ -3,12 +3,14 @@ param([string]$Avatar,[ValidateRange(64,4096)][int]$OutputHeight=1080,
     [switch]$NoPreview,
     [switch]$LegacyPreview,
     [ValidateRange(0,1)][double]$MouthCornerEmphasis=0,
+    [ValidateSet('existing','auto-custom')][string]$ExpressionMode='existing',
     [switch]$LegacySecondaryResponse,
     [switch]$NoEdgeAA)
 $ErrorActionPreference='Stop'
 $taskExe=Join-Path $PSScriptRoot 'builds/lab/TanakaCap.exe'
 if (-not (Test-Path -LiteralPath $taskExe)) { throw 'Run build-unity-lab.ps1 first.' }
 $taskArgs=@('--motion-demo','-nolog')
+$taskArgs+=@('--expression-mode',$ExpressionMode)
 $taskArgs+=@('--output-height',$OutputHeight.ToString())
 if (-not $PSBoundParameters.ContainsKey('MouthCornerEmphasis')) {
     $taskMotionSettings=Get-Content (Join-Path $PSScriptRoot 'tracking-settings.json') -Raw -Encoding UTF8 | ConvertFrom-Json

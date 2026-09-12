@@ -954,3 +954,13 @@ TensorRTは「CUDAと同条件なら」という条件付き指定。通常版10
 ユーザーが既存キー優先の機能別対応を承認。眉を先行実装し従来の口/目線表現ごと保存、その後全独自キーを通常版から排除して比較する指定。さらに実験用自動独自キーモードを追加し、従来の実験を踏襲する指定。眉は追加推論なし、眼端基準とPnP固定平面、安定10観測中立、3/1ゲート、欠測保持。MMD既存眉で実Player頂点変形と従来の口/目/腕回帰成功、237 tests。既存FP16録画の5,071/5,187で眉有効、正解精度の証明ではない。眉動画は不要の指定通り生成しない。
 
 builds/demos/haolan-custom-browsへPlayerと専用.tcapを保存。汎用版と自動生成の実装は次の作業。仕様の詳細はEXPRESSION_PORTABILITY.md。眉以外の制御を固定した比較用replayを準備、全方式共通で使用する。実カメラなし、素材/動画/ビルドはGit除外。
+
+## 2026-09-13 — 既存表情キー優先と自動独自キーを実装
+
+通常existingは部位/左右ごとARKit→MMD→VRC、空キーを除外し、両側形状は平均。目線も既存方向キー/眼ボーンへ変更し生成キーを使わない。auto-customは過去の左右口角・唇限定4mm・瞳限定移動とガンマ/開口抑制/強調0を継承。日本語作者キー等の材料が必要で、全モデル対応を保証しない。HAOLANの通常口角は両側一体、横寄せは未対応、眼ボーンの表示が弱くなる見込みを比較対象とした。
+
+新ExporterはHAOLAN Body/viseme必須を撤去し、existing-expressions-1へ機能対応表/Descriptor情報を保存。SDK 3.10.5ローカル公式Editorソースでフィールドを照合、SDKなしHAOLANは既存名照合。新Playerは旧profileも読める。プラグインのtar内容を検査しSDK/AvatarDriverが入らないことを確認。実SDKで全Descriptor方式/任意モデルの検証は未実施。
+
+237 Python tests、Unity合成の優先順位/空キー/明示VRC名/平均/目線軸代替/原本不変と実Player両モード回帰成功。自動唇外不変と両方向4mm、瞳2,178頂点の方向/範囲外不変、強調0/.5/1も成功。results/expression-mapping/{existing-final,auto-custom-final}.log。初回Unity import途中に新クラス未検出エラーが出たが、再コンパイル後の最終ビルドと検査は成功。揺れ物/推論モデル/頭/腕補正変更なし。
+
+通常/保存デモ/自動方式bat更新、PowerShell構文検査成功。旧デモは6806913とdemo-checkpoint.jsonにhashを保存。既存録画5,187packetを使う3方式比較を生成中。README/SPEC0.69/AGENTS/HANDOFF/起動文書更新。実カメラ・動画目視なし、実写/結果/素材のGit追加なし。

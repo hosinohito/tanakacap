@@ -10,12 +10,14 @@ def sha(p):
 def run(output,comparison=None):
  output=output.resolve();output.mkdir(parents=True,exist_ok=False)
  ff=ROOT/'tools/bin/ffmpeg.exe';player=ROOT/'builds/lab/TanakaCap.exe'
+ variants={}
  inputs={'current':ROOT/'results/comparisons/first-take/baseline/replay.jsonl','hamer-fingers':ROOT/'results/comparisons/first-take-hamer/fingers/replay.jsonl'}
  scope='Same original capture and camera; only finger geometry differs. Offline rendering, not live latency. Opaque MP4 preview; OBS RGBA output unchanged.'
  if comparison is not None:
   comparison=comparison.resolve();result=json.loads((comparison/'report.json').read_text(encoding='utf-8'))
   if result['status']!='complete':raise ValueError('Completed body comparison required')
   inputs={name:comparison/name/'replay.jsonl' for name in result['variants']}
+  variants=result['variants']
   scope=result['scope']+' Opaque MP4 preview; OBS RGBA output unchanged.'
   if result.get('partial_test'):scope='PARTIAL INTEGRATION TEST. '+scope
  if len(inputs)<2:raise ValueError('At least two variants required')
@@ -30,8 +32,15 @@ def run(output,comparison=None):
  videos=[]
  for name,source in inputs.items():
   video=output/(name+'.mp4');log=output/(name+'.log')
-  subprocess.run([str(player),'-batchmode','--render-replay',str(source),'--video-output',str(video),'--ffmpeg',str(ff),'-logFile',str(log)],cwd=ROOT,check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
+  variant=variants.get(name,{})
+  selected=Path(variant.get('player',player))
+  extra=variant.get('player_args',[])
+  if not isinstance(extra,list) or any(not isinstance(a,str) for a in extra):raise ValueError('player_args must be a string list')
+  subprocess.run([str(selected),'-batchmode',*extra,'--render-replay',str(source),'--video-output',str(video),'--ffmpeg',str(ff),'-logFile',str(log)],cwd=ROOT,check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
   meta=json.loads(Path(str(video)+'.json').read_text());assert meta['status']=='complete' and meta['packets']==expected
+  meta['player']=str(selected);meta['player_args']=extra
+  meta['assembly_sha256']=sha(selected.parent/'TanakaCap_Data/Managed/Assembly-CSharp.dll')
+  meta['avatar_sha256']=sha(selected.parent/'avatars/haolan.tcap')
   videos.append(video);report[name]=meta;print(name,meta['frames'],meta['duration'],flush=True)
  if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
@@ -40,10 +49,10 @@ def run(output,comparison=None):
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  rendered=videos+[combined]
- if list(inputs) in (['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16']):
+ if list(inputs) in (['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16'],['custom-demo','existing','auto-custom']):
   closeup=output/'face-closeup.mp4'
   close_labels=[label.replace('pad=iw:', 'crop=640:480:320:0,scale=960:720,pad=iw:') for label in labels]
-  close_filter=';'.join(close_labels)+';[v0][v1]hstack=inputs=2[out]'
+  close_filter=';'.join(close_labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
   subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',close_filter,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(closeup)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
   rendered.append(closeup)
  for video in rendered:
