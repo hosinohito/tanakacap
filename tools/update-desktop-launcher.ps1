@@ -4,7 +4,7 @@ $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
 $taskTarget = Join-Path $taskDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar-lab.ps1'
-$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode depth3d -Diagnose -Frames 1800`r`npause`r`n"
+$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp_depthmouth -Diagnose -Frames 1800`r`npause`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget

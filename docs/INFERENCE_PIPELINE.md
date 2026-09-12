@@ -1,5 +1,7 @@
 # 現在の推論経路
 
+最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
+
 追加試行：body3d顔＋head_pose_mode=depth3dでは、PnP/仮定唇深度を使わず、既存推論の顔Zから回転を求めて口輪郭を正面へ戻す。[可逆操作・計測](FACE_DEPTH_TRIAL.md)。通常pnpを維持。
 
 追加試行：`face_source=body3d`では下記RTMW-Lを省略し、RTMW3D-Xの同じ1回のXY出力を顔にも使う。虹彩モデル・補正は維持。通常はseparate。[切替・比較](FACE_SOURCE_TRIAL.md)。

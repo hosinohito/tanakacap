@@ -1,5 +1,8 @@
 # 作業開始時の指示
 
+最新採用（2026-09-13）：ユーザー評価で顔Zピッチを撤回、口角Zは採用。通常face_source=body3d/head_pose_mode=pnp_depthmouth。ピッチだけPnP、口角はZ。depth3dは再現専用。HANDOFF先頭参照。
+
+
 最新試行（2026-09-13）：head_pose_mode=depth3dでRTMW3D顔Zからピッチ/口角を同時計算、pnpで復帰。face_source=body3d必須、通常separate/pnpを維持。今回の動画の目視確認はユーザーが担当、エージェントは映像抽出/目視をせず機械検証のみ。docs/FACE_DEPTH_TRIAL.md参照。
 
 最新試行（2026-09-13）：RTMW3D-Xの顔XY共有をユーザー指定で可逆実装。face_source=separateが通常、body3dは体と1回の推論を共有。補正と虹彩モデルは固定し、既存録画で比較する。test.batは共有、test-face-original.batで従来へ。docs/FACE_SOURCE_TRIAL.mdとHANDOFF先頭参照。見た目評価前に通常採用へ変更しない。

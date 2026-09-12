@@ -7,7 +7,7 @@
   "gaze_reference": "contour",
   "face_distance_enabled": true,
   "face_distance_mode": "framed",
-  "head_pose_mode": "pnp",
+  "head_pose_mode": "pnp_depthmouth",
   "head_pitch_gain": 1.8,
   "mouth_lip_depth_scale": 1.5,
   "face_distance_filter": "stable",
@@ -16,7 +16,7 @@
   "body_enabled": true,
   "person_detector_enabled": true,
   "tracking_mode": "full",
-  "face_source": "separate",
+  "face_source": "body3d",
   "inference_mode": "graph",
   "detector_interval": 3,
   "detector_model": "yolox-m-human"

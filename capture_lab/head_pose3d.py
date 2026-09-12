@@ -98,3 +98,22 @@ class HeadPose3D:
                                 pose_angles=angles.tolist(), face_camera_distance=distance,
                                 rigid_residual_m=error, mouth_normalized=detail is not None)
         return self.diagnostics
+
+
+class PnPPitchDepthMouth:
+    """Keep the accepted PnP pitch; independently retain the trial Z lips."""
+    def __init__(self, gain=1.8):
+        from .head_pose import HeadPose
+        self.pitch = HeadPose(gain)
+        self.mouth = HeadPose3D(gain)
+        self.diagnostics = {}
+
+    def update(self, points, scores, packet, image_size, depth=None, depth_scores=None):
+        self.mouth.update(points, scores, packet, image_size, depth, depth_scores)
+        pitch_packet = dict(packet)
+        self.pitch.update(points, scores, pitch_packet, image_size, normalize_mouth=False)
+        packet['headPitch'] = pitch_packet['headPitch']
+        self.diagnostics = dict(self.pitch.diagnostics, mode='pnp_depthmouth',
+                                mouth_depth=self.mouth.diagnostics,
+                                mouth_normalized=bool(packet.get('mouthContourTracked')))
+        return self.diagnostics

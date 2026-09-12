@@ -68,9 +68,9 @@ class SharedFace:
     def __init__(self,settings,output,execution_mode='run'):
         self.s=settings;b=settings['observation_block'];stride=settings['observation_stride']
         self.filter=FaceFilter(b,stride);self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
-        if settings['head_pose_mode']=='depth3d':
-            from .head_pose3d import HeadPose3D
-            self.pose=HeadPose3D(settings['head_pitch_gain'])
+        if settings['head_pose_mode'] in ('depth3d','pnp_depthmouth'):
+            from .head_pose3d import HeadPose3D, PnPPitchDepthMouth
+            self.pose=(PnPPitchDepthMouth if settings['head_pose_mode']=='pnp_depthmouth' else HeadPose3D)(settings['head_pitch_gain'])
         self.pose_ms=0.
         self.distance=FaceDistance(b,stride,settings.get('face_distance_filter','stable'))
         self.gaze=None
@@ -81,7 +81,7 @@ class SharedFace:
         p=packet_from_landmarks(xy,scores,index)
         start=time.perf_counter()
         if self.pose:
-            extra=dict(depth=depth,depth_scores=depth_scores) if self.s['head_pose_mode']=='depth3d' else {}
+            extra=dict(depth=depth,depth_scores=depth_scores) if self.s['head_pose_mode'] in ('depth3d','pnp_depthmouth') else {}
             self.pose.update(xy,scores,p,image.shape[1::-1],**extra)
         self.pose_ms=(time.perf_counter()-start)*1000
         if self.gaze:self.gaze.update(image,xy,scores,p,now)

@@ -1,5 +1,7 @@
 # RTMW3D-Xの顔XY共有試行
 
+最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
+
 2026-09-13。ユーザー指定で実装と既存録画によるアバター比較動画を作る。通常採用の判断はまだしていない。実カメラは開かない。
 
 ## 切替と戻し方

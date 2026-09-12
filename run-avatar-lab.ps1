@@ -17,7 +17,7 @@
     [ValidateSet(1,2,3)][int]$DetectorInterval,
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
     [ValidateSet('separate','body3d')][string]$FaceSource,
-    [ValidateSet('pnp','legacy','depth3d')][string]$HeadPoseMode,
+    [ValidateSet('pnp','legacy','depth3d','pnp_depthmouth')][string]$HeadPoseMode,
     [switch]$NoGaze,
     [switch]$NoPersonDetector,
     [switch]$IntegerBodyPeaks)
@@ -65,7 +65,7 @@ try {
     if (-not $FaceSource) { $FaceSource='separate' }
     if (-not $HeadPoseMode) { $HeadPoseMode=$taskGazeSettings.head_pose_mode }
     if (-not $HeadPoseMode) { $HeadPoseMode='pnp' }
-    if ($HeadPoseMode -eq 'depth3d' -and $FaceSource -ne 'body3d') { throw 'depth3d requires -FaceSource body3d' }
+    if ($HeadPoseMode -in @('depth3d','pnp_depthmouth') -and $FaceSource -ne 'body3d') { throw 'depth3d requires -FaceSource body3d' }
     if ($FaceSource -notin @('separate','body3d')) { throw 'Invalid face_source' }
     $taskGazeGain=4.0
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }

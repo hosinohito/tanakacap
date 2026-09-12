@@ -1,5 +1,7 @@
 # 高速化の候補と評価
 
+最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
+
 2026-09-13。最新ユーザー指定：全部ONを対象にB→C→Dを実装・評価する。A/Eは保留。B/C/Dの結果と採用状態は[FULL_MODE_OPTIMIZATION.md](FULL_MODE_OPTIMIZATION.md)を参照。揺れ物は今後調整しない。通常モデル/補正を固定した基準から一つずつ可逆比較する。
 
 ## 実測の基準
