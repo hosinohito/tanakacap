@@ -15,7 +15,7 @@ SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON','face_head':'顔・頭（目線なし）','head_only':'頭のみ'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/lab/avatars/haolan.tcap'),
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
-             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='size2d')
+             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp')
 
 
 def validate(values):

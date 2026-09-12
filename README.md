@@ -48,9 +48,9 @@ UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtki
 
 必要な場合に限り、`python -m capture_lab benchmark ...`または`python -m capture_lab.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
 
-現在の試行設定は`-FaceSource body3d -HeadPoseMode size2d`。頭角度は眼間距離に対する鼻位置の2D比率を使う。起動後に正面で短く静止する。UI「入力・推論」→「頭角度」で`pnp`を選び適用すると従来方式へ復帰（直接指定は`-HeadPoseMode pnp`）。口・眉の固定テンプレートによる正面化は維持する。頭のみモードは別モデルで変更しない。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。ピッチのガタつき改善は未確認。
+現在の既定は`-FaceSource body3d -HeadPoseMode pnp`。ピッチは固定3D顔型へのPnP当てはめを使う。2D比率のsize2dはUI「入力・推論」→「頭角度」で選べる任意試行として残す。口・眉の正面化は維持。頭のみモードは別モデル。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。
 
-顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋2D比率の頭角度試行/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
+顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 
