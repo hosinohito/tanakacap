@@ -73,3 +73,7 @@ resultsにはplayer.jsonl、system.jsonl、report.json、OBSで受信したsourc
 ## 2026-09-13 全部ON高速化の追加検証
 
 B+C（CUDA Graph＋人物ROI追跡）を通常採用。既存録画＋実Player＋隔離OBS/720p60/AAあり・各60秒で、受信20.24→32.63Hz、描画約60fpsを維持。Dの小型人物検出は35.60Hzだが既存モデルの相対Z差が大きく任意選択。RGBA合成・正常終了を確認。結果results/optimization-obs-{baseline,bc,bcd}。詳細[FULL_MODE_OPTIMIZATION.md](FULL_MODE_OPTIMIZATION.md)。新構成の実カメラ+OBS30分とセンサー〜表示遅延、実人物品質の合格は未確認。
+
+## 2026-09-13 F〜I後の短期検証
+
+RTMW3D共有/PnPピッチ/Z口角固定、録画最大速度・実Player＋隔離OBS720p60/AA/各60秒で基準39.317→G＋I44.833Hz。両方描画59.997fps、透過/変化/正常終了成功。最初のOBS準備待ち不足を修正して再実行。F任意OFF、Hrevert。[条件・結果](FURTHER_OPTIMIZATION.md)。実カメラ/露光遅延/新構成30分の未達を解消したとは扱わない。

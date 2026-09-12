@@ -880,3 +880,15 @@ F〜I実行とH独立コミット/遅ければrevertをユーザー指定。Fは
 ## 2026-09-13 — I左右眼batch2を採用
 
 元虹彩の重みを維持してbatch2派生をローカル生成。両眼/片眼/欠測80入力、73観測眼の座標差0・有効フラグ一致、CUDA主要計算確認。全部ON900観測の前後基準20.101/20.345msに対しbatch19.625ms。G+I通常採用、F任意、Hはrevert。OBS試験は起動直後API207で一度失敗し検証側準備待ちを修正して再試験中。詳細FURTHER_OPTIMIZATION.md。
+
+## 2026-09-13 — F〜I高速化完了、G＋Iを通常採用
+
+- ユーザー指定通りF→G→H→Iを実装・計測。追加で高優先だった全画像RGB変換の無駄はGで対応し、低優先の別施策は追加しない。顔はRTMW3D共有・PnPピッチ/Z口角を維持。A/E保留、揺れ物は変更なし。
+- F b3d583f：同じYOLOX固定390/NMS25ノード分割、GPU上直接受け渡し。空画像/録画80入力でROI・信頼度差0、主要計算CUDA。900観測平均22.248→22.028msと小幅なので任意（既定OFF）。-DetectorGraph/-NoDetectorGraph。
+- G 9aed8d0：RGB化を全画像からcrop後へ移動、モデル入力完全一致。900観測平均22.387→20.323ms、前処理3.966→1.756ms。通常preprocess_mode=crop、-PreprocessMode legacyで復帰。
+- H 53772c7：同一観測内の虹彩GPUとCPU補正を並行化、229 tests。前後基準20.128/20.263msに対しH20.413msで遅く、指示通りcee5557でrevert。並行worker/オプションは現行に残さない。
+- I e925743：既存虹彩重みのbatch2派生、片眼はダミー枠を無視し両眼欠測は呼ばない。80入力/73観測眼の虹彩座標差0・視線有効一致、GPU主要計算確認。900観測平均は前後基準20.101/20.345→19.625ms、目線2.159/2.152→1.472ms。通常batch_eyes=true、-NoBatchEyesで復帰。
+- 最終実Player＋隔離OBS/720p60/AA/各60秒/既存録画最大速度：基準39.317Hz→G＋I44.833Hz、両方描画59.997fps。透過合成・画像変化・正常終了成功。results/optimization-fgi-obs-baseline-retry と optimization-fgi-obs-final。カメラの新規観測Hz・実センサー表示遅延・長時間品質の保証ではない。配信/録画なし、映像目視はしない。
+- 最初のOBS基準はAPI207（WebSocket接続後の出力系未準備）で失敗。検証スクリプトへ準備待ちを追加し再試験成功。失敗結果optimization-fgi-obs-baselineを保持。実カメラ未使用、モデル/実写/アバター/結果はGit除外。原本ONNXは変更せずSHA別の派生キャッシュ、既存ONNX1.22.0を利用。
+- 現行228 tests、PowerShell構文確認、desktop bat更新済み。通常live/testは採用設定を使用、head-only/motionは維持。全高速化を戻す場合-PreprocessMode legacy -NoBatchEyes -NoDetectorGraph。顔の採用設定とは独立。
+- 詳細・単独条件・再現はdocs/FURTHER_OPTIMIZATION.md。次は必要な録画品質/長時間評価と既存フェーズ残件。Hを再追加しない。ユーザー明示まで実カメラを開かない。揺れ物・A/Eへ勝手に戻らない。
