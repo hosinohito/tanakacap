@@ -200,8 +200,8 @@ namespace TanakaCap
             var renderArgs = Environment.GetCommandLineArgs();
             int renderIndex = Array.IndexOf(renderArgs, "--render-fps");
             if (renderIndex >= 0 && (renderIndex+1 >= renderArgs.Length ||
-                !int.TryParse(renderArgs[renderIndex+1], out renderFps) || (renderFps != 30 && renderFps != 60)))
-                throw new ArgumentException("--render-fps must be 30 or 60");
+                !int.TryParse(renderArgs[renderIndex+1], out renderFps) || renderFps<1 || renderFps>240))
+                throw new ArgumentException("--render-fps must be 1..240");
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = renderFps;
             head = animator.GetBoneTransform(HumanBodyBones.Head);

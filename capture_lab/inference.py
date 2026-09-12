@@ -87,6 +87,11 @@ class SimCCModel:
         dynamic = self.info.get('kind') == 'detector'
         original_path=path
         tail_path=None
+        # This legacy face network contains FP16 nodes that cannot all be captured
+        # by the CUDA EP. Keep its verified FP32 CUDA graph; no CPU fallback.
+        if name=='rtmw-l-384' and execution_mode=='graph-fp16':
+            execution_mode='graph'
+            print('RTMW-L compatibility: FP32 CUDA graph (full RTMW3D remains FP16)',flush=True)
         if detector_graph:
             if not dynamic: raise ValueError('Split graph is only for detectors')
             from .onnx_variants import split_detector

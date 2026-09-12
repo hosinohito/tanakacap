@@ -1,5 +1,19 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 操作用UIを実装
+
+desktop tanakacap.bat / run-ui.ps1でTk操作画面を開く。起動だけではカメラもPlayerも起動しない。開始時に選んだカメラ/保存録画/自作モーションと.tcapを使う。全機能/顔・頭/頭のみ、全機能時の部位OFF、60/推論同期/30/自由1〜240fps、幅高さ64〜4096（既定Full HD）、AA/アバタープレビュー、既存/自動表情と口角3調整/目線感度を実装。保存先ui-settings.jsonはGit除外。実行中の適用は停止・再起動、ホットリロードではない。
+
+実写画面はUIにも録画選択にもない。UIから長い表示許可引数を渡す経路なし。アバター用previewとは区別。UiStatusFeedbackとlive_status.pyで数字だけloopback UDP通知、推論Hz/実RGBA描画fps/受信Hzを別表示、2秒無更新で消去。上限制御は入力取得前・推論開始前に待機、カメラはその後最新を読む。同期は新packet時にRGBA描画、100ms以上空くと10Hz以下で更新、ウインドウ/同じSpout画像再送は上限fpsで継続。モーションは同期でも上限fps。
+
+検証は既存録画のみ。results/ui-validation/report.json complete、5構成（全機能60、顔頭60、頭のみ60、全機能23、同期60）で推論/実Player受信/描画/終了を検査。全部ON47.54Hz/60fps、顔頭49.18Hz/受信49.11、頭のみ58.65Hz、23指定22.84Hz/23fps、同期47.94Hz/描画44.09。ms/観測は16.97/14.26/8.46でUIの倍率2/2/1（頭のみ基準）、docs/ui-costs.json。個別OFFや描画負荷はこの倍率で保証しない。今回OBSアプリ合成は含まない。Player回帰/透過Spout検査はplayer-regression.logで別途成功。
+
+GUI検証：実Tk入力/開始/適用/再起動/保存/終了（プロセスmock）、257 tests成功。実写/実カメラは使用せず。UIスクロール対応、閉じると子プロセス終了。カメラ・停止ハング・新規PC・任意アバター・長時間品質は未確認。
+
+UI検証で見つけた既存不具合も修正：(1) RTMW-L FP16 Graph起動失敗→このモデルだけFP32 CUDA Graphを明示使用。CPUへのfallbackは不可、全部ON RTMW3D/人物/虹彩はFP16維持、UIに精度選択は追加しない。(2) body OFFでfingerTrackedだけ送ってflex配列が欠け、Unityが全packet拒否→無効フラグとゼロ15角を揃える。顔頭の受信まで確認済み。
+
+README/SPEC0.72/CONTROL_PANEL/フェーズ表を更新。次はユーザーがtanakacap.batから操作確認。UIは実装済みだが、一般向け配布インストーラー/別PC/個別オプション全組合せ倍率/設定ライブ反映/カメラ名の自動列挙は未実装。過去のUI未実装記述は旧状態。
+
 ## 2026-09-13 — 実写の画面表示を長い専用起動引数だけに制限
 
 ユーザー指定：カメラ映像は特別に長い起動オプションがない限り画面へ出さず、今後の実装でも一貫して守る。完全一致の --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only のみ許可。旧--previewを削除、argparse省略形拒否。capture_lab/camera_display.pyで実プロセスsys.argvを毎回確認してOpenCV表示/ROI選択/Tk画像生成を守る。診断・設定値・UI・ホットキー・環境変数による許可は作らない。録画映像や重畳画像も対象。標準ランチャーへ長い引数を自動追加しない。

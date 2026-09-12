@@ -8,6 +8,14 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 
 ## セットアップ済みの環境で起動する
 
+**操作用UIはデスクトップの`tanakacap.bat`から開く。** 入力・アバター・推論モード、描画60/推論同期/30/自由入力、Full HD/自由解像度、表情調整を選び、「開始」を押す。開くだけではカメラを起動しない。実写はUIにも表示しない。実行中の「保存して適用」は再起動で反映する。推論Hz・アバター描画fps・受信Hz、測定済み構成の相対負荷を表示する。[操作と計測条件](docs/CONTROL_PANEL.md)。
+
+```powershell
+.\run-ui.ps1
+```
+
+UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtkinterが必要（現環境で検証済み）。UI自体の別ビルドは不要、Playerは通常どおり`build-unity-lab.ps1`でビルドする。UI設定はローカルの`ui-settings.json`へ保存し、従来bat用の`tracking-settings.json`とは分ける。
+
 デスクトップの次のbatを、使いたいもの一つだけ起動する。
 
 | 起動ファイル | 動作 | 記録・時間制限 |
@@ -215,9 +223,9 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 
 ## 描画品質と解像度
 
-口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。将来UIへ追加予定。[詳細](docs/EXPRESSION_PORTABILITY.md)。
+口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。操作UIの「表情」タブでも変更できる。[詳細](docs/EXPRESSION_PORTABILITY.md)。
 
-通常版の口角ガンマは既定1（直線）、開口時の上げ抑制は既定0（抑制なし）。未設定ならこの3調整は影響しない。`mouth_corner_gamma`（0.25〜4）と`mouth_open_smile_suppression`（0〜1）を設定JSONで変更できる。`null`はモード既定：通常1/0、自動独自キーは従来の2/0.9。起動引数を優先し、将来UIからも調整できる接続を保持する。
+通常版の口角ガンマは既定1（直線）、開口時の上げ抑制は既定0（抑制なし）。未設定ならこの3調整は影響しない。`mouth_corner_gamma`（0.25〜4）と`mouth_open_smile_suppression`（0〜1）を設定JSONで変更できる。`null`はモード既定：通常1/0、自動独自キーは従来の2/0.9。起動引数を優先する。操作UIにも調整欄がある。
 
 ```powershell
 # 通常版にも以前のガンマと開口抑制を適用する例
@@ -379,4 +387,4 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 左右眼は`batch_eyes=true`で1回の推論にまとめる。`-NoBatchEyes`で従来へ、`-BatchEyes`で明示指定。派生ONNXは初回にmodels内へ自動生成し原本を保持。Hの並行処理は計測で遅くなったためrevert済み。[結果](docs/FURTHER_OPTIMIZATION.md)。
 
-描画上限は`-RenderFps 30|60`（既定60）。`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。
+従来のPowerShell起動は`-RenderFps 30|60`（既定60）。操作UIは60/推論同期/30/自由入力と推論上限の連動に対応する。[UI](docs/CONTROL_PANEL.md)。従来batでは`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。

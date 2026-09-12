@@ -1,0 +1,18 @@
+{
+  "scope": "RTX4090, recorded video, UI controller, FullHD60. Inference and retarget per observation, excluding decode/rate wait/render. Mean of .5-second telemetry windows after first two samples.",
+  "results": "results/ui-validation",
+  "modes": {
+    "full": {
+      "ms": 16.97428975806453,
+      "ratio": 2
+    },
+    "face_head": {
+      "ms": 14.264308252661666,
+      "ratio": 2
+    },
+    "head_only": {
+      "ms": 8.463740478680977,
+      "ratio": 1
+    }
+  }
+}

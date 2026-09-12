@@ -8,3 +8,5 @@ def test_disabled_body_cannot_drive_fallback_arms_fingers_or_distance():
     assert packet["tracked"] and packet["headYaw"] == 23 and packet["mouth"] == .8
     assert not any(packet[k] for k in ("torsoTracked","leftArmTracked","rightArmTracked","body3d","faceDistanceTracked"))
     assert not any(packet["leftFingerTracked"] + packet["rightFingerTracked"])
+    assert packet['leftFingerFlex']==[0.]*15
+    assert packet['rightFingerFlex']==[0.]*15

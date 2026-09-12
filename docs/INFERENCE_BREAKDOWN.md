@@ -1,3 +1,5 @@
+2026-09-13更新：操作UIと上限制御を実装済み。最新のFull HD測定と負荷倍率の基準はCONTROL_PANEL.md / ui-costs.json。以下は以前の推論経路の測定履歴。
+
 # 推論時間内訳と統合構成オプション
 
 最新（2026-09-13）：通常はRTMW3D顔/体共有＋PnPピッチ/Z口角、Gのcrop後RGB化、Iの左右眼batch2を採用。Fの人物Graph分割は任意OFF、H並行は遅くrevert。[新しい測定条件・結果](FURTHER_OPTIMIZATION.md)。

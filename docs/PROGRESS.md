@@ -984,3 +984,15 @@ PowerShell起動mockで既定省略/明示指定受け渡しと構文確認、�
 ユーザーが長い専用起動オプション以外でのカメラ表示禁止を今後一貫して要求。従来の通常launcher常時--preview、頭のselectROI、比較撮影Tk画像を確認し共通camera_displayガードへ移行。完全一致の --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only の実sys.argvだけ許可し、旧--preview/省略形を拒否。JSON/環境/診断/ホットキー/UIによる代替を設けない。録画プレビューも対象。比較撮影は実写なしの文字ガイド/録画を維持、固定頭ROIは通常数値指定。保存やアバター/OBS出力は変更なし。
 
 245 tests成功。無許可表示API/Tk変換不達、頭選択の設定値迂回拒否、旧/短縮拒否と完全一致受理、許可非永続、表示API集中の構造検査。実カメラと実写画面表示は行わない。通常検証でもPlayer終了へ推論を追従させ、映像窓なしで終了できるようにした。PowerShell構文検査、デスクトップbat更新、README/SPEC0.71/AGENTS/HANDOFF/起動/頭専用文書更新。Unity再ビルド不要。将来の表示API追加時も共通ガードと検査更新を必須とする。
+
+## 2026-09-13 — 操作UI、描画同期/自由fps、推論上限と速度表示
+
+ユーザーのUI実装指定を受けTk/ttk操作画面を追加。desktop tanakacap.bat / run-ui.ps1。開くだけではPlayer/カメラを起動せず、開始で入力/アバター/モードを起動する。実写表示面/許可スイッチ/実写サムネイルはない。旧の表示ガードを維持。推論3構成と部位OFF、60/同期/30/自由fps、幅高さ、AA/アバター表示、表情方式/口角3値/目線感度を設定できる。UI設定はui-settings.json（除外）、適用は停止・再起動。UI終了時も子プロセスを終了、エラーを表示。
+
+LiveStatusは入力取得前に上限待機し、最新カメラ入力を処理する。数字だけloopback通知、実推論Hz/描画fps/受信Hz/処理msを分離、2秒途絶で表示を消す。同期描画は新packetと100ms更新間隔、ウインドウ合成/Spout同じ画像再送は上限fpsのまま。モーションでは推論がなく上限fps。揺れ物アルゴリズムは変更しない。
+
+検証で顔・頭モードの旧RTMW-L FP16 Graph起動失敗を確認し、そのモデルだけFP32 CUDA Graphへ固定。全部ONのRTMW3D等はFP16維持、CPU fallback不可、UIに精度選択を増やさない。またbody OFFで指の無効フラグと角度配列が不整合なためUnityの全packet拒否を確認。15要素のゼロ配列を補い、指を動かさず顔頭が受信されるよう修正。
+
+既存録画のみ・FullHD Player・UIと同じSessionで5構成を検証。全部ON47.54Hz/60fps、顔頭49.18Hz/受信49.11Hz、頭のみ58.65Hz、23指定22.84Hz/23fps、同期47.94Hz/描画44.09fps。results/ui-validation/report.json complete、OBSアプリの負荷は含まない。ms/観測16.97/14.26/8.46を頭のみ基準で整数倍率2/2/1にしdocs/ui-costs.jsonに保存。未計測の部位組合せは未計測表示で、描画/待機込み総負荷の保証ではない。
+
+257 tests、実Tkの入力/開始/適用/再起動/保存/終了（子プロセスmock）、Playerの関節/表情/透過Spout回帰成功。実カメラ/実写画面表示なし。初回Unity新ファイルimport途中の一時エラー後、最終ビルド成功。UIソースに別ビルドは不要。新デスクトップbat更新、README/SPEC0.72/HANDOFF/AGENTS/CONTROL_PANELとフェーズ表を更新。配布インストーラー/新規PC/任意アバター/長時間品質は残る。
