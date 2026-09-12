@@ -68,3 +68,7 @@ ProceduralMotion.csは外部クリップ/実写記録を使わない独自の数
 ## 2026-09-12 — 軽量AA
 
 EdgeAntialiasing.cs / EdgeAntialiasing.shaderは本プロジェクトで記述した輪郭フィルター。FXAA等の外部コードやパッケージをコピー/同梱していない。Unity標準OnRenderImage/Graphics.Blitで動き、新しい第三者ライセンス依存は追加しない。ANTIALIASING.md参照。
+
+## 開発評価の追加（2026-09-12）
+
+頭姿勢：yakhyo/head-pose-estimationのMobileNet V3 small ONNX。コードMITの表記はHEAD_MODEL_LICENSE.txt。学習元300W-LPを含む重み配布条件の監査は未完了、通常配布物/Exporterへ同梱しない。HEAD_ONLY.md。PhysBone：公式SDK3.10.5はresults内の別Unity Editorで参照動作比較だけに使用、SDK/DLL/ソルバーソースを配布物やGitへ入れない。PHYSBONE_REFERENCE.md。

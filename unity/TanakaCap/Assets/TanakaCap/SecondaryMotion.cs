@@ -16,6 +16,7 @@ namespace TanakaCap {
   readonly List<Node> nodes=new List<Node>();readonly List<Collider> colliders=new List<Collider>();
   RootState[] roots;Vector3 previousRoot;
   public bool motionEnabled=true,externalClock;
+  public bool referenceDamping=true;
   public int BoneCount=>nodes.Count;
   public float MaxAngle=>nodes.Count==0?0:nodes.Max(n=>Quaternion.Angle(n.rest,n.bone.localRotation));
   public float MaxTipSpeed=>nodes.Count==0?0:nodes.Max(n=>n.velocity.magnitude);
@@ -46,6 +47,7 @@ namespace TanakaCap {
    }
    nodes.Sort((a,b)=>Depth(a.bone).CompareTo(Depth(b.bone)));ResetState();
    motionEnabled=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-secondary-motion")<0;
+   referenceDamping=Array.IndexOf(Environment.GetCommandLineArgs(),"--legacy-secondary-response")<0;
    Debug.Log("TANAKACAP_SECONDARY_READY bones="+nodes.Count+" chains="+roots.Length+" colliders="+colliders.Count+" enabled="+motionEnabled);
   }
   Transform Find(string path){var t=string.IsNullOrEmpty(path)?transform:transform.Find(path);if(!t)throw new Exception("Missing secondary transform: "+path);return t;}
@@ -101,7 +103,7 @@ namespace TanakaCap {
      if(n.chain.version>=1){var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;if(gravity.sqrMagnitude>1e-10f)targetDirection=Vector3.Slerp(targetDirection,(n.gravity>=0?gravity:-gravity).normalized,Mathf.Clamp01(Mathf.Abs(n.gravity)*gravity.magnitude));}
      n.velocity+=(anchor+targetDirection*length-n.tip)*(w*w*dt);
      if(n.chain.version==0){var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;n.velocity+=gravity*(n.gravity*9.81f*dt);}
-     n.velocity*=Mathf.Exp(-Mathf.Max(1,2*damping*w)*dt);n.tip+=n.velocity*dt;
+     n.velocity*=Mathf.Exp(-Mathf.Max(1,2*(referenceDamping?1.5f:1f)*damping*w)*dt);n.tip+=n.velocity*dt;
      n.tip=anchor+Limit(n,n.tip-anchor,restWorld)*length;
      // Explicit original colliders, with sampled segment capsules (not mesh collisions).
      for(int iteration=0;iteration<2;iteration++){

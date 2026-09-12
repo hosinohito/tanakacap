@@ -781,3 +781,12 @@
 - 検証76件、実Playerの骨/表情/掌/指/ロスト保持/alpha smoke、揺れ73区間960stepの収束/本体非干渉/OFF復元、不正パッケージ4種code2拒否成功。原本依存hash不変。非記録motion4秒でPlayer.log不変/新規resultsなし。
 - 検証batの-Diagnoseはresults/player-performanceへPlayer統計も記録。live/motion版は非記録・無期限を維持。デスクトップbat更新済み。README/SPEC/LAUNCH_MODES/THIRD_PARTYとIMPLEMENTATION_PHASESの最新表を更新。通常OBSは変更も終了もせず、試験Player/隔離OBSは終了。
 - フェーズ4全体は未達：実カメラ/最終構成30分、実動作→表示遅延、認識30Hz、腕/肩/左指と遮蔽復帰の実用品質、本家PhysBoneとの動作比較。既存録画の品質監査では終盤静止yaw約16度と顔付近左腕の跳びが残る。今回、採用済み補正やモデルは変更しない。結果と再現手順はdocs/PHASE4_VALIDATION.md、results/phase4。実写/資産/結果はGit除外、外部pushなし。
+
+## 2026-09-12 — 推論内訳・統合OFF設定・頭専用試行・本家PhysBone比較
+
+- ユーザー指定：目/顔頭/体/その他の時間を測り、頭以外を個別OFF（既定ON）。最軽量は頭姿勢のみ＋将来の音声口パク、顔ランドマークも省略。音声口パクは今回未実装。追加質問を受け、同じアプリ/起動スクリプトの構成オプションへ統合。tracking_mode=full（既定）/face_head/head_only、-TrackingModeと-HeadOnly別名。頭専用batは別製品ではなく非記録・無期限ショートカット。
+- 計測追加：モデル毎、人物検出の前/推論/後、PnP、顔フィルター、距離、体補正、UDP、read/その他。--no-ort-profileでJSON記録とORT詳細traceを分離。RTX4090/同じ録画900観測/専用Player・隔離OBS・previewなし：全体41.145ms、体OFF29.352ms、顔頭のみ24.579ms、人物検出もOFF9.719ms、頭専用3.177ms（ループ中央値）。全構成の人物検出推論14.968msが最大、RTMW-L5.683/体10.228/目4.106ms。測定条件の違う旧OBS併用20Hzや表示遅延と混同しない。docs/INFERENCE_BREAKDOWN.md、results/inference-stages-1789224490331791700。
+- 頭専用はMobileNet V3 smallの直接頭姿勢ONNX、CUDA必須、SHA256固定。顔/体/虹彩/人物検出モデルを読み込まない。手動固定ROI、P停止/R再選択。空画像の自動ロスト/再取得は未達。矩形が合っている前提の試行であり通常品質を置き換えない。画像既知回転から当初の符号反転を修正。headTrackedをfaceTrackedから分離、実Playerで表情OFF/頭pitch22度反映を確認。CUDA node5643/CPU0。コードMIT表記を保持、重み/学習元の一般配布監査は残し同梱しない。docs/HEAD_ONLY.md。
+- PhysBone公式SDK3.10.5をSHA照合し隔離Editorへ。原本コピー36SDKコンポーネントと独自35系統73区間を同じ60Hz/頭振り・胸pitch/rollで比較。初回初期化漏れ/時間刻み不一致の無効な比較は修正して除外。復元周波数候補は悪化で維持、減衰1.5倍は別動作でも改善し採用。平均回転差（全骨1260frame）2.007→1.740度、頭振り1.740→1.266度、胸2.523→2.188度。静止残差1.847度/服の衝突過渡/急停止差は残る。--legacy-secondary-response/-LegacySecondaryResponseで旧減衰。SDKはPlayer/Exporter/Gitに入れず、逆コンパイル・ソルバーコピーなし。docs/PHYSBONE_REFERENCE.md、results/physbone-reference。
+- 検証：205 Python tests、PowerShell3本構文、最終Unity build、実Playerの既存骨/表情/掌/指/ロスト/透過と頭単独smoke成功。揺れ960stepで73区間、本体/位置誤差0、OFF復元、静止速度0.0000143m/s。結果results/model-switches-final。実カメラ品質・最終30分・本家全機能一致の合格とは扱わない。bat更新済み、実写/SDK/資産/結果はGit除外。
+- 次：統合設定を実カメラで確認、頭専用の範囲追跡/再検出と角度品質、肩/腕/左指の既存品質課題、PhysBone衝突/初期過渡/静止差、フェーズ4の最終OBS併用と実遅延。音声口パクは後日。通常アバター/追跡補正は維持。SDK比較再現はtools/prepare_physbone_reference.py→tools/tune_secondary_reference.py。

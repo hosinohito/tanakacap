@@ -13,7 +13,7 @@ namespace TanakaCap
         public int version;
         public long sequence;
         public double inputReadTime,inputSentTime;
-        public bool tracked, faceTracked, leftArmTracked, rightArmTracked, body3d, torsoTracked;
+        public bool tracked, headTracked, faceTracked, leftArmTracked, rightArmTracked, body3d, torsoTracked;
         public float headPitch, headYaw, headRoll, mouth, mouthWidth,mouthRound,mouthSmile,leftBlink, rightBlink, torsoRoll, torsoPitch, torsoYaw;
         public bool mouthContourTracked;
         public float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
@@ -363,11 +363,12 @@ namespace TanakaCap
             // Otherwise interpolation starts from a stale world orientation.
             left.lowerUntwisted=left.lower.parent.rotation*Quaternion.Inverse(leftParentBefore)*left.lowerUntwisted;
             right.lowerUntwisted=right.lower.parent.rotation*Quaternion.Inverse(rightParentBefore)*right.lowerUntwisted;
-            var headTarget = transform.rotation * (p.faceTracked ? Quaternion.Euler(Mathf.Clamp(p.headPitch,-40,40),
+            bool headActive=p.headTracked || p.faceTracked;
+            var headTarget = transform.rotation * (headActive ? Quaternion.Euler(Mathf.Clamp(p.headPitch,-40,40),
                 Mathf.Clamp(p.headYaw,-60,60),Mathf.Clamp(p.headRoll,-35,35)) : Quaternion.identity) * headRootRest;
             // Face orientation is camera-relative: do not add torso rotation a second time.
-            float faceT=p.faceTracked ? 1-Mathf.Exp(-FrameDelta*45) : t;
-            if (p.faceTracked) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
+            float faceT=headActive ? 1-Mathf.Exp(-FrameDelta*45) : t;
+            if (headActive) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
             ApplyFaceFraming(p,live);
             DriveGaze(p,live,FrameDelta);
 

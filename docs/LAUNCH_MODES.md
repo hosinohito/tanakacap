@@ -27,3 +27,7 @@
 全起動で追加の軽量AAを既定ON。F7で切替、両PowerShell起動スクリプトの-NoEdgeAAで起動OFF（元のMSAAは維持）。-OutputHeight 1080で1920×1080のSpout出力、既定720。プレビューのウインドウサイズ/カメラ入力は独立。非記録・無期限・モーション専用の挙動はそのまま。
 
 Playerの--performance-logと--performance-secondsは明示的な検証専用。live/motion版は渡さない。検証版-Diagnoseはresults/player-performanceへPlayer統計を記録するが、新たな自動終了時間は指定しない。GPU計測はさらに--performance-gpuを指定する。検証の保存先と条件はPHASE4_VALIDATION.md。
+
+## 2026-09-12 統合構成オプション
+
+共通run-avatar-lab.ps1の-TrackingMode full（既定）/face_head/head_onlyで切替。tracking-settings.jsonにもtracking_mode。-NoBody/-NoGaze/-NoPersonDetectorの個別OFFは推論生成を省略。-HeadOnlyはhead_onlyの別名。頭専用ショートカットtanakacap-head-only.batは-NoLogで無期限、手動範囲指定/自動再取得なし/音声口パク未実装。既存test/live/motionは保持。[頭専用](HEAD_ONLY.md)。run-avatar-lab.ps1とrun-motion-lab.ps1に-LegacySecondaryResponseを追加し、今回の減衰調整を戻せる。

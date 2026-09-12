@@ -89,8 +89,8 @@ def main():
                 assert actual[side+'WristSwing']<=91 and actual[side+'WristTwist']<=41, actual
                 assert abs(actual[side+'ForearmTwist'])<=160.1
                 checked+=1
-            assert checked or fixture.get('faceTracked'), 'Fixture must contain a valid palm or face'
-            if fixture.get('faceTracked'):
+            assert checked or fixture.get('faceTracked') or fixture.get('headTracked'), 'Fixture must contain a valid palm, face or head'
+            if fixture.get('faceTracked') or fixture.get('headTracked'):
                 assert abs(actual['headPitchApplied']-float(np.clip(fixture.get('headPitch',0),-40,40)))<.2,actual
             if fixture.get('gazeTracked') and fixture.get('faceTracked'):
                 for field,limit in [('Yaw',20),('Pitch',12)]:

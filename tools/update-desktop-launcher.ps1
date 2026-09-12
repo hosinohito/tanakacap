@@ -61,3 +61,9 @@ $taskDemoScript = Join-Path $taskRoot 'run-motion-lab.ps1'
 $taskDemoContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskDemoScript`"`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskDemoTarget,$taskDemoContents,[Text.Encoding]::Default)
 Write-Output $taskDemoTarget
+
+# Opt-in direct head-pose prototype: manual crop, no face/body/gaze models or logs.
+$taskHeadTarget = Join-Path $taskDesktop 'tanakacap-head-only.bat'
+$taskHeadContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -HeadOnly -NoLog`r`nif errorlevel 1 pause`r`n"
+[IO.File]::WriteAllText($taskHeadTarget,$taskHeadContents,[Text.Encoding]::Default)
+Write-Output $taskHeadTarget

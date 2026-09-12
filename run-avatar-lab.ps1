@@ -6,7 +6,14 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [string]$Avatar,
     [switch]$NoLog,
     [ValidateSet(720,1080)][int]$OutputHeight=720,
+    [switch]$LegacySecondaryResponse,
     [switch]$NoEdgeAA,
+    [switch]$NoBody,
+    [switch]$HeadOnly,
+    [ValidateSet('full','face_head','head_only')][string]$TrackingMode,
+    [int[]]$HeadRoi,
+    [switch]$NoGaze,
+    [switch]$NoPersonDetector,
     [switch]$IntegerBodyPeaks)
 $ErrorActionPreference = 'Stop'
 if (-not $PSBoundParameters.ContainsKey('ObservationBlock')) {
@@ -31,11 +38,20 @@ try {
     if (-not (Test-Path -LiteralPath $taskExe)) { throw 'Run build-unity-lab.ps1 first.' }
     # This is the interactive avatar window requested by this launcher.
     $taskGazeSettings=Get-Content (Join-Path $PSScriptRoot 'tracking-settings.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    if (-not $TrackingMode) { $TrackingMode=$taskGazeSettings.tracking_mode }
+    if (-not $TrackingMode) { $TrackingMode='full' }
+    if ($TrackingMode -notin @('full','face_head','head_only')) { throw 'tracking_mode must be full, face_head or head_only' }
+    if ($TrackingMode -eq 'head_only') { $HeadOnly=$true }
+    if ($TrackingMode -eq 'face_head') { $NoBody=$true; $NoGaze=$true }
+    if ($HeadOnly) { $NoBody=$true; $NoGaze=$true; $NoPersonDetector=$true }
+    if ($taskGazeSettings.body_enabled -eq $false) { $NoBody=$true }
+    if ($taskGazeSettings.person_detector_enabled -eq $false) { $NoPersonDetector=$true }
     $taskGazeGain=4.0
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
+    if ($LegacySecondaryResponse) { $taskPlayerArgs+='--legacy-secondary-response' }
     if ($NoEdgeAA) { $taskPlayerArgs+='--no-edge-aa' }
     if ($NoLog) { $taskPlayerArgs += @('-nolog') }
     if ($Diagnose -and -not $NoLog) {
@@ -47,15 +63,18 @@ try {
     }
     if ($Avatar) { $taskPlayerArgs += @('--avatar',('"'+(Resolve-Path -LiteralPath $Avatar).Path+'"')) }
     if ($taskGazeSettings.gaze_render_mode -eq 'bones') { $taskPlayerArgs+='--gaze-bones' }
-    if ($taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }
+    if ($NoBody -or $taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }
     if ($taskGazeSettings.face_distance_mode -eq 'seated') { $taskPlayerArgs+='--face-distance-seated' }
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @()
+    if ($HeadOnly) { $taskExtra+='--head-only'; if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
+    if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }
+    if ($NoPersonDetector) { $taskExtra+='--fixed-roi' }
     if ($NoLog) { $taskExtra += @('--no-log','--parent-pid',$taskPlayer.Id); $Frames=0 }
     if ($Diagnose -and -not $NoLog) { $taskExtra += '--landmarks' }
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
-    if ($taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
+    if (-not $NoGaze -and $taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
     if ($taskGazeSettings.head_pose_mode) { $taskExtra += @('--head-pose-mode',$taskGazeSettings.head_pose_mode) }
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'head_pitch_gain') {
         $taskPitchGain=[double]$taskGazeSettings.head_pitch_gain
@@ -72,7 +91,7 @@ try {
     elseif ($taskGazeSettings.shoulder_yaw_mode) { $taskExtra += @('--shoulder-yaw-mode',$taskGazeSettings.shoulder_yaw_mode) }
     if ($taskGazeSettings.arm_depth_mode) { $taskExtra += @('--arm-depth-mode',$taskGazeSettings.arm_depth_mode) }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
-    & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --body3d --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
+    & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }
 } finally {
     if ($taskPlayer -and -not $taskPlayer.HasExited) { $null = $taskPlayer.CloseMainWindow() }
