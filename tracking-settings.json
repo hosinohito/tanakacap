@@ -8,6 +8,7 @@
   "face_distance_enabled": true,
   "face_distance_mode": "framed",
   "head_pose_mode": "pnp",
+  "brow_gain": 2.0,
   "head_pitch_gain": 1.8,
   "mouth_lip_depth_scale": 1.5,
   "face_distance_filter": "stable",

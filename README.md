@@ -1,5 +1,7 @@
 # tanakacap
 
+検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定し、既存の独自キーを再生成せず使う。直接指定は`run-avatar-lab.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
+
 デスクトップ直下のbatは5本に整理：`tanakacap.bat`（UI）、`tanakacap-test.bat`（診断）、`tanakacap-face-capture.bat`（30秒録画）、`tanakacap-live.bat`（ログなし無期限）、`tanakacap-motion.bat`（自作モーション）。その他の比較・個別試行・デモ用batはデスクトップの`tanakacap-tools`フォルダー内。以下で名前だけ記載する補助batも同フォルダーにある。更新スクリプトはこの配置を維持する。
 
 頭の固定速度／可変速度の比較は`tanakacap-compare-head-follow.bat`、または`results/avatar-videos/head-follow/face-closeup.mp4`（左が従来）。試行Player引数は`--adaptive-head-follow`、通常起動は従来の固定追従を維持。[比較条件](docs/HEAD_FOLLOW_COMPARISON.md)。

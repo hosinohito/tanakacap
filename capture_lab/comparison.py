@@ -67,7 +67,7 @@ def frame_mask(xy,scores,size):
 class SharedFace:
     def __init__(self,settings,output,execution_mode='run'):
         self.s=settings;b=settings['observation_block'];stride=settings['observation_stride']
-        self.filter=FaceFilter(b,stride);self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
+        self.filter=FaceFilter(b,stride,settings.get('brow_gain',2.));self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
         if settings['head_pose_mode'] == 'size2d':
             from .head_pose_size import SizeHeadPose
             self.pose = SizeHeadPose(settings['head_pitch_gain'], settings['mouth_lip_depth_scale'])

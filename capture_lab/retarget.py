@@ -77,13 +77,13 @@ def packet_from_landmarks(points, scores, sequence, threshold=.3):
 
 class FaceFilter:
     """Two-observation motion confirmation shared by head, eyes and mouth."""
-    def __init__(self, block_size=1, stride=None):
+    def __init__(self, block_size=1, stride=None, brow_gain=2.):
         from .motion_gate import DirectionGate
         self.head=DirectionGate(.25,float('inf'),block_size,stride)
         self.expression=DirectionGate(.015,float('inf'),block_size,stride)
         self.contour=DirectionGate(.015,float('inf'),block_size,stride)
         from .brows import BrowFilter
-        self.brows=BrowFilter(block_size,stride)
+        self.brows=BrowFilter(block_size,stride,brow_gain)
         self.corner_samples=[]
         self.corner_neutral=None
         self.bow_samples=[]

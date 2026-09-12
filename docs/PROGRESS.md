@@ -1028,3 +1028,11 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 ## 2026-09-13 — デスクトップbatを29本から5本へ整理
 
 ユーザーの整理指定。UI/test/face-capture/live/motionの5本を直下へ残し、既知の補助24本はdesktop/tanakacap-toolsへ移動。比較動画やデモ、個別試行は同フォルダーから利用可能。更新スクリプトも補助の生成先を変更し、直下への復活を防ぐ。移動は絶対親パスを確認、同名競合は上書きせず停止。5本/24本の配置を確認。アプリ・カメラは起動せず、素材/録画/設定の削除なし。README/SPEC/HANDOFF/AGENTSを更新。
+
+## 2026-09-13 — 眉の強調とデモアバターによる検証
+
+ユーザーが眉の強調を実装、目の閉じは案のみ、今後の検証はデモ用シェイプキーアバターと指定。眉は基準差の既存4フレームゲート後にgain2、±1で制限。brow_gain/--brow-gainを通常bat/UI/比較へ接続、1で旧、範囲0.5〜4。検出点/基準/ゲートは変更なし。
+
+通常testを-DemoAvatarへ更新。最新Playerで保存済みhaolan-custom-browsのtcapを読み、--use-demo-shape-keysで既存TCキーを使用。生成処理を通さず、保存デモ原本のexe/assembly/tcapハッシュ一致を確認。通常UIの既存キー優先設定は変更なし。
+
+新30秒録画の保存XYをPnPで再処理、853観測/眉有効789、デモアバター再生をresults/brow-demo/demo.mp4へ保存。264 tests/Unityビルド成功。実写表示/カメラ起動/エージェント目視なし。閉眼コードは変更せず、raw/filtered左右とも最大1、0.9超raw24/20・filtered24/22。正解ラベルがないため捕捉率とは扱わない。提案は個人別EAR閾値、閉じ/開き別の時間処理、シェイプキー1入力の表示確認。README/SPEC/HANDOFF/AGENTS更新、眉品質はユーザー確認待ち。

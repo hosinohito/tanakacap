@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新（2026-09-13）：今後の検証はデモ用シェイプキーアバターを指定。最新Player＋builds/demos/haolan-custom-brows/avatars/haolan.tcap＋--use-demo-shape-keys（既存TCキーを使用し生成しない）。保存済みデモPlayer/素材は上書きしない。通常testは-DemoAvatar。眉gain2を実装、1で旧感度。目の閉じ改善は今回案のみで、勝手に実装しない。
+
 最新（2026-09-13）：bat整理。desktop直下はtanakacap.bat/test/face-capture/live/motionの5本のみ。比較・個別試行・デモの補助batはdesktop/tanakacap-toolsへ。tools/update-desktop-launcher.ps1がこの配置を維持する。補助batを直下へ再増殖させない。過去記述の補助bat配置は本項を優先。
 
 最新確定（2026-09-13）：ユーザー指定で頭角度の既定はpnpへ復帰。size2dは任意試行。旧size2d既定記述より本項を優先。頭の可変追従は別の未採用試行で、通常は固定速度。

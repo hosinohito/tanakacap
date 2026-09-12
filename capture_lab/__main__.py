@@ -127,7 +127,7 @@ def benchmark(args):
     live_status=LiveStatus(getattr(args, 'inference_limit', 0), getattr(args, 'status_port', None))
     model = body_model = detector = camera = video = sender = gaze = None
     body_retarget = BodyRetarget(args.observation_block,args.observation_stride,args.arm_depth_mode,args.shoulder_yaw_mode)
-    face_filter = FaceFilter(args.observation_block,args.observation_stride)
+    face_filter = FaceFilter(args.observation_block,args.observation_stride,args.brow_gain)
     from .face_distance import FaceDistance
     face_distance=FaceDistance(args.observation_block,args.observation_stride,args.face_distance_filter)
     from .head_pose import HeadPose
@@ -516,6 +516,7 @@ def main(argv=None, *, inference_mode=None):
             sub.add_argument('--landmarks', action='store_true', help='Save numeric landmarks locally; never raw camera frames')
             sub.add_argument('--unity-port', type=int, help='Send experimental controls to Unity over loopback UDP')
             sub.add_argument('--observation-stride',type=int,choices=(1,3),default=1,help='1: overlapping means, 3: disjoint means (block size 3 only)')
+            sub.add_argument('--brow-gain',type=float,default=2.)
             sub.add_argument('--observation-block',type=int,choices=(1,3),default=3,help='1: original confirmation; 3: three-frame means (stride controls overlap)')
             sub.add_argument('--body3d', action='store_true', help='Add RTMW3D body inference; keep the existing face model')
             sub.add_argument('--head-pose-mode',choices=['pnp','size2d','legacy','depth3d','pnp_depthmouth'],default='pnp')
