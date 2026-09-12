@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：MANO_RIGHT.pkl受領、assets-source/manoへ配置。SAMは申請済み承認待ち。実撮影のfirst-take比較reportはcomplete、詳細監査未完了。HaMeR環境/3D接続は未完了。HANDOFF先頭参照。端末向け案内には生URLを添える。
+
 - 最新（2026-09-12）：ユーザー撮影待ち。tanakacap-compare-capture.batで日本語ガイド・HuffYUV可逆録画、analyzeで共通入力/補正比較。実装済みは現行＋DWPose/RTMW-Xの2D対照。SAM/HaMeRは取得待ち・生出力ワーカー未検証・3D共通補正接続未完了。docs/COMPARISON_CAPTURE.mdを参照し全候補完成と扱わない。
 
 - 最新（2026-09-12）：顔距離のガタつきへstableフィルター追加、legacyで復元。次は補正固定のモデル比較（docs/MODEL_COMPARISON_PLAN.md）。目線/口/掌は良好、胴体yaw/腕/左指/右手開閉時の肘が課題。OBSより距離・比較を優先。新モデル比較はまだ未実施。
