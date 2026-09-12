@@ -78,6 +78,20 @@ namespace TanakaCap.Editor {
      Require(browMesh.blendShapeCount==before,"Existing brow mode must not generate keys");
      Debug.Log("TANAKACAP_BROW_SPLIT_GEOMETRY_OK");
     }finally{if(split)UnityEngine.Object.DestroyImmediate(split);UnityEngine.Object.DestroyImmediate(browMesh);UnityEngine.Object.DestroyImmediate(eyeL);UnityEngine.Object.DestroyImmediate(eyeR);}
+    Require(AvatarDriver.FollowBrow(0,.2f,0)==0,"Brow follow zero dt");
+    Require(AvatarDriver.FollowBrow(0,.2f,.01f,false)==.2f,"Brow follow reversible direct mode");
+    float browSmall=0,browLarge=0,browNoise=0,noiseMax=0;
+    for(int i=0;i<120;i++){
+     browSmall=AvatarDriver.FollowBrow(browSmall,.02f,1f/60);
+     if(i<6)browLarge=AvatarDriver.FollowBrow(browLarge,.8f,1f/60);
+     browNoise=AvatarDriver.FollowBrow(browNoise,i%2==0?.02f:-.02f,1f/60);
+     noiseMax=Mathf.Max(noiseMax,Mathf.Abs(browNoise));
+    }
+    Require(Mathf.Abs(browSmall-.02f)<.00001f,"Small brow movement must converge");
+    Require(browLarge>.65f&&browLarge<=.8f,"Large brow movement must follow rapidly without overshoot");
+    Require(noiseMax<.005f,"Small alternating brow noise must be reduced");
+    Require(AvatarDriver.FollowBrow(0,0,1f/60)==0,"Unchanged opposite brow must stay still");
+    Debug.Log("TANAKACAP_BROW_FOLLOW_CHECK_OK");
     Debug.Log("TANAKACAP_EXPRESSION_CHECKS_OK priority/empty/descriptor/grouping/gaze/no-generated-keys");
    }finally{UnityEngine.Object.DestroyImmediate(root);UnityEngine.Object.DestroyImmediate(mesh);}
   }

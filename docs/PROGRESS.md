@@ -1052,3 +1052,9 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 ユーザー指定でBrowShapeSplitを追加。眼骨の左右軸/中点を基準に元の眉モーフ差分を左右へ分配し、頂点/法線/接線と元のフレーム重みを利用。デモ/auto-customの実行時コピーにUp/Down/Sad/Angry左右キーを生成。既存の片側キーを優先し、共通browInnerUpは独自モードで分割可能。既存キーモードは独自生成せず、標準左右名と上左/左上/上_L等を探索して共通fallbackを置換。左右共通しかなければ共通表示が残る。左右独立がある場合の共通困る/怒りの重畳を抑止。目閉じや眉gain2は変更なし。
 
 Editor検査で片眉の上下、反対側weightゼロ、合成メッシュ反対側変位ゼロ、生成原本不変、existingのキー数不変を確認。最終ビルドと264 Python tests成功。実デモで--check-brow-sides成功、同じ853packetの30秒再生をresults/brow-independent/demo.mp4へ保存し全デコード成功。保存済みデモexe/assembly/tcapハッシュ一致。実写画面表示/実カメラ/動画目視なし。材料不明/眼骨なし/読取不可では生成できない。既知のデモ口寄せ未マップは別残件。README/SPEC/HANDOFF/AGENTS更新。
+
+## 2026-09-13 — 眉の可変追従による振動対策
+
+ユーザー指定で眉の可変追従を既定ONにした。4フレーム法/gain2後の目標差0〜0.3でrate6〜45をsmoothstep、指数補間。左右内外4値を別々に更新、欠測保持。微小な目標も到達し、完全な不動域は追加しない。--no-adaptive-brow-followで旧直接反映へ戻せる。頭の可変追従や目閉じの処理は変更なし。
+
+Unity Editor検査で微小交互入力低減、大入力の速い追従、微小目標への収束、dt=0、従来復帰、反対側不変を確認、ビルド成功。指定のデモtcapで左右独立チェック成功、新録画853packetを再生してresults/brow-follow/demo.mp4へ出力、全デコード成功。実カメラ/実写表示/エージェント目視なし。通常検証bat更新、README/SPEC/HANDOFF/AGENTSを更新。見た目の改善はユーザー評価待ち。
