@@ -19,5 +19,6 @@
   "face_source": "body3d",
   "inference_mode": "graph",
   "detector_interval": 3,
-  "detector_model": "yolox-m-human"
+  "detector_model": "yolox-m-human",
+  "preprocess_mode": "crop"
 }

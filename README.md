@@ -332,3 +332,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 部位別のモデル、補正、表示までの経路は[現在の推論経路](docs/INFERENCE_PIPELINE.md)を参照。
 
 追加高速化F：`-DetectorGraph`で同じ人物検出の固定部分をGraph化、`-NoDetectorGraph`で解除。効果が小さいため通常はOFF。[F〜Iの進捗・測定条件](docs/FURTHER_OPTIMIZATION.md)。
+
+前処理は`preprocess_mode=crop`（切り出し後のRGB化）を通常採用。`-PreprocessMode legacy`で以前へ戻せる。入力テンソルは同一。[計測](docs/FURTHER_OPTIMIZATION.md)。
