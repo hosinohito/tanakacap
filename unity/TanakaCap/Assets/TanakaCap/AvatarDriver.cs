@@ -32,7 +32,7 @@ namespace TanakaCap
         public Vector3 leftHandForward, leftHandNormal, rightHandForward, rightHandNormal;
     }
 
-    public class AvatarDriver : MonoBehaviour
+    public partial class AvatarDriver : MonoBehaviour
     {
         [Serializable] class BoneDiagnostics
         {
@@ -223,6 +223,7 @@ namespace TanakaCap
             if(gazeGainArg>=0 && gazeGainArg+1<args.Length && float.TryParse(args[gazeGainArg+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var requestedGazeGain) && !float.IsNaN(requestedGazeGain))
                 gazeGain=Mathf.Clamp(requestedGazeGain,.5f,6f);
             if(Array.IndexOf(args,"--obs")>=0)SetObsMode(true);
+            if(TryStartVideo(args))return;
             int portArg=Array.IndexOf(args,"--port");
             if(portArg>=0 && portArg+1<args.Length && int.TryParse(args[portArg+1],out var testPort) && testPort>0 && testPort<=65535) port=testPort;
             try { receiver = new UdpClient(new IPEndPoint(IPAddress.Loopback, port)); }
@@ -265,6 +266,7 @@ namespace TanakaCap
 
         void Update()
         {
+            if(videoMode)return;
             if (Input.GetKeyDown(KeyCode.F3)) SetObsMode(!obsMode);
             if (Input.GetKeyDown(KeyCode.F4)) gazeEnabled=!gazeEnabled;
             if (Input.GetKeyDown(KeyCode.F1)) showStatus = !showStatus;
@@ -316,6 +318,7 @@ namespace TanakaCap
 
         void LateUpdate()
         {
+            if(videoMode && probeDelta<=0)return;
             if (!head) return;
             float t = 1-Mathf.Exp(-FrameDelta*16);
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
