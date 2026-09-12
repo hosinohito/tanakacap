@@ -137,13 +137,15 @@ def benchmark(args):
             sender = LocalSender(args.unity_port)
         profile_output = None if getattr(args, 'no_ort_profile', False) else output
         execution = {} if args.inference_mode=='run' else dict(execution_mode=args.inference_mode)
-        model = SimCCModel(face_name, profile_output, **execution)
+        pose_execution={**execution}
+        if args.preprocess_mode!='legacy': pose_execution['preprocess_mode']=args.preprocess_mode
+        model = SimCCModel(face_name, profile_output, **pose_execution)
         report['face_source'] = args.face_source
         if args.gaze:
             from .gaze import IrisGaze
             gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **execution)
         if args.body3d:
-            body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **execution)
+            body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **pose_execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
             report['body_model'] = body_model.identity
             report['body_note'] = 'Learned relative depth; XY scale uses nominal 0.36m shoulder span. Not metric ground truth.'
@@ -477,6 +479,7 @@ def main():
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
+            sub.add_argument('--preprocess-mode',choices=('legacy','crop'),default='legacy')
             sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
             sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)

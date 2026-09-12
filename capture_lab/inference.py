@@ -16,7 +16,7 @@ from .models import catalog, model_path, sha256
 from .gpu_runner import GpuRunner, provider_options
 
 
-def preprocess(frame, roi, input_wh):
+def preprocess(frame, roi, input_wh, color_order='BGR'):
     x, y, w, h = roi
     if w <= 0 or h <= 0:
         raise ValueError('ROI must have positive width and height')
@@ -32,6 +32,7 @@ def preprocess(frame, roi, input_wh):
     affine = np.array([[sx, 0, iw / 2 - center[0] * sx],
                        [0, sy, ih / 2 - center[1] * sy]], dtype=np.float32)
     crop = cv2.warpAffine(frame, affine, (iw, ih), flags=cv2.INTER_LINEAR)
+    if color_order=='RGB': crop=crop[:,:,::-1]
     crop = (crop.astype(np.float32) - np.array([123.675, 116.28, 103.53], np.float32))
     crop /= np.array([58.395, 57.12, 57.375], np.float32)
     tensor = np.ascontiguousarray(crop.transpose(2, 0, 1)[None])
@@ -67,7 +68,9 @@ def provider_summary(path):
 
 
 class SimCCModel:
-    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False):
+    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False, preprocess_mode='legacy'):
+        if preprocess_mode not in ('legacy','crop'): raise ValueError('Unknown preprocessing mode')
+        self.preprocess_mode=preprocess_mode
         self.info = catalog()[name]
         path = model_path(name)
         if not path.exists():
@@ -122,8 +125,11 @@ class SimCCModel:
 
     def predict(self, frame, roi):
         start = time.perf_counter()
-        input_frame = frame[:,:,::-1] if self.info.get('color_order') == 'RGB' else frame
-        tensor, center, scale = preprocess(input_frame, roi, self.info['input_wh'])
+        if self.preprocess_mode=='crop':
+            tensor,center,scale=preprocess(frame,roi,self.info['input_wh'],self.info.get('color_order','BGR'))
+        else:
+            input_frame = frame[:,:,::-1] if self.info.get('color_order') == 'RGB' else frame
+            tensor, center, scale = preprocess(input_frame, roi, self.info['input_wh'])
         ready = time.perf_counter()
         outputs = self.runner.run(tensor,self.input_name)
         self.calls += 1

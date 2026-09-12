@@ -18,6 +18,7 @@
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
     [ValidateSet('separate','body3d')][string]$FaceSource,
     [ValidateSet('pnp','legacy','depth3d','pnp_depthmouth')][string]$HeadPoseMode,
+    [ValidateSet('legacy','crop')][string]$PreprocessMode,
     [switch]$DetectorGraph,
     [switch]$NoDetectorGraph,
     [switch]$NoGaze,
@@ -91,6 +92,9 @@ try {
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @('--face-source',$FaceSource,'--inference-mode',$InferenceMode,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
+    if (-not $PreprocessMode) { $PreprocessMode=$taskGazeSettings.preprocess_mode }
+    if (-not $PreprocessMode) { $PreprocessMode='legacy' }
+    $taskExtra+=@('--preprocess-mode',$PreprocessMode)
     if (($DetectorGraph -or $taskGazeSettings.detector_graph) -and -not $NoDetectorGraph) { $taskExtra+='--detector-graph' }
     if ($HeadOnly) { $taskExtra+=@('--head-only','--head-roi-mode',$HeadRoiMode); if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
     if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }

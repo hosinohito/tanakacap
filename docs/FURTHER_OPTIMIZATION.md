@@ -13,3 +13,7 @@
 公式根拠：[ORT CUDA Graph](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)、[ONNX部分グラフ抽出](https://onnx.ai/onnx/api/utils.html)。これは速度保証やモデル重みの配布許諾を意味しない。元の許諾監査残件を維持する。
 
 G/H/Iは続行中。
+
+## G 切り出し後にRGB化
+
+顔/体は採用済みの1モデル共有なので二重cropはない。残る全映像RGB変換を384×288へ切り出した後へ移動し、補間・正規化・配列dtypeは同じ。カラー変換とチャンネル独立warpの交換でありGPU前処理への置換ではない。整数/端外/小数ROIで入力テンソル完全一致の3 tests、全228 tests成功。results/full-optimization-G-1789236115409127600。通常preprocess_mode=cropを採用、-PreprocessMode legacyで復帰。
