@@ -6,6 +6,9 @@ Never allow the next eye/frame to overwrite an output while it is in use.
 import numpy as np
 import onnxruntime as ort
 
+# Internal policy hook for a possible future UI. No startup precision switch.
+DEFAULT_INFERENCE_MODE = 'graph-fp16'
+
 
 class GpuRunner:
     def __init__(self, session, mode='run', dynamic_output=False):

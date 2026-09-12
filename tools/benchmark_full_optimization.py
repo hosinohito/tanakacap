@@ -32,6 +32,12 @@ def main():
             '--no-ort-profile','--arm-depth-mode','front_projection','--shoulder-yaw-mode','face_ratio',*extra]
         if args.stage in ('F','G','I'): command+=['--inference-mode','graph','--detector-interval','3','--face-source','body3d','--head-pose-mode','pnp_depthmouth']
         if args.landmarks: command+=['--landmarks']
+        # These are historical fixed-FP32 experiments, not app startup options.
+        mode='run'
+        if '--inference-mode' in command:
+            at=command.index('--inference-mode'); mode=command[at+1]
+            del command[at:at+2]
+        command[1:3]=['-c',f'from capture_lab.__main__ import main; main(inference_mode={mode!r})']
         with (out/(name+'.log')).open('wb') as log:
             subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=600)
         text=(out/(name+'.log')).read_text(encoding='utf-8',errors='replace').replace('\0','')

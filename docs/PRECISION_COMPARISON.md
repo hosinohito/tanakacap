@@ -1,10 +1,12 @@
 # F採用とCUDA混合精度比較
 
+最新決定：比較後ユーザーがFP16を通常採用。起動引数の-InferenceMode/--inference-modeと設定キーinference_modeを削除し、精度指定なしでFP16起動とする。FP32は内部のmain(..., inference_mode="graph") / SimCCModel等のAPIにのみ保持。将来UIへ追加するかもしれないという意向で、UI追加は未確定。頭専用モデルは今回の変更対象外。以下の通常FP32/採用保留は比較時点の記録。
+
 2026-09-13。ユーザーがFを通常採用と指定。`detector_graph=true`に変更し、人物検出の固定部分をCUDA Graphで実行する。`-NoDetectorGraph`で復元可能。F自体の全5,187観測の制御完全一致はFURTHER_OPTIMIZATION参照。
 
 ## FP16の実装
 
-通常は`graph`（FP32）、試行は`graph-fp16`。YOLOX-Mの固定部分、RTMW3D-X、batch2虹彩へ適用する。元ONNXは変更しない。既存ORT1.30.0同梱変換器で派生ONNXを作り、入出力・Softmax・ReduceMean/ReduceSum等をFP32に保つ。NMS後段も既存FP32。人体補正・3/1時間フィルター・モデル・前処理・部位更新頻度は固定する。ONNXの型検査と順序検査を通し、CPUへの暗黙フォールバックは禁止する。
+比較時点では`graph`（FP32）が通常、`graph-fp16`が試行だった。現在はFP16を通常採用。YOLOX-Mの固定部分、RTMW3D-X、batch2虹彩へ適用する。元ONNXは変更しない。既存ORT1.30.0同梱変換器で派生ONNXを作り、入出力・Softmax・ReduceMean/ReduceSum等をFP32に保つ。NMS後段も既存FP32。人体補正・3/1時間フィルター・モデル・前処理・部位更新頻度は固定する。ONNXの型検査と順序検査を通し、CPUへの暗黙フォールバックは禁止する。
 
 FP16は[公式精度ガイド](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/accuracy-considerations.html)にもあるように表現範囲・集約・Softmax等が敏感。大きな見た目の劣化を必然とは考えないが、ピーク選択や信頼度の閾値を跨ぐ差は生じうる。原本維持・切替・実録画比較で判断する。モデル差を実人物の正解誤差とは扱わない。
 
@@ -30,7 +32,7 @@ FP16は[公式精度ガイド](https://docs.nvidia.com/deeplearning/tensorrt/lat
 
 上記の点集計は画面外の推定点も含む。両方式で画面内にある点だけなら615,841点、XY差中央値0.353px/p95 1.575px/最大549.224px。画面内判定も正解可視性を保証しない。実際のアバターにはさらに欠測判定・関節補正・保持が入る。
 
-顔/胴体の有効フラグ差は0、左腕8/右腕4観測、左掌47/右掌179観測で有効フラグが異なる。品質劣化と断定する正解はないが、見た目同等とも断言しない。FP16の通常採用は保留し、ユーザーが動画を確認する。
+顔/胴体の有効フラグ差は0、左腕8/右腕4観測、左掌47/右掌179観測で有効フラグが異なる。品質劣化と断定する正解はないが、見た目同等とも断言しない。この数値だけでは通常採用を保留してユーザーへ動画を提示した。その後ユーザーがFP16採用を指定。
 
 ## Full HD60fps＋OBSでの速度
 
@@ -44,10 +46,10 @@ FP16は[公式精度ガイド](https://docs.nvidia.com/deeplearning/tensorrt/lat
 受信は約7.0%向上。受信Hzを推論カーネル単体の速さや実カメラの新規フレーム数と混同しない。既存ループには描画上限で推論を待たせる将来機能は未実装。両側OBSのRGBA・背景透過合成・動き・正常終了を数値確認。results/precision-fp32-fullhd、results/precision-fp16-fullhdのreport/player/systemを参照。
 
 ```powershell
-.\.venv\Scripts\python.exe tools/phase4_soak.py --seconds 90 --video results/comparison-takes/20260911T235327-031115Z/camera.avi --output results/precision-fp32-fullhd --output-height 1080 --render-fps 60 --obs-fps 60 --inference-mode graph --detector-interval 3 --detector-graph --preprocess-mode crop --batch-eyes
+.\.venv\Scripts\python.exe tools/phase4_soak.py --seconds 90 --video results/comparison-takes/20260911T235327-031115Z/camera.avi --output results/precision-adopted-fullhd --output-height 1080 --render-fps 60 --obs-fps 60 --detector-interval 3 --detector-graph --preprocess-mode crop --batch-eyes
 ```
 
-FP16は出力先を別名にして`--inference-mode graph-fp16`へ置換する。再実行時は既存出力先を使わない。
+この起動は現在FP16固定。過去のFP32回帰は開発用内部APIでのみ可能。再実行時は既存出力先を使わない。
 
 ## TensorRTは不採用
 

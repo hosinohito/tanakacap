@@ -1,4 +1,5 @@
-﻿param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
+﻿[CmdletBinding()]
+param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet('rtmw-l-384','dwpose-l-384')][string]$Model = 'rtmw-l-384',
     [ValidateSet(1,3)][int]$ObservationBlock = 3,
     [ValidateSet(1,3)][int]$ObservationStride = 1,
@@ -18,7 +19,6 @@
     [ValidateSet('full','face_head','head_only')][string]$TrackingMode,
     [int[]]$HeadRoi,
     [ValidateSet('auto','fixed')][string]$HeadRoiMode='auto',
-    [ValidateSet('run','binding','graph','graph-fp16')][string]$InferenceMode,
     [ValidateSet(1,2,3)][int]$DetectorInterval,
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
     [ValidateSet('separate','body3d')][string]$FaceSource,
@@ -62,9 +62,6 @@ try {
     if ($HeadOnly) { $NoBody=$true; $NoGaze=$true; $NoPersonDetector=$true }
     if ($taskGazeSettings.body_enabled -eq $false) { $NoBody=$true }
     if ($taskGazeSettings.person_detector_enabled -eq $false) { $NoPersonDetector=$true }
-    if (-not $InferenceMode) { $InferenceMode=$taskGazeSettings.inference_mode }
-    if (-not $InferenceMode) { $InferenceMode='run' }
-    if ($InferenceMode -notin @('run','binding','graph','graph-fp16')) { throw 'Invalid inference_mode' }
     if (-not $DetectorInterval) { $DetectorInterval=$taskGazeSettings.detector_interval }
     if (-not $DetectorInterval) { $DetectorInterval=1 }
     if ($DetectorInterval -notin @(1,2,3)) { throw 'Invalid detector_interval' }
@@ -105,7 +102,7 @@ try {
     if ($taskGazeSettings.face_distance_mode -eq 'seated') { $taskPlayerArgs+='--face-distance-seated' }
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
-    $taskExtra = @('--face-source',$FaceSource,'--inference-mode',$InferenceMode,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
+    $taskExtra = @('--face-source',$FaceSource,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
     if (-not $PreprocessMode) { $PreprocessMode=$taskGazeSettings.preprocess_mode }
     if (-not $PreprocessMode) { $PreprocessMode='legacy' }
     $taskExtra+=@('--preprocess-mode',$PreprocessMode)

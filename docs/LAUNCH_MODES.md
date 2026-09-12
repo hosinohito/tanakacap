@@ -32,7 +32,7 @@
 
 ## 2026-09-13 CUDA FP16比較
 
-通常test/liveはFをON、精度はgraph/FP32。`tanakacap-test-fp16.bat`は同じ通常構成に`-InferenceMode graph-fp16`だけを指定するユーザー起動用。設定ファイルは変更しない。比較動画の場所は`tanakacap-compare-fp16.bat`。実カメラ試験はユーザーの明示指示があるまでエージェントが実行しない。頭専用モードの精度は変更しない。
+ユーザー指定で通常test/liveをFP16へ統一、FもON。`tanakacap-test-fp16.bat`は互換用に通常testと同じ内容を維持。FP32を選ぶ起動引数・設定キーは削除済み。内部APIは将来UI追加の可能性に備えて保持するが、UI実装の確約ではない。比較動画の場所は`tanakacap-compare-fp16.bat`。実カメラ試験はユーザーの明示指示があるまでエージェントが実行しない。頭専用モードの精度は変更しない。
 
 ## 2026-09-12 描画の追加設定
 

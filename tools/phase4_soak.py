@@ -73,7 +73,7 @@ def stop(process):
     process.terminate()
     try:process.wait(10)
     except subprocess.TimeoutExpired:process.kill();process.wait()
-def main():
+def main(*, inference_mode='graph-fp16'):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seconds",type=int,default=1800)
     parser.add_argument("--video",type=Path)
@@ -91,7 +91,7 @@ def main():
     parser.add_argument('--batch-eyes',action='store_true')
     parser.add_argument('--no-batch-eyes',action='store_true')
     parser.add_argument('--detector-graph',action='store_true')
-    parser.add_argument('--inference-mode',choices=('run','binding','graph','graph-fp16'),default='run')
+    parser.set_defaults(inference_mode=inference_mode)
     parser.add_argument('--detector-interval',type=int,choices=(1,2,3),default=1)
     parser.add_argument('--detector-model',choices=('yolox-m-human','yolox-tiny-human'),default='yolox-m-human')
     args=parser.parse_args()
@@ -142,10 +142,10 @@ def main():
         player=subprocess.Popen(cmd,cwd=ROOT,creationflags=subprocess.CREATE_NO_WINDOW)
         if not args.demo:
             settings=json.loads((ROOT/"tracking-settings.json").read_text())
-            cmd=[sys.executable,"-m","capture_lab","benchmark","--source","video","--video",str(args.video.resolve()),
+            cmd=[sys.executable,"-c",f"from capture_lab.__main__ import main; main(inference_mode={inference_mode!r})","benchmark","--source","video","--video",str(args.video.resolve()),
                  "--loop-video","--no-log","--frames","0","--parent-pid",str(player.pid),"--unity-port",str(port),"--body3d",
                  "--model","rtmw-l-384","--gaze",
-                 '--inference-mode',args.inference_mode,'--detector-interval',str(args.detector_interval),
+                 '--detector-interval',str(args.detector_interval),
                  '--detector-model',args.detector_model]
             cmd+=['--face-source',settings.get('face_source','separate'),'--preprocess-mode',args.preprocess_mode or settings.get('preprocess_mode','legacy')]
             if (args.batch_eyes or settings.get('batch_eyes')) and not args.no_batch_eyes:cmd+=['--batch-eyes']

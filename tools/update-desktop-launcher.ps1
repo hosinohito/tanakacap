@@ -99,7 +99,7 @@ $taskPrecisionContents = "@echo off`r`nexplorer.exe /select,`"$taskPrecisionVide
 Write-Output $taskPrecisionTarget
 
 $taskFp16TestTarget = Join-Path $taskDesktop 'tanakacap-test-fp16.bat'
-[IO.File]::WriteAllText($taskFp16TestTarget,$taskContents.Replace(' -Diagnose',' -InferenceMode graph-fp16 -Diagnose'),[Text.Encoding]::Default)
+[IO.File]::WriteAllText($taskFp16TestTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskFp16TestTarget
 
 $taskFacePnpTarget = Join-Path $taskDesktop 'tanakacap-test-face-pnp.bat'

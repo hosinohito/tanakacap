@@ -20,7 +20,7 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 | `tanakacap-compare-face.bat` | 顔方式の比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-compare-f.bat` | 高速化FのOFF／ON比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-compare-fp16.bat` | CUDA FP32／FP16比較動画の保存先を開く | カメラ不使用 |
-| `tanakacap-test-fp16.bat` | 通常設定を保存したままFP16を試す | ユーザーが起動するカメラ試験 |
+| `tanakacap-test-fp16.bat` | 通常testと同じFP16起動（旧ショートカットの互換用） | ユーザーが起動するカメラ試験 |
 
 通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
 
@@ -323,26 +323,26 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 ## 全部ONの高速化
 
-通常の`run-avatar-lab.ps1`とデスクトップtest/liveは、`tracking-settings.json`の`inference_mode=graph`、`detector_interval=3`、`detector_model=yolox-m-human`を使う。頭専用モードは従来のまま。GPU転送・起動を削減し、人物領域は最大2観測の画像追跡を挟む。顔・体・手・目線の詳細モデルは毎観測実行する。画像追跡不良、切り出し端、120ms経過で人物検出へ戻す。
+通常の`run-avatar-lab.ps1`とデスクトップtest/liveは、CUDA混合FP16（内部既定`graph-fp16`）と、`tracking-settings.json`の`detector_interval=3`、`detector_model=yolox-m-human`を使う。頭専用モードは従来のまま。GPU転送・起動を削減し、人物領域は最大2観測の画像追跡を挟む。顔・体・手・目線の詳細モデルは毎観測実行する。画像追跡不良、切り出し端、120ms経過で人物検出へ戻す。
 
 ```powershell
 # 従来の実行・毎回の人物検出へ戻す（設定ファイルは変更しない）
-.\run-avatar-lab.ps1 -InferenceMode run -DetectorInterval 1 -DetectorModel yolox-m-human
+.\run-avatar-lab.ps1 -DetectorInterval 1 -DetectorModel yolox-m-human
 
 # 小型人物検出Dを試す。詳細モデル・補正は同じ
 .\.venv\Scripts\python.exe -m capture_lab fetch yolox-tiny-human
 .\run-avatar-lab.ps1 -DetectorModel yolox-tiny-human
 ```
 
-`-InferenceMode run|binding|graph`、`-DetectorInterval 1|2|3`、`-DetectorModel yolox-m-human|yolox-tiny-human`で各変更を戻せる。Python CLIでは同名の`--inference-mode`、`--detector-interval`、`--detector-model`を使用する。Python CLIの既定は既存比較の再現のためrun/1/mediumのまま。小型モデルは切り出しの差が深度にも影響したため通常採用せず、追加取得は選択時のみ。
+`-DetectorInterval 1|2|3`、`-DetectorModel yolox-m-human|yolox-tiny-human`で人物領域更新と検出器を選べる。Python CLIは`--detector-interval`、`--detector-model`。精度はFP16固定で、`-InferenceMode`/`--inference-mode`と設定キー`inference_mode`は削除済み。Python CLIの人物更新/検出器既定は1/medium。小型モデルは切り出しの差が深度にも影響したため通常採用せず、追加取得は選択時のみ。
 
-結果・条件・残る検証は[全部ON高速化](docs/FULL_MODE_OPTIMIZATION.md)を参照。部位ごとの更新頻度Eは保留。FP16は下記の可逆な比較対象。
+結果・条件・残る検証は[全部ON高速化](docs/FULL_MODE_OPTIMIZATION.md)を参照。部位ごとの更新頻度Eは保留。FP16は通常採用済み。
 
 部位別のモデル、補正、表示までの経路は[現在の推論経路](docs/INFERENCE_PIPELINE.md)を参照。
 
 追加高速化F：通常ON（`detector_graph=true`）。`-DetectorGraph`で明示有効、`-NoDetectorGraph`で解除。同じ人物検出の固定部分をGraph化する。全編比較後にユーザーが採用を指定。[F〜Iの進捗・測定条件](docs/FURTHER_OPTIMIZATION.md)。
 
-FP16比較：`run-avatar-lab.ps1 -InferenceMode graph-fp16`でCUDAの混合精度へ切替、`-InferenceMode graph`で通常FP32へ戻す。設定キーは`inference_mode`。既存ONNX Runtime同梱の変換器を使い、モデル原本を残して`models`内へ派生ONNXを生成する。初回生成は通常起動より時間がかかる。入出力とSoftmax/一部集約はFP32、主な畳み込み等はFP16。頭専用モードは対象外。追加Python依存は不要。比較動画の保存先は`tanakacap-compare-fp16.bat`から開ける。[比較条件・結果](docs/PRECISION_COMPARISON.md)。TensorRTはユーザー指定で不採用。試験接続・追加依存は削除済み。CUDA FP16はTensorRTを必要としない。
+精度はCUDA混合FP16を通常採用。FP32の起動オプション・設定キーは公開しない。将来UIに追加する可能性に備えた内部APIのみ保持し、UI追加を確定要件にはしない。初回はモデル原本を残してmodels内へFP16派生ONNXを生成する。入出力とSoftmax/一部集約はFP32、主な畳み込み等はFP16。頭専用モデルは今回の精度変更の対象外。追加Python依存は不要。以前の比較動画は`tanakacap-compare-fp16.bat`から開ける。[比較条件・結果](docs/PRECISION_COMPARISON.md)。TensorRTは不採用、CUDA FP16には不要。
 
 前処理は`preprocess_mode=crop`（切り出し後のRGB化）を通常採用。`-PreprocessMode legacy`で以前へ戻せる。入力テンソルは同一。[計測](docs/FURTHER_OPTIMIZATION.md)。
 

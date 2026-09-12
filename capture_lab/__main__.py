@@ -458,7 +458,12 @@ def probe(args):
     print(f'Results: {output}')
 
 
-def main():
+def main(argv=None, *, inference_mode=None):
+    # Internal hook for offline regression tools / a possible future UI.
+    from .gpu_runner import DEFAULT_INFERENCE_MODE
+    inference_mode = inference_mode or DEFAULT_INFERENCE_MODE
+    if inference_mode not in ('run','binding','graph','graph-fp16'):
+        raise ValueError('Unknown internal inference mode')
     parser = argparse.ArgumentParser(description='GPU capture evaluation (development only)')
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('environment')
@@ -477,7 +482,7 @@ def main():
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
             sub.add_argument('--head-only',action='store_true',help='Direct head pose with automatic CUDA head region detection; no expression/gaze/body networks')
             sub.add_argument('--head-roi-mode', choices=('auto','fixed'), default='auto', help='Head-only: auto acquisition/loss/recovery, or legacy fixed crop')
-            sub.add_argument('--inference-mode',choices=('run','binding','graph','graph-fp16'),default='run',help='CUDA run/binding/graph, mixed graph-fp16, or optional standard TensorRT FP32/FP16')
+            sub.set_defaults(inference_mode=inference_mode)
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
@@ -510,7 +515,7 @@ def main():
             sub.add_argument('--gaze',action='store_true',help='Experimental CUDA iris-driven eye rotation')
             sub.add_argument('--gaze-reference',choices=['contour','legacy'],default='contour',help='Legacy restores the previous ROI reference and eye flips')
             sub.add_argument('--integer-body-peaks',action='store_true',help='Restore integer body coordinate decoding for comparison')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if hasattr(args, 'frames') and args.frames < 2 and not (args.command=='benchmark' and args.frames==0 and args.no_log):
         parser.error('--frames must be at least 2; 0 is unlimited with benchmark --no-log')
     if getattr(args,'no_log',False) and (args.landmarks or args.snapshot):
