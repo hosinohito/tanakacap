@@ -1,4 +1,5 @@
 """User-started lossless camera take. No inference, audio, or network transfer."""
+from . import camera_display
 import argparse,json,time,shutil
 from datetime import datetime,timezone
 from pathlib import Path
@@ -66,7 +67,7 @@ def record(camera_index=1):
     title=tk.StringVar(value='カメラを準備しています');hint=tk.StringVar(value='開始ボタンを押すまでは映像を保存しません。音声は録音しません。')
     tk.Label(window,textvariable=title,font=('Yu Gothic UI',21,'bold')).pack(pady=8)
     tk.Label(window,textvariable=hint,font=('Yu Gothic UI',13),wraplength=930).pack()
-    preview=tk.Label(window);preview.pack(pady=5)
+    preview=tk.Label(window,text='カメラ映像は非表示です。撮影ガイドと録画は利用できます。' if not camera_display.allowed() else '');preview.pack(pady=5)
     status=tk.StringVar();tk.Label(window,textvariable=status,wraplength=930).pack()
     take=None;started=None;countdown=None;last_sequence=-1;camera=None
     def finish(result='interrupted',error=None):
@@ -113,9 +114,7 @@ def record(camera_index=1):
                             take.append(frame.image,elapsed,frame.sequence,key)
                             status.set(f'録画中 {take.count}フレーム / {elapsed:.1f}秒  |  ローカル保存・音声なし')
                     last_sequence=frame.sequence
-                    thumb=cv2.resize(frame.image,(800,450))[:,:,::-1][:,::-1].copy()
-                    photo=tk.PhotoImage(data=b'P6\n800 450\n255\n'+thumb.tobytes(),format='PPM')
-                    preview.configure(image=photo);preview.image=photo
+                    camera_display.update_tk_preview(preview, frame.image)
                 window.after(10,tick)
             except Exception as exc:
                 countdown=None;finish('failed',str(exc));messagebox.showerror('撮影エラー',str(exc));window.destroy()
@@ -125,6 +124,6 @@ def record(camera_index=1):
         if camera:camera.__exit__()
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--camera',type=int,default=1)
+    parser=argparse.ArgumentParser(allow_abbrev=False);camera_display.add_argument(parser);parser.add_argument('--camera',type=int,default=1)
     args=parser.parse_args();record(args.camera)
 if __name__=='__main__':main()

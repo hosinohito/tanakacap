@@ -1,4 +1,5 @@
 """Direct head pose with independent CUDA region acquisition and loss handling."""
+from . import camera_display
 import json
 import time
 from contextlib import nullcontext
@@ -82,10 +83,11 @@ class HeadOnlyModel:
 
 
 def run(args):
+    args.preview = camera_display.allowed()
     from .__main__ import output_folder, environment, parent_running, roi_for, stats, write_json
     automatic = args.head_roi_mode == 'auto'
     if not automatic and args.roi is None and not args.preview:
-        raise ValueError("Fixed head crop requires --roi X Y W H, or --preview")
+        raise ValueError("Fixed head crop requires --roi X Y W H, or the full camera display startup option")
     output = None if args.no_log else output_folder("head-only")
     model = detector = camera = video = sender = None
     rows = []
@@ -131,7 +133,7 @@ def run(args):
                     if not ok: break
                     acquired = time.perf_counter()
                 if not automatic and roi is None:
-                    roi = list(cv2.selectROI("Select head including a small margin; Enter confirms", image, False))
+                    roi = list(camera_display.select_roi("Select head including a small margin; Enter confirms", image, False))
                     cv2.destroyAllWindows()
                     if roi[2] == 0 or roi[3] == 0: break
                     print("Fixed head crop selected. Keep head inside; P pauses; R reselects.", flush=True)
@@ -167,7 +169,7 @@ def run(args):
                         cv2.rectangle(canvas, (x,y), (x+w,y+h), (0,220,255), 2)
                     cv2.putText(canvas, "HEAD ONLY | P pause / R reset / S select / Q quit | " + timing['region_state'],
                                 (10,25), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
-                    cv2.imshow("tanakacap head-only experimental", canvas)
+                    camera_display.show("tanakacap head-only experimental", canvas)
                     key = cv2.waitKey(1) & 255
                     if key in (27, ord("q")): break
                     if key == ord("p"):
@@ -179,7 +181,7 @@ def run(args):
                         tracker = HeadRegionTracker()
                         gate.reset()
                     if key == ord('s') and automatic:
-                        chosen = list(cv2.selectROI('Select target head; Enter confirms', image, False))
+                        chosen = list(camera_display.select_roi('Select target head; Enter confirms', image, False))
                         cv2.destroyWindow('Select target head; Enter confirms')
                         if chosen[2] > 0 and chosen[3] > 0:
                             roi = chosen

@@ -26,7 +26,15 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 | `tanakacap-motion-auto-expressions.bat` | 自動独自キー方式で自作モーション再生 | カメラなし・非記録・無期限 |
 | `tanakacap-compare-expressions.bat` | 従来デモ／既存キー／自動独自キーの顔拡大比較動画の場所を開く | 保存動画 |
 
-通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
+通常はカメラ番号1。実写のカメラ映像は表示しない。検証版・非記録版ともアバターを閉じると推論が終了する。端末ではCtrl+Cでも終了できる。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
+
+実写表示は次の長いオプションを**Pythonプロセスの起動時に完全一致で指定した場合だけ**許可する。通常bat・診断・比較撮影は非表示。旧`--preview`やオプションの省略形は拒否する。設定JSON・環境変数・UI・ショートカットから自動で有効にしない。
+
+```text
+--explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only
+```
+
+必要な場合に限り、`python -m capture_lab benchmark ...`または`python -m capture_lab.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
 
 現在の試行設定は`-FaceSource body3d -HeadPoseMode pnp`。頭はPnPを維持し、口輪郭も固定テンプレートで正面化して、モデルの推定Zを使わない。`-HeadPoseMode pnp_depthmouth`で直前のZ口輪郭へ戻せる。比較動画は`tanakacap-compare-face.bat`、旧Z方式の実カメラ起動は`tanakacap-test-mouth-z.bat`。[今回の比較と時間フィルター](docs/MOUTH_NO_Z_TRIAL.md)。ピッチもZにする過去試行`depth3d`は通常へ戻さない。
 

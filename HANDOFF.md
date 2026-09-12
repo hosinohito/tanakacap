@@ -1,5 +1,15 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 実写の画面表示を長い専用起動引数だけに制限
+
+ユーザー指定：カメラ映像は特別に長い起動オプションがない限り画面へ出さず、今後の実装でも一貫して守る。完全一致の --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only のみ許可。旧--previewを削除、argparse省略形拒否。capture_lab/camera_display.pyで実プロセスsys.argvを毎回確認してOpenCV表示/ROI選択/Tk画像生成を守る。診断・設定値・UI・ホットキー・環境変数による許可は作らない。録画映像や重畳画像も対象。標準ランチャーへ長い引数を自動追加しない。
+
+全機能/頭専用の表示、頭の手動ROI、比較撮影の実写を共通ガードへ移した。通常batの常時--previewを撤去。比較撮影は映像なしで文字ガイド/開始/中断/録画を利用可能。固定頭ROIは通常数値指定必須、画面上の選択は専用引数が必要。アバター表示とOBS/録画保存は別、停止手段はアバター終了または端末Ctrl+C。通常検証版も--parent-pidでPlayer終了に追従する。
+
+245 tests成功（results/pytest-camera-display-complete）。短縮/旧フラグ拒否、完全一致受理、無許可のimshow/selectROI/Tk変換不達、設定preview=Trueによる頭選択迂回拒否、許可非永続、capture_lab/tools内の表示API集中を検査。実カメラ/実写の画面表示なし、Unity変更なし。PowerShell構文検査とdesktop bat更新済み。README/SPEC0.71/HEAD_ONLY/LAUNCH_MODES/AGENTS更新。今後表示手段を増やす際はガードと構造検査を必ず拡張する。
+
+次はユーザーの指定作業。映像表示をしなくても実カメラをエージェントが勝手に試験してよい意味ではない。比較用実写のローカル保存やアバター動画は維持。
+
 ## 2026-09-13 — 通常口角の無作用既定・任意調整とARKit非対称確認
 
 ユーザー指定で通常existingのガンマ/開口時上げ抑制/強調は既定1/0/0（追加調整による影響なし）。以前は通常版にも2/.9が固定適用されていたが、今回外して任意設定へ変更。auto-customのモード既定は2/.9/0のまま。tracking-settings.jsonのmouth_corner_gamma/mouth_open_smile_suppressionはnullでモード既定、数値で共通上書き。PowerShell -MouthCornerGamma（.25〜4）/-MouthOpenSmileSuppression（0〜1）、既存-MouthCornerEmphasis（0〜1）を優先。Playerにも同名kebab引数。Driverプロパティは将来UI接続用、UI画面はまだない。

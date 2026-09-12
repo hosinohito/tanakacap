@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最優先の表示ルール（2026-09-13）：実写のカメラ映像（録画由来/切出し/診断重畳も含む）は、Python起動時に完全一致の --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only がある場合以外、画面へ出さない。通常bat/診断/頭ROI選択/比較撮影/将来UIも共通。短縮形・旧--preview・JSON・環境変数・記憶したUI状態・ホットキーで許可を代替しない。長い引数を標準ランチャーに自動追加しない。実写表示はcapture_lab/camera_display.pyのガードを通す。別GUI/ブラウザ/ツール画像表示への迂回を作らない。tests/test_camera_display.pyを維持し、新しい表示API/入口を追加したら検査範囲も拡張する。アバター表示/OBS出力や録画保存とは別の要件。実カメラ試験の事前相談ルールも引き続き有効。
+
 最新（2026-09-13）：通常既存キー版も口角のガンマ/開口時上げ抑制/強調を調整可能、未設定は1/0/0（追加作用なし）。自動独自キーは2/.9/0を維持。JSON/起動指定と将来UI接続を用意。Perfect Sync/ARKitのmouthLeft/Rightと左右smile/frownがあれば通常版も横寄せ/非対称を駆動する。HAOLAN通常版の不足と機能全体の未実装を混同しない。
 
 最新（2026-09-13）：眉を実装し旧表情のデモをbuilds/demos/haolan-custom-browsへ保存（ソース6806913）、上書きしない。通常はexpression-mode existing：機能別ARKit/Perfect Sync→MMD→VRC、目線を含め独自キーを生成しない。auto-customは任意の実験方式で、過去の左右口角・唇限定横寄せ・瞳限定移動を踏襲。眉専用比較動画は不要。Perfect Sync推論の再実装ではない。docs/EXPRESSION_PORTABILITY.mdとHANDOFF先頭を参照。

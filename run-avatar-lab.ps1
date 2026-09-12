@@ -124,7 +124,8 @@ try {
     if ($HeadOnly) { $taskExtra+=@('--head-only','--head-roi-mode',$HeadRoiMode); if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
     if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }
     if ($NoPersonDetector) { $taskExtra+='--fixed-roi' }
-    if ($NoLog) { $taskExtra += @('--no-log','--parent-pid',$taskPlayer.Id); $Frames=0 }
+    $taskExtra += @('--parent-pid',$taskPlayer.Id)
+    if ($NoLog) { $taskExtra += '--no-log'; $Frames=0 }
     if ($Diagnose -and -not $NoLog) { $taskExtra += '--landmarks' }
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
     if (-not $NoGaze -and $taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
@@ -144,7 +145,7 @@ try {
     elseif ($taskGazeSettings.shoulder_yaw_mode) { $taskExtra += @('--shoulder-yaw-mode',$taskGazeSettings.shoulder_yaw_mode) }
     if ($taskGazeSettings.arm_depth_mode) { $taskExtra += @('--arm-depth-mode',$taskGazeSettings.arm_depth_mode) }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
-    & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
+    & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --unity-port 39540 --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }
 } finally {
     if ($taskPlayer -and -not $taskPlayer.HasExited) { $null = $taskPlayer.CloseMainWindow() }
