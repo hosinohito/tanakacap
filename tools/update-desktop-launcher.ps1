@@ -3,9 +3,32 @@ $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskUiScript=Join-Path $taskRoot 'run-ui.ps1'
 $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
-$taskUiTarget=Join-Path $taskDesktop 'tanakacap.bat'
+$taskMainDesktop=[IO.Path]::GetFullPath($taskDesktop)
+$taskDesktop=Join-Path $taskMainDesktop 'tanakacap-tools'
+if (-not (Test-Path -LiteralPath $taskDesktop)) { New-Item -ItemType Directory -Path $taskDesktop | Out-Null }
+# Only this project's known auxiliary launchers are moved. Main launchers stay visible.
+$taskAuxiliaryNames=@(
+ 'tanakacap-avatar-files.bat','tanakacap-compare-analyze.bat','tanakacap-compare-arm-depth.bat',
+ 'tanakacap-compare-body.bat','tanakacap-compare-capture.bat','tanakacap-compare-expressions.bat',
+ 'tanakacap-compare-f.bat','tanakacap-compare-face.bat','tanakacap-compare-fp16.bat',
+ 'tanakacap-compare-hamer.bat','tanakacap-compare-head-follow.bat','tanakacap-compare-physbone.bat',
+ 'tanakacap-compare-shoulder.bat','tanakacap-demo-custom-brows.bat','tanakacap-head-only.bat',
+ 'tanakacap-motion-auto-expressions.bat','tanakacap-test-30fps.bat','tanakacap-test-auto-expressions.bat',
+ 'tanakacap-test-face-original.bat','tanakacap-test-face-pnp.bat','tanakacap-test-fp16.bat',
+ 'tanakacap-test-mouth-z.bat','tanakacap-test-no-preview.bat','tanakacap-test-shoulder.bat')
+foreach ($taskName in $taskAuxiliaryNames) {
+    $taskOld=[IO.Path]::GetFullPath((Join-Path $taskMainDesktop $taskName))
+    $taskNew=[IO.Path]::GetFullPath((Join-Path $taskDesktop $taskName))
+    if ([IO.Path]::GetDirectoryName($taskOld) -ne $taskMainDesktop -or
+        [IO.Path]::GetDirectoryName($taskNew) -ne $taskDesktop) { throw 'Launcher path escaped its intended directory' }
+    if (Test-Path -LiteralPath $taskOld -PathType Leaf) {
+        if (Test-Path -LiteralPath $taskNew) { throw "Both launcher paths exist; preserve and inspect: $taskName" }
+        Move-Item -LiteralPath $taskOld -Destination $taskNew
+    }
+}
+$taskUiTarget=Join-Path $taskMainDesktop 'tanakacap.bat'
 [IO.File]::WriteAllText($taskUiTarget,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`"`r`n",[Text.Encoding]::Default)
-$taskTarget = Join-Path $taskDesktop 'tanakacap-test.bat'
+$taskTarget = Join-Path $taskMainDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar-lab.ps1'
 $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
@@ -13,7 +36,7 @@ $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass 
 Write-Output $taskTarget
 
 $taskComparisonScript = Join-Path $taskRoot 'run-comparison-lab.ps1'
-$taskFaceCapture = Join-Path $taskDesktop 'tanakacap-face-capture.bat'
+$taskFaceCapture = Join-Path $taskMainDesktop 'tanakacap-face-capture.bat'
 [IO.File]::WriteAllText($taskFaceCapture,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode capture -Profile face-head`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskFaceCapture
 $taskHeadFollowVideo=Join-Path $taskRoot 'results/avatar-videos/head-follow/face-closeup.mp4'
@@ -62,11 +85,11 @@ $taskPackageContents = "@echo off`r`nexplorer.exe `"$taskPackageFolder`"`r`n"
 Write-Output $taskPackageTarget
 
 # Separate non-recording, unlimited launchers. The diagnostic launcher stays available.
-$taskLiveTarget = Join-Path $taskDesktop 'tanakacap-live.bat'
+$taskLiveTarget = Join-Path $taskMainDesktop 'tanakacap-live.bat'
 $taskLiveContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -NoLog`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskLiveTarget,$taskLiveContents,[Text.Encoding]::Default)
 Write-Output $taskLiveTarget
-$taskDemoTarget = Join-Path $taskDesktop 'tanakacap-motion.bat'
+$taskDemoTarget = Join-Path $taskMainDesktop 'tanakacap-motion.bat'
 $taskDemoScript = Join-Path $taskRoot 'run-motion-lab.ps1'
 $taskDemoContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskDemoScript`"`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskDemoTarget,$taskDemoContents,[Text.Encoding]::Default)
