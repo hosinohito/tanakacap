@@ -1040,3 +1040,9 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 ## 2026-09-13 — 眉強調の顔アップ動画を提供
 
 ユーザーの動画化指定。作成済みデモ用アバターの眉gain2再生（results/brow-demo/demo.mp4）からface-closeup.mp4を出力。640×480の顔領域を960×720へ拡大、約30秒。全デコード成功。目の閉じ処理は変更せず、実写表示/実カメラ/目視評価なし。動画はGit除外、既知の口寄せ制限はHANDOFF参照。
+
+## 2026-09-13 — 眉の従来/2倍比較と左右独立の説明
+
+比較動画指定により同じ新録画・デモtcap・最新Playerでbrow-1x/brow-2xを作成。tools/prepare_brow_gain_comparison.pyで853packetの眉4値以外と時刻の一致を検査。gain2は既存の眉動画の値とも一致。初回は欠測packetの眉キー欠落を検査側で扱えず中断し修正、失敗出力はbrow-gain-incompleteへ保存。比較動画はresults/avatar-videos/brow-gain、顔アップは左従来/右2倍。実カメラ/実写表示/エージェント目視なし。
+
+途中で眉の左右独立について質問。検出は左右内外4値で独立だが、デモ表示は共通MMD眉キーへ集約されて独立ではないと説明。左右別キーがある場合の汎用マッピングは対応済み、デモ眉の左右分割キーは未実装。今回追加していない。

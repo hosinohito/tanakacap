@@ -40,7 +40,8 @@ def run(output,comparison=None):
   meta=json.loads(Path(str(video)+'.json').read_text());assert meta['status']=='complete' and meta['packets']==expected
   meta['player']=str(selected);meta['player_args']=extra
   meta['assembly_sha256']=sha(selected.parent/'TanakaCap_Data/Managed/Assembly-CSharp.dll')
-  meta['avatar_sha256']=sha(selected.parent/'avatars/haolan.tcap')
+  avatar=Path(extra[extra.index('--avatar')+1]) if '--avatar' in extra else selected.parent/'avatars/haolan.tcap'
+  meta['avatar_path']=str(avatar.resolve());meta['avatar_sha256']=sha(avatar)
   videos.append(video);report[name]=meta;print(name,meta['frames'],meta['duration'],flush=True)
  if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
@@ -49,7 +50,7 @@ def run(output,comparison=None):
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  rendered=videos+[combined]
- if list(inputs) in (['fixed','adaptive'], ['pnp','size2d'], ['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16'],['custom-demo','existing','auto-custom']):
+ if list(inputs) in (['brow-1x','brow-2x'], ['fixed','adaptive'], ['pnp','size2d'], ['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16'],['custom-demo','existing','auto-custom']):
   closeup=output/'face-closeup.mp4'
   close_labels=[label.replace('pad=iw:', 'crop=640:480:320:0,scale=960:720,pad=iw:') for label in labels]
   close_filter=';'.join(close_labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
