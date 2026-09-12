@@ -17,27 +17,6 @@ class GpuRunner:
         self.binding = None
         self.outputs = []
 
-    def run_device(self,value,input_name):
-        """Consume a stable CUDA preprocessing output without a CPU round trip."""
-        if self.mode=='run':raise ValueError('Device input requires binding or graph')
-        if self.input is None:
-            self.input=value;self.input_name=input_name
-            self.binding=self.session.io_binding()
-            self.binding.bind_ortvalue_input(input_name,value)
-            self.names=[o.name for o in self.session.get_outputs()]
-            for name in self.names:self.binding.bind_output(name,'cuda',0)
-            options=ort.RunOptions();options.add_run_config_entry('gpu_graph_id','-1')
-            self.session.run_with_iobinding(self.binding,options)
-            samples=self.binding.get_outputs()
-            self.binding.clear_binding_outputs()
-            for name,sample in zip(self.names,samples):
-                output=ort.OrtValue.ortvalue_from_shape_and_type(sample.shape(),np.float32,'cuda',0)
-                self.outputs.append(output);self.binding.bind_ortvalue_output(name,output)
-        elif self.input.data_ptr()!=value.data_ptr() or self.input_name!=input_name:
-            raise ValueError('CUDA input buffer changed')
-        self.session.run_with_iobinding(self.binding)
-        return self.binding.copy_outputs_to_cpu()
-
     def run(self, tensor, input_name, output_names=None, return_device=False):
         if self.mode == 'run':
             return self.session.run(output_names, {input_name:tensor})

@@ -16,7 +16,7 @@ from .models import catalog, model_path, sha256
 from .gpu_runner import GpuRunner, provider_options
 
 
-def preprocess_geometry(roi,input_wh):
+def preprocess(frame, roi, input_wh, color_order='BGR'):
     x, y, w, h = roi
     if w <= 0 or h <= 0:
         raise ValueError('ROI must have positive width and height')
@@ -31,12 +31,6 @@ def preprocess_geometry(roi,input_wh):
     sx, sy = iw / scale[0], ih / scale[1]
     affine = np.array([[sx, 0, iw / 2 - center[0] * sx],
                        [0, sy, ih / 2 - center[1] * sy]], dtype=np.float32)
-    return center,scale,affine
-
-
-def preprocess(frame, roi, input_wh, color_order='BGR'):
-    center,scale,affine=preprocess_geometry(roi,input_wh)
-    iw,ih=input_wh
     crop = cv2.warpAffine(frame, affine, (iw, ih), flags=cv2.INTER_LINEAR)
     if color_order=='RGB': crop=crop[:,:,::-1]
     crop = (crop.astype(np.float32) - np.array([123.675, 116.28, 103.53], np.float32))
@@ -74,12 +68,9 @@ def provider_summary(path):
 
 
 class SimCCModel:
-    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False, preprocess_mode='legacy', gpu_decode=False, gpu_preprocess=False):
+    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False, preprocess_mode='legacy', gpu_decode=False):
         if preprocess_mode not in ('legacy','crop'): raise ValueError('Unknown preprocessing mode')
         self.preprocess_mode=preprocess_mode
-        self.gpu_preprocess=gpu_preprocess
-        self.preprocessor=None
-        self.profile_folder=output_dir
         self.info = catalog()[name]
         path = model_path(name)
         if not path.exists():
@@ -133,26 +124,19 @@ class SimCCModel:
         self.decode_diagnostics = None
         self.identity = {'id': name, 'sha256': sha256(original_path),
                          'gpu_decode':self.gpu_decode,
-                         'gpu_preprocess':self.gpu_preprocess,
                          'execution_mode':self.runner.mode,
                          'providers': self.session.get_providers(), 'input_shape': shape,
                          'onnxruntime_version': ort.__version__}
 
     def predict(self, frame, roi):
         start = time.perf_counter()
-        if self.gpu_preprocess:
-            from .gpu_preprocess import GpuPreprocessor
-            center,scale,affine=preprocess_geometry(roi,self.info['input_wh'])
-            if self.preprocessor is None:
-                self.preprocessor=GpuPreprocessor(frame.shape,self.info['input_wh'],self.info.get('color_order','BGR'),self.profile_folder)
-            tensor=self.preprocessor.run(frame,affine)
-        elif self.preprocess_mode=='crop':
+        if self.preprocess_mode=='crop':
             tensor,center,scale=preprocess(frame,roi,self.info['input_wh'],self.info.get('color_order','BGR'))
         else:
             input_frame = frame[:,:,::-1] if self.info.get('color_order') == 'RGB' else frame
             tensor, center, scale = preprocess(input_frame, roi, self.info['input_wh'])
         ready = time.perf_counter()
-        outputs = self.runner.run_device(tensor,self.input_name) if self.gpu_preprocess else self.runner.run(tensor,self.input_name)
+        outputs = self.runner.run(tensor,self.input_name)
         self.calls += 1
         inferred = time.perf_counter()
         if self.gpu_decode:
