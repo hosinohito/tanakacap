@@ -9,7 +9,7 @@
 3. OBSを次回起動するとSpout2 Captureが使える。送信元TanakaCap、Composite modeはPremultiplied Alphaを選ぶ。背景ソースを下へ置く。必要ならソースを画面へ合わせる。
 4. Unity側はbuilds/lab/TanakaCapExporter.unitypackageを導入し、アバタールートを選択→TanakaCap/Export selected avatar (HAOLAN profile)。現行はHAOLAN用表情プロファイルのみ。出力先には新しいファイル名を選ぶ。出力と同名の.report.jsonに省略機能と対象を記録する。
 
-書き出しと再生のUnityは2022.3.22f1/Windows64/Built-inを一致させる。VRCプロジェクト一般への導入互換性は別途検証が必要。Modular Avatar等のビルド時処理は未対応で、ロードできる未知スクリプトはエラーにする。VRC/欠損スクリプトはパス付き警告で省略する。PhysBoneを変換済みとは扱わない。
+書き出しと再生のUnityは2022.3.22f1/Windows64/Built-inを一致させる。VRCプロジェクト一般への導入互換性は別途検証が必要。Modular Avatar等のビルド時処理は未対応で、ロードできる未知スクリプトはエラーにする。VRC/欠損スクリプトはパス付き警告で省略する。PhysBoneは後続実装で設定の互換変換を追加済み。本家の動作一致は未確認で、範囲は[揺れ物の現仕様](SECONDARY_MOTION.md)を参照。
 
 ## パッケージ
 

@@ -762,3 +762,11 @@
 - モーションは外部素材/実人物録画を使わないProceduralMotion.csの24秒周期。モーション専用0BSD許諾をdocs/PROCEDURAL_MOTION_LICENSE.txtとbuilds/lab同名ファイルに配置。HAOLAN等を再配布できる意味ではない。
 - 未確認：本家VRChatとの同一軌跡比較/減衰時間校正、実人物での自然さ、SDKありの実改変プロジェクト、Simplified/Polar/Plane/版1.1の実素材、非一様scale、標準/他人Collider、Stretch/Squish/Grab/Animator挙動、30分とOBS併用性能。初期段階の独立互換変換であり完全一致とは書かない。次は通常batでの見た目評価と合法的なVRChat実行結果との比較、フェーズ4の品質/性能評価。
 - 検証用Playerは終了済み。実写動画/アバター/結果はGit除外のまま。外部pushなし。
+
+## 2026-09-12 — READMEをセットアップ・ビルドの入口として整備
+
+- ユーザー指定でREADMEを現在のセットアップ、Unityビルド、成果物、通常/非記録/モーション起動、Exporter、OBS、検証、トラブル対応まで整理。プロジェクトの趣旨・制約・素材クレジット・引き継ぎへの導線は維持。古い進捗の重複は整理し、過去の内容はGit履歴と既存PROGRESSに残る。
+- setup-lab.ps1に虹彩モデル取得が含まれない点、prepare_unity.pyが要求する正確なZIP名、BuildLabが規約PDFを必須コピーする点を実ソースで確認し明記。虹彩の追加取得/安全な抽出/SHA256照合、results作成、Unityパス指定、bat再生成を案内。SAM/HaMeRは通常導入の必須ではない。
+- AGENTSのREADME役割に継続メンテナンスを明文化。依存版・素材・ビルド/起動引数・成果物・設定・OBS連携変更時は同じ変更でREADMEを更新する。READMEは現在手順、PROGRESSは履歴、HANDOFFは再開地点に分ける。リンク先PHASE3_PACKAGE_OBSの旧「PhysBone未変換」を現行の互換変換へ訂正。
+- 検証：READMEのローカルリンク22件が実在、PowerShellコード例14件の構文解析成功。虹彩の入れ子archive選択・SHA256・既存モデルとの一致を、取得済みファイルで読み取り検証。新規PCの一括導入/再ダウンロード/Unity再ビルドは今回未実施（文書のみの変更）。新しい依存導入・追跡/揺れ実装変更はない。
+- 次の実装・品質残件は下記のPhysBone互換変換とフェーズ4の引き継ぎを継続する。
