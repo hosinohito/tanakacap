@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新結果（2026-09-13）：口角強調度0〜1連続、既定0で追加増幅なし、1で従来へ。将来UIに追加。J/K/Lは全てFull HD60＋OBSで比較しrevert済み。Jは同等で利点確認できず、Kは速いが推定差大、Lは僅かに遅い。G+Iを維持し試行フラグは残さない。最終228 tests。docs/MOUTH_EMPHASIS_AND_OPTIMIZATION_JKL.mdとHANDOFF先頭。
+
 最新UI要件（2026-09-13）：推論切替UIに実測の推論速度を表示する。描画fps/Player受信Hzと混同しない。UI実装は将来。docs/SHARED_PREVIEW.md参照。
 
 最新指定（2026-09-13）：描画共有・自由解像度・プレビュー非表示の3案を実装。既定Full HD。将来の推論切替UIに60/推論同期/30/自由入力を置き、数値上限より速い推論は計算開始前に抑える予定。UI/推論上限は今回未実装。最新検証はHANDOFFとdocs/SHARED_PREVIEW.md。揺れ物調整・A/E保留を維持。
