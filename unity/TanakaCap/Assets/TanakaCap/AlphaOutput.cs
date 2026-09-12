@@ -20,6 +20,8 @@ namespace TanakaCap
         Material previewMaterial;
         int previewMask;
         public double RenderSubmitMilliseconds { get; private set; }
+        public long RenderedFrames {get;private set;}
+        bool inferenceSync;AvatarDriver syncDriver;long lastPacket=-1;float lastOutput=-1;
         Camera outputCamera;
         RenderTexture texture;
         SpoutSender sender;
@@ -31,6 +33,8 @@ namespace TanakaCap
         {
             EdgeAntialiasing.Active=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-edge-aa")<0;
             var startupArgs=Environment.GetCommandLineArgs();
+            inferenceSync=Array.IndexOf(startupArgs,"--render-sync")>=0;
+            if(Array.IndexOf(startupArgs,"--ui-status-port")>=0)gameObject.AddComponent<UiStatusFeedback>();
             SharedPreview=Array.IndexOf(startupArgs,"--legacy-preview")<0;
             PreviewVisible=Array.IndexOf(startupArgs,"--no-preview")<0;
             int heightIndex=Array.IndexOf(startupArgs,"--output-height");
@@ -103,8 +107,16 @@ namespace TanakaCap
             }
             if(outputCamera && texture && !quitting)
             {
+                if(inferenceSync){
+                    if(!syncDriver)syncDriver=FindObjectOfType<AvatarDriver>();
+                    long sequence=syncDriver?syncDriver.ReceivedPackets:0;
+                    bool motion=Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-demo")>=0;
+                    if(!motion && sequence==lastPacket && Time.unscaledTime-lastOutput<.1f)return;
+                    lastPacket=sequence;
+                }
                 var start=System.Diagnostics.Stopwatch.GetTimestamp();
                 outputCamera.Render();
+                RenderedFrames++;lastOutput=Time.unscaledTime;
                 RenderSubmitMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-start)*1000.0/System.Diagnostics.Stopwatch.Frequency;
             }
         }

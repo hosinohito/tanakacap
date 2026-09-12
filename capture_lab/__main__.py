@@ -1,3 +1,4 @@
+from .live_status import LiveStatus
 from . import camera_display
 import argparse
 import importlib.metadata
@@ -123,6 +124,7 @@ def benchmark(args):
               'latency_note': 'Inference call includes tensor upload/output readback. Camera age starts AFTER capture read, not exposure. No end-to-end/display latency claim.',
               'quality_note': 'Confidence coverage is not measured accuracy. Synthetic input is performance-only.'}
     if output is not None: write_json(output / 'report.json', report)
+    live_status=LiveStatus(getattr(args, 'inference_limit', 0), getattr(args, 'status_port', None))
     model = body_model = detector = camera = video = sender = gaze = None
     body_retarget = BodyRetarget(args.observation_block,args.observation_stride,args.arm_depth_mode,args.shoulder_yaw_mode)
     face_filter = FaceFilter(args.observation_block,args.observation_stride)
@@ -184,6 +186,7 @@ def benchmark(args):
         last_acquired = None
         with (nullcontext(None) if args.no_log else (output / 'frames.jsonl').open('w', encoding='utf-8')) as log:
             for index in (count() if args.frames == 0 else range(args.warmup + args.frames)):
+                live_status.wait()
                 iteration_start = time.perf_counter()
                 if args.parent_pid and not parent_running(args.parent_pid): break
                 if camera:
@@ -329,6 +332,7 @@ def benchmark(args):
                 if index >= args.warmup:
                     rows.append(row)
 
+                live_status.complete((done-read_done)*1000, packet.get('tracked',False) if sender else pose_executed)
                 previous_points, previous_scores, previous_time = points, scores, done
                 if camera:
                     last_acquired = last_sequence, acquired
@@ -435,6 +439,7 @@ def benchmark(args):
             camera.__exit__()
         if video:
             video.release()
+        live_status.close()
         if args.preview:
             cv2.destroyAllWindows()
         if output is not None: write_json(output / 'report.json', report)
@@ -502,6 +507,8 @@ def main(argv=None, *, inference_mode=None):
             sub.add_argument('--warmup', type=int, default=20)
             sub.add_argument('--threshold', type=float, default=.3)
             camera_display.add_argument(sub)
+            sub.add_argument('--inference-limit',type=float,default=0,help='Maximum inference starts per second; 0 is unlimited')
+            sub.add_argument('--status-port',type=int,help='Numeric loopback UI telemetry')
             sub.add_argument('--snapshot', action='store_true', help='Explicitly save one annotated diagnostic frame locally')
             sub.add_argument('--landmarks', action='store_true', help='Save numeric landmarks locally; never raw camera frames')
             sub.add_argument('--unity-port', type=int, help='Send experimental controls to Unity over loopback UDP')

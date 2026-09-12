@@ -1,5 +1,6 @@
 """Direct head pose with independent CUDA region acquisition and loss handling."""
 from . import camera_display
+from .live_status import LiveStatus
 import json
 import time
 from contextlib import nullcontext
@@ -89,6 +90,7 @@ def run(args):
     if not automatic and args.roi is None and not args.preview:
         raise ValueError("Fixed head crop requires --roi X Y W H, or the full camera display startup option")
     output = None if args.no_log else output_folder("head-only")
+    live_status=LiveStatus(getattr(args, 'inference_limit', 0), getattr(args, 'status_port', None))
     model = detector = camera = video = sender = None
     rows = []
     report = dict(status="running", environment=environment(), arguments=vars(args),
@@ -119,6 +121,7 @@ def run(args):
         with nullcontext(None) if output is None else (output/"frames.jsonl").open("w", encoding="utf-8") as log:
             for index in (count() if args.frames == 0 else range(args.frames + args.warmup)):
                 if args.parent_pid and not parent_running(args.parent_pid): break
+                live_status.wait()
                 start = time.perf_counter()
                 if camera:
                     frame = camera.mailbox.next(after=sequence)
@@ -162,6 +165,7 @@ def run(args):
                               region_score=tracker.score if automatic else None,
                               read_to_send_ms=(time.perf_counter()-read_done)*1000,
                               raw_angles=None if values is None else values.tolist(), sent_packet=packet)
+                live_status.complete((time.perf_counter()-read_done)*1000, filtered is not None)
                 if args.preview:
                     canvas = image.copy()
                     if roi is not None:
@@ -218,5 +222,6 @@ def run(args):
             if sender: sender.close()
             if camera: camera.__exit__()
             if video: video.release()
+            live_status.close()
             if args.preview: cv2.destroyAllWindows()
             if output: write_json(output/"report.json", report)
