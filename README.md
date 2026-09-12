@@ -334,3 +334,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 追加高速化F：`-DetectorGraph`で同じ人物検出の固定部分をGraph化、`-NoDetectorGraph`で解除。効果が小さいため通常はOFF。[F〜Iの進捗・測定条件](docs/FURTHER_OPTIMIZATION.md)。
 
 前処理は`preprocess_mode=crop`（切り出し後のRGB化）を通常採用。`-PreprocessMode legacy`で以前へ戻せる。入力テンソルは同一。[計測](docs/FURTHER_OPTIMIZATION.md)。
+
+左右眼は`batch_eyes=true`で1回の推論にまとめる。`-NoBatchEyes`で従来へ、`-BatchEyes`で明示指定。派生ONNXは初回にmodels内へ自動生成し原本を保持。Hの並行処理は計測で遅くなったためrevert済み。[結果](docs/FURTHER_OPTIMIZATION.md)。

@@ -19,6 +19,8 @@
     [ValidateSet('separate','body3d')][string]$FaceSource,
     [ValidateSet('pnp','legacy','depth3d','pnp_depthmouth')][string]$HeadPoseMode,
     [ValidateSet('legacy','crop')][string]$PreprocessMode,
+    [switch]$BatchEyes,
+    [switch]$NoBatchEyes,
     [switch]$DetectorGraph,
     [switch]$NoDetectorGraph,
     [switch]$NoGaze,
@@ -95,6 +97,7 @@ try {
     if (-not $PreprocessMode) { $PreprocessMode=$taskGazeSettings.preprocess_mode }
     if (-not $PreprocessMode) { $PreprocessMode='legacy' }
     $taskExtra+=@('--preprocess-mode',$PreprocessMode)
+    if (($BatchEyes -or $taskGazeSettings.batch_eyes) -and -not $NoBatchEyes) { $taskExtra+='--batch-eyes' }
     if (($DetectorGraph -or $taskGazeSettings.detector_graph) -and -not $NoDetectorGraph) { $taskExtra+='--detector-graph' }
     if ($HeadOnly) { $taskExtra+=@('--head-only','--head-roi-mode',$HeadRoiMode); if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
     if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }

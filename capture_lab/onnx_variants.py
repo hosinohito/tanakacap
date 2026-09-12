@@ -27,3 +27,26 @@ def split_detector(path):
         temporary=target.with_suffix('.tmp')
         onnx.save(model,temporary);temporary.replace(target)
     return fixed,tail
+
+
+def iris_batch_model(path):
+    path=Path(path)
+    target=path.parent/('iris-batch2-v1-'+sha256(path)[:16]+'.onnx')
+    if target.exists():return target
+    model=onnx.load(path)
+    if len(model.graph.input)!=1 or model.graph.input[0].type.tensor_type.shape.dim[0].dim_value!=1:
+        raise ValueError('Unexpected iris input batch')
+    initial={v.name:v for v in model.graph.initializer}
+    shapes={n.input[1] for n in model.graph.node if n.op_type=='Reshape'}
+    for name in shapes:
+        value=onnx.numpy_helper.to_array(initial[name]).copy()
+        if value.tolist()!=[1,-1]:raise ValueError('Unexpected iris reshape')
+        value[0]=2
+        initial[name].CopyFrom(onnx.numpy_helper.from_array(value,name))
+    for value in list(model.graph.input)+list(model.graph.output):
+        value.type.tensor_type.shape.dim[0].dim_value=2
+    del model.graph.value_info[:]
+    model=onnx.shape_inference.infer_shapes(model)
+    onnx.checker.check_model(model)
+    temporary=target.with_suffix('.tmp');onnx.save(model,temporary);temporary.replace(target)
+    return target

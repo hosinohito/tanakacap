@@ -76,7 +76,7 @@ class SharedFace:
         self.gaze=None
         if settings.get('gaze_enabled'):
             from .gaze import IrisGaze
-            self.gaze=IrisGaze(output,b,stride,settings['gaze_reference'],execution_mode=execution_mode)
+            self.gaze=IrisGaze(output,b,stride,settings['gaze_reference'],execution_mode=execution_mode,**({'batch_eyes':True} if settings.get('batch_eyes') else {}))
     def update(self,image,xy,scores,index,now,depth=None,depth_scores=None):
         p=packet_from_landmarks(xy,scores,index)
         start=time.perf_counter()
