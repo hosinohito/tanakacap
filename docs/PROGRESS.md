@@ -671,3 +671,10 @@
 - 最新質問はGPU低負荷・CPU2コア。CPU各ワーカー約1コア、CUDA実行あり。動画後の単独プロファイルで1frame約2.8〜3万kernel/2425同期、同期132〜147ms。MHR26回/314〜339ms。計測器負荷あり、GPU注釈と実演算を区別。4090演算能力の限界とは言わない。docs/SAM_PERFORMANCE.md。
 - tools/profile_sam_runtime.py、tools/audit_sam_profile.py、results/sam-setup/runtime-profile/trace-audit.jsonで再現。初期summaryのCPU/GPU同名区間混同を訂正し旧版保持、元traceは不変。実4trace集計と新規3テスト成功。本体177テスト成功済み、通常追跡や補正を変更していない。
 - 次：完成動画のユーザー評価を受け、MHR/動的処理/同期の実行経路を出力同等性を守って最適化検証。TensorRT・ネイティブMHR・低頻度併用は候補のみ、採用/30fpsは未決定。通常モデルは現行のまま。OBS実取り込み等の既存未確認事項も残る。
+
+## 2026-09-12 — ユーザーはViT-Hの品質を優先、実時間化/配布条件を調査
+
+- ユーザー評価：SAM両モデルの肘は非常に安定、最後のViT-Hは肩もよく、質ならViT-H。今回の比較動画での評価。通常ライブの採用確定ではない。
+- docs/VITH_REALTIME_DISTRIBUTION.mdに一次資料を確認した検討を記録。SAM Licenseは利用/改変/再配布の許諾あり、研究限定ではないが条件付き。MHRはApache-2.0。製品全依存の配布監査は未完了。
+- Fast SAM研究は参考になるが公開手順DINO中心、5090実演65ms。4090/ViT-H/同じ肩品質で30Hzの証拠ではない。MHR→SMPL変換の倍率は本件に適用しない。
+- 提案：ViT-H fullを品質基準に演算内容を保つ最適化→エンジン/演算統合→可逆な処理削減→ライブ＋Unity＋OBS評価。15Hz級の初期到達点案と30Hz検証は保証/確定要件でない。モデルパック分離案。顔/補正/通常実装は今回変更なし、実験も未実施。
