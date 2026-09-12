@@ -111,7 +111,8 @@ def benchmark(args):
         from .head_only import run
         return run(args)
     if getattr(args, 'no_body', False): args.body3d=False
-    output = None if args.no_log else output_folder(args.model)
+    face_name = 'rtmw3d-x-384' if args.face_source == 'body3d' else args.model
+    output = None if args.no_log else output_folder(face_name)
     print(f'Results: {output}', flush=True)
     report = {'status': 'running', 'environment': environment(), 'arguments': vars(args),
               'scope': '2D face diagnostic with optional learned 3D body (--body3d). Single person; no identity tracking. Approximate retargeting.',
@@ -131,12 +132,13 @@ def benchmark(args):
             sender = LocalSender(args.unity_port)
         profile_output = None if getattr(args, 'no_ort_profile', False) else output
         execution = {} if args.inference_mode=='run' else dict(execution_mode=args.inference_mode)
-        model = SimCCModel(args.model, profile_output, **execution)
+        model = SimCCModel(face_name, profile_output, **execution)
+        report['face_source'] = args.face_source
         if args.gaze:
             from .gaze import IrisGaze
             gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **execution)
         if args.body3d:
-            body_model = SimCCModel('rtmw3d-x-384', profile_output, **execution)
+            body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
             report['body_model'] = body_model.identity
             report['body_note'] = 'Learned relative depth; XY scale uses nominal 0.36m shoulder span. Not metric ground truth.'
@@ -145,7 +147,7 @@ def benchmark(args):
         dummy = np.zeros((args.height, args.width, 3), np.uint8)
         for _ in range(3):
             model.predict(dummy, [0, 0, args.width, args.height])
-            if body_model:
+            if body_model and body_model is not model:
                 body_model.predict(dummy,[0,0,args.width,args.height])
         report['initialization_pose_warmup_calls'] = 3
         region_tracker = None
@@ -206,7 +208,9 @@ def benchmark(args):
                     timing = {'preprocess_ms': 0., 'inference_call_ms': 0., 'postprocess_ms': 0., 'pipeline_ms': 0.}
                     pose_executed = False
                 if region_tracker: region_tracker.observe(points, scores)
-                timing['face_model_ms'] = timing['pipeline_ms']
+                primary_ms = timing['pipeline_ms']
+                timing['face_model_ms'] = 0. if body_model is model else primary_ms
+                timing['face_body_shared'] = body_model is model
                 timing['input_wait_read_ms'] = (read_done-iteration_start)*1000
                 timing['detector_ms'] = detect_ms
                 if region_tracker: timing.update(region_tracker.timing)
@@ -214,12 +218,16 @@ def benchmark(args):
                 body_xy = body_scores = None
                 timing['body3d_ms'] = 0.
                 if body_model and roi is not None:
-                    body_xy, body_scores, body_timing = body_model.predict(image,roi)
+                    if body_model is model:
+                        body_xy, body_scores = points.copy(), scores.copy()
+                        body_timing = {'pipeline_ms': primary_ms}
+                    else:
+                        body_xy, body_scores, body_timing = body_model.predict(image,roi)
                     # Out-of-frame landmarks (notably seated hips) are not observed.
                     inside = (body_xy[:,0]>=0)&(body_xy[:,0]<image.shape[1])&(body_xy[:,1]>=0)&(body_xy[:,1]<image.shape[0])
                     body_scores = np.where(inside,body_scores,0)
                     timing['body3d_ms'] = body_timing['pipeline_ms']
-                    timing['pipeline_ms'] += timing['body3d_ms']
+                    if body_model is not model: timing['pipeline_ms'] += timing['body3d_ms']
                 if sender:
                     timing['gaze_ms']=0.
                     controls_start=time.perf_counter()
@@ -313,7 +321,7 @@ def benchmark(args):
                     last_acquired = last_sequence, acquired
                 if args.preview:
                     display = annotate(image, points, scores, args.threshold,
-                                       [f'{args.model} | CUDA | 2D diagnostic',
+                                       [f'{face_name} | CUDA | XY diagnostic',
                                         f'Pipeline {timing["pipeline_ms"]:.1f} ms | frame {index}',
                                         ('Person detected' if pose_executed else 'No person - pose suppressed') + ' | Q / Esc: stop'],
                                        roi if roi is not None else [0, 0, image.shape[1], image.shape[0]])
@@ -326,7 +334,7 @@ def benchmark(args):
                         break
                 if args.snapshot and index == args.warmup:
                     canvas = annotate(image, points, scores, args.threshold,
-                                      [f'{args.model} | CUDA | 2D diagnostic',
+                                      [f'{face_name} | CUDA | XY diagnostic',
                                        'Person detected' if pose_executed else 'No person - pose suppressed'],
                                       roi if roi is not None else [0, 0, image.shape[1], image.shape[0]])
                     if not cv2.imwrite(str(output / 'diagnostic.png'), canvas):
@@ -339,6 +347,9 @@ def benchmark(args):
                 if not args.no_log and index and index % 100 == 0:
                     print(f'{index} frames processed', flush=True)
         report['execution'] = model.finish()
+        if body_model is model:
+            report['body_execution'] = {**report['execution'], 'shared_with_face': True}
+            body_model = None
         if gaze:
             report['gaze_execution']=gaze.finish()
             gaze=None
@@ -369,7 +380,7 @@ def benchmark(args):
                                          'detector_preprocess_ms','detector_inference_call_ms','detector_postprocess_ms')}
         report['coverage'] = {key: stats([row['coverage'][key] for row in rows]) for key in rows[0]['coverage']}
         report['skipped_camera_frames'] = sum(row['skipped_camera_frames'] for row in rows)
-        print(json.dumps({'status': report['status'], 'model': args.model, 'pipeline_ms': report['timings']['pipeline_ms'],
+        print(json.dumps({'status': report['status'], 'model': face_name, 'pipeline_ms': report['timings']['pipeline_ms'],
                           'execution': report['execution']}, indent=2), flush=True)
     except BaseException as exc:
         report['status'] = 'interrupted' if isinstance(exc,KeyboardInterrupt) else 'failed'
@@ -458,6 +469,7 @@ def main():
             sub.add_argument('--inference-mode',choices=('run','binding','graph'),default='run',help='Same CUDA models: legacy run, reusable GPU buffers, or CUDA graph replay')
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
+            sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
             sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')

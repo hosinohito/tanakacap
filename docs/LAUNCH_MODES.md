@@ -4,7 +4,9 @@
 
 | bat | 用途 | 動作記録 | 終了 |
 |---|---|---|---|
-| tanakacap-test.bat | 今回は頭専用autoのカメラ検証版 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test.bat | 全部ON・RTMW3D-X顔共有試行 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test-face-original.bat | 全部ON・従来RTMW-L顔方式 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-compare-face.bat | 顔比較動画の保存先を開く | なし・カメラ不使用 | Explorerで確認 |
 | tanakacap-head-only.bat | 頭専用auto | なし | 制限なし。アバターを閉じるかQ/Esc |
 | tanakacap-live.bat | 普段使いのカメラ版 | なし | 制限なし。アバターを閉じるかプレビューでQ/Esc |
 | tanakacap-motion.bat | カメラを使わないモーション版 | なし | 制限なし。アバターを閉じる |

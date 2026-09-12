@@ -16,6 +16,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet('run','binding','graph')][string]$InferenceMode,
     [ValidateSet(1,2,3)][int]$DetectorInterval,
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
+    [ValidateSet('separate','body3d')][string]$FaceSource,
     [switch]$NoGaze,
     [switch]$NoPersonDetector,
     [switch]$IntegerBodyPeaks)
@@ -59,6 +60,9 @@ try {
     if (-not $DetectorModel) { $DetectorModel=$taskGazeSettings.detector_model }
     if (-not $DetectorModel) { $DetectorModel='yolox-m-human' }
     if ($DetectorModel -notin @('yolox-m-human','yolox-tiny-human')) { throw 'Invalid detector_model' }
+    if (-not $FaceSource) { $FaceSource=$taskGazeSettings.face_source }
+    if (-not $FaceSource) { $FaceSource='separate' }
+    if ($FaceSource -notin @('separate','body3d')) { throw 'Invalid face_source' }
     $taskGazeGain=4.0
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
@@ -80,7 +84,7 @@ try {
     if ($taskGazeSettings.face_distance_mode -eq 'seated') { $taskPlayerArgs+='--face-distance-seated' }
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
-    $taskExtra = @('--inference-mode',$InferenceMode,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
+    $taskExtra = @('--face-source',$FaceSource,'--inference-mode',$InferenceMode,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
     if ($HeadOnly) { $taskExtra+=@('--head-only','--head-roi-mode',$HeadRoiMode); if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
     if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }
     if ($NoPersonDetector) { $taskExtra+='--fixed-roi' }

@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--stage',choices=('B','C','D'),default='B')
+    parser.add_argument('--stage',choices=('B','C','D','face'),default='B')
     parser.add_argument('--frames',type=int,default=900)
     parser.add_argument('--landmarks',action='store_true')
     args=parser.parse_args()
@@ -21,7 +21,9 @@ def main():
            'C':{'every-frame':['--inference-mode','graph','--detector-interval','1'],
                 'interval3':['--inference-mode','graph','--detector-interval','3']},
            'D':{'medium':['--inference-mode','graph','--detector-interval','3'],
-                'tiny':['--inference-mode','graph','--detector-interval','3','--detector-model','yolox-tiny-human']}}[args.stage]
+                'tiny':['--inference-mode','graph','--detector-interval','3','--detector-model','yolox-tiny-human']},
+           'face':{'separate':['--inference-mode','graph','--detector-interval','3','--face-source','separate'],
+                   'body3d':['--inference-mode','graph','--detector-interval','3','--face-source','body3d']}}[args.stage]
     reports={}
     for name,extra in modes.items():
         command=[sys.executable,'-m','capture_lab','benchmark','--source','video','--video',
