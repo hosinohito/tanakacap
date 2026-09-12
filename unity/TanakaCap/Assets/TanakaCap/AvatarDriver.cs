@@ -103,6 +103,14 @@ namespace TanakaCap
         public FaceProfile faceProfile;
         FaceExpressions expressions;
         bool autoExpressions;
+        bool adaptiveHeadFollow;
+
+        public static float HeadFollowAmount(float errorDegrees,float dt,bool adaptive)
+        {
+            float weight=Mathf.SmoothStep(0,1,Mathf.Clamp01(errorDegrees/12f));
+            float rate=adaptive?Mathf.Lerp(6f,45f,weight):45f;
+            return 1-Mathf.Exp(-Mathf.Max(0,dt)*rate);
+        }
         readonly HashSet<Mesh> expressionClones=new HashSet<Mesh>();
         Mesh ExpressionClone(SkinnedMeshRenderer renderer) {
             if(expressionClones.Contains(renderer.sharedMesh))return renderer.sharedMesh;
@@ -249,6 +257,7 @@ namespace TanakaCap
             Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
+            adaptiveHeadFollow=Array.IndexOf(args,"--adaptive-head-follow")>=0;
             MouthCornerGamma=ReadExpressionOption(args,"--mouth-corner-gamma",autoExpressions?2:1,.25f,4);
             MouthOpenSmileSuppression=ReadExpressionOption(args,"--mouth-open-smile-suppression",autoExpressions?.9f:0,0,1);
             Debug.Log("TANAKACAP_CORNER_OPTIONS gamma="+MouthCornerGamma+" suppression="+MouthOpenSmileSuppression);
@@ -410,7 +419,7 @@ namespace TanakaCap
             var headTarget = transform.rotation * (headActive ? Quaternion.Euler(Mathf.Clamp(p.headPitch,-40,40),
                 Mathf.Clamp(p.headYaw,-60,60),Mathf.Clamp(p.headRoll,-35,35)) : Quaternion.identity) * headRootRest;
             // Face orientation is camera-relative: do not add torso rotation a second time.
-            float faceT=headActive ? 1-Mathf.Exp(-FrameDelta*45) : t;
+            float faceT=headActive ? HeadFollowAmount(Quaternion.Angle(head.rotation,headTarget),FrameDelta,adaptiveHeadFollow) : t;
             if (headActive) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
             ApplyFaceFraming(p,live);
             expressions.Begin();
@@ -1215,6 +1224,14 @@ namespace TanakaCap
 
         void CheckMotionPaths(string path)
         {
+            if(!(HeadFollowAmount(1,1f/60,true)<HeadFollowAmount(6,1f/60,true)) ||
+               Mathf.Abs(HeadFollowAmount(12,1f/60,true)-HeadFollowAmount(12,1f/60,false))>1e-6f ||
+               HeadFollowAmount(1,0,true)!=0)
+                throw new Exception("Adaptive head follow gain regression");
+            float remaining=1;
+            for(int i=0;i<120;i++) remaining*=1-HeadFollowAmount(remaining,1f/60,true);
+            if(remaining>.001f)throw new Exception("Adaptive head follow small motion cannot converge");
+            Debug.Log("TANAKACAP_ADAPTIVE_HEAD_CHECK_OK");
             browExpressions.CheckMotion();
             CheckGaze();
             CheckFaceDistance();

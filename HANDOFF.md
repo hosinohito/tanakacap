@@ -1,5 +1,11 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 頭の可変追従を試行・比較動画
+
+頭の震えについてユーザーが「4フレーム法後、小さい動きはゆっくり、大きい動きは速く」を提案し比較動画を指定。Player --adaptive-head-followで試行。表示頭と目標の最短角度差0〜12度でrate6〜45へsmoothstep、既存固定45のSlerpを置換。4フレームゲート/size2d/他部位/欠測保持は維持。通常は引数なしの固定追従、採用待ち。docs/HEAD_FOLLOW_COMPARISON.md。
+
+新30秒録画から全部ON FP16で853観測を再推論、顔有効849。results/comparisons/head-follow-input。制御値をバイト一致で複製しresults/comparisons/head-follow。動画results/avatar-videos/head-follow/face-closeup.mp4（左fixed/右adaptive）、desktop tanakacap-compare-head-follow.bat。比較は30fpsのオフライン・auto-custom表情、実時間遅延測定ではない。Unityビルド/可変係数と微小収束/既存関節・表情・受信回帰成功、results/head-follow-smoke。実カメラと実写表示/動画目視なし。次はユーザーの比較評価に応じ採用か感度調整。
+
 ## 2026-09-13 — 30秒の顔・頭・表情録画を受領・検証
 
 ユーザー撮影完了。results/comparison-takes/20260912T230559-718866Z、face-head/free、1280×720、29.999秒、853保存フレーム。全編デコード/メタデータと時刻行数一致/単調時刻/映像と時刻のSHA256一致を確認、validation.jsonへ保存。カメラ読取から保存まで48フレームの欠落あり（skipped_camera_frames）、連続30fpsの記録とは扱わず実観測時刻で評価する。完了状態で、破損は検出されなかった。映像の目視や表情の網羅性・推論品質は未評価。実カメラをエージェントが開いたり実写を画面表示したりしていない。

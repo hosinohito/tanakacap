@@ -1014,3 +1014,9 @@ LiveStatusは入力取得前に上限待機し、最新カメラ入力を処理�
 ## 2026-09-13 — 新しい顔・頭・表情録画を受領
 
 ユーザー撮影完了によりresults/comparison-takes/20260912T230559-718866Zを検査。complete/face-head/free、1280×720、29.999秒、853フレーム。全フレームデコード、時刻単調、メタデータ/時刻行数一致、映像/時刻SHA256一致。validation.jsonに保存。保存までのカメラフレーム欠落48を記録しており、比較は実時刻を使う。実写画面表示や実カメラ起動なし、動作内容の目視・推論品質は未評価。今後の顔・頭・表情の修正用入力としてHANDOFFへ記載。実写のGit除外を維持。
+
+## 2026-09-13 — 頭の固定追従と可変追従の比較動画
+
+ユーザーの提案を受け比較動画の作成指定。4フレーム法後の目標と表示頭のQuaternion角度差で追従率を変更。0〜12度をsmoothstep、rate6〜45、指数Slerp。--adaptive-head-followで可逆試行、通常は固定45のまま。新しい顔録画853観測を全部ON CUDA FP16/size2dで再推論、顔有効849。推論出力を完全一致で両方式へ渡し、表情auto-customも同一。Unityビルドとmotion-check（速度係数、微小収束、既存受信/関節/表情）成功。results/head-follow-smoke。
+
+results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4動画、各30.033秒、901描画frame、全デコード成功。入力ハッシュ同一を確認。30fpsオフライン比較で実時間遅延を表すものではない。実カメラ起動・実写表示・エージェントによる目視はなし。desktop tanakacap-compare-head-follow.batを追加。README/SPEC/HANDOFF/HEAD_FOLLOW_COMPARISONを更新。通常採用はユーザー評価待ち。
