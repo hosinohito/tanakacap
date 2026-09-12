@@ -609,3 +609,11 @@
 
 - 撮影フォルダーがまだない状態で解析用バッチを開き、Get-ChildItemエラーになった。存在確認を追加し、未撮影/完了テイクなしでは撮影用tanakacap-compare-capture.batの案内を出して正常終了する。カメラや録画は自動開始しない。
 - 実際の未撮影状態でanalyze起動の案内・正常終了を確認。推論/補正/録画形式は変更なし。デスクトップbat更新。
+
+## 2026-09-12 — MANO受領、SAM承認待ち
+
+- ユーザーがプロジェクト直下へ保存したMANO_RIGHT.pkl（3,821,356 bytes）をassets-source/mano/MANO_RIGHT.pklへ移動。SHA256: 45d60aa3b27ef9107a7afd4e00808f307fd91111e1cfa35afd5c4a62de264767。pickleを実行せず命令列からMANOの主要キー7種を確認。HaMeRでの読み込み・推論成功はまだ未確認。モデル原本はGit管理対象外。
+- SAMはユーザー申告でアクセス申請済み・著者の審査待ち。取得済みとは扱わない。HaMeR公開重み・独立CUDA環境・共通補正への接続が次の作業。
+- 撮影済みresults/comparison-takes/20260911T235327-031115Zに対するresults/comparisons/first-take/report.jsonはcompleteを確認。現行と2D対照の処理完了であり、3D交換や人物品質合格ではない。詳細監査・結果報告は未完了。実行中にORTプロファイル記録上限の警告があったため、GPU証拠の対象範囲にも注意して監査する。
+- 端末ではMarkdownリンクを開けないため、ユーザー向け案内には生URLを添える。不要とされたopen-model-downloads.batは削除済み。
+
