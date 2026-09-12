@@ -132,6 +132,9 @@ def benchmark(args):
     face_distance=FaceDistance(args.observation_block,args.observation_stride,args.face_distance_filter)
     from .head_pose import HeadPose
     head_pose=HeadPose(args.head_pitch_gain,args.mouth_lip_depth_scale) if args.head_pose_mode=="pnp" else None
+    if args.head_pose_mode == 'size2d':
+        from .head_pose_size import SizeHeadPose
+        head_pose = SizeHeadPose(args.head_pitch_gain, args.mouth_lip_depth_scale)
     if args.head_pose_mode in ('depth3d','pnp_depthmouth'):
         from .head_pose3d import HeadPose3D, PnPPitchDepthMouth
         head_pose = (PnPPitchDepthMouth if args.head_pose_mode=='pnp_depthmouth' else HeadPose3D)(args.head_pitch_gain)
@@ -515,7 +518,7 @@ def main(argv=None, *, inference_mode=None):
             sub.add_argument('--observation-stride',type=int,choices=(1,3),default=1,help='1: overlapping means, 3: disjoint means (block size 3 only)')
             sub.add_argument('--observation-block',type=int,choices=(1,3),default=3,help='1: original confirmation; 3: three-frame means (stride controls overlap)')
             sub.add_argument('--body3d', action='store_true', help='Add RTMW3D body inference; keep the existing face model')
-            sub.add_argument('--head-pose-mode',choices=['pnp','legacy','depth3d','pnp_depthmouth'],default='pnp')
+            sub.add_argument('--head-pose-mode',choices=['pnp','size2d','legacy','depth3d','pnp_depthmouth'],default='pnp')
             sub.add_argument('--head-pitch-gain',type=float,default=1.8)
             sub.add_argument('--mouth-lip-depth-scale',type=float,default=1.5)
             sub.add_argument('--face-distance-filter',choices=['stable','legacy'],default='stable')
