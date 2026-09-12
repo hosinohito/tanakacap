@@ -67,3 +67,10 @@ $taskHeadTarget = Join-Path $taskDesktop 'tanakacap-head-only.bat'
 $taskHeadContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -HeadOnly -NoLog`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskHeadTarget,$taskHeadContents,[Text.Encoding]::Default)
 Write-Output $taskHeadTarget
+
+# Locally rendered real PhysBone / independent solver comparison videos.
+$taskPhysTarget = Join-Path $taskDesktop 'tanakacap-compare-physbone.bat'
+$taskPhysFolder = Join-Path $taskRoot 'results/avatar-videos/physbone-vs-independent'
+$taskPhysContents = "@echo off`r`nexplorer.exe /select,`"$taskPhysFolder\front.mp4`"`r`n"
+[IO.File]::WriteAllText($taskPhysTarget,$taskPhysContents,[Text.Encoding]::Default)
+Write-Output $taskPhysTarget

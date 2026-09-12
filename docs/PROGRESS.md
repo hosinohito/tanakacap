@@ -790,3 +790,15 @@
 - PhysBone公式SDK3.10.5をSHA照合し隔離Editorへ。原本コピー36SDKコンポーネントと独自35系統73区間を同じ60Hz/頭振り・胸pitch/rollで比較。初回初期化漏れ/時間刻み不一致の無効な比較は修正して除外。復元周波数候補は悪化で維持、減衰1.5倍は別動作でも改善し採用。平均回転差（全骨1260frame）2.007→1.740度、頭振り1.740→1.266度、胸2.523→2.188度。静止残差1.847度/服の衝突過渡/急停止差は残る。--legacy-secondary-response/-LegacySecondaryResponseで旧減衰。SDKはPlayer/Exporter/Gitに入れず、逆コンパイル・ソルバーコピーなし。docs/PHYSBONE_REFERENCE.md、results/physbone-reference。
 - 検証：205 Python tests、PowerShell3本構文、最終Unity build、実Playerの既存骨/表情/掌/指/ロスト/透過と頭単独smoke成功。揺れ960stepで73区間、本体/位置誤差0、OFF復元、静止速度0.0000143m/s。結果results/model-switches-final。実カメラ品質・最終30分・本家全機能一致の合格とは扱わない。bat更新済み、実写/SDK/資産/結果はGit除外。
 - 次：統合設定を実カメラで確認、頭専用の範囲追跡/再検出と角度品質、肩/腕/左指の既存品質課題、PhysBone衝突/初期過渡/静止差、フェーズ4の最終OBS併用と実遅延。音声口パクは後日。通常アバター/追跡補正は維持。SDK比較再現はtools/prepare_physbone_reference.py→tools/tune_secondary_reference.py。
+
+## 2026-09-13 — 本家PhysBoneと独自揺れ物の比較動画
+
+- ユーザー指定で、本家SDK3.10.5と現在の独自ソルバー（減衰1.5倍）を同じEditor/同じHAOLANコピー/同じモーションで同時撮影。左本家・右独自、日本語ラベルと動作区間付き。
+- results/avatar-videos/physbone-vs-independentにfront.mp4、hair-closeup.mp4各21秒、各-half-speed.mp4約42秒、全て1080p60/H.264。正面は服込み、拡大は髪を斜め25度から。原Prefabの共通Tポーズ、頭振り/胸pitch-roll/停止後を比較。SDKは隔離Editor内のみ。通常アプリ・追跡・揺れの設定/実装は変更しない。
+- 検証：両側の実骨変化、1260撮影フレーム、半速2519フレーム、4本の全編デコード、ラベル/構図を確認。最初のdtのみ20ms、以降1/60秒。半速は撮影結果の再生時間だけ変更。試写でエンコーダーパス不一致を修正、初期化失敗時の自動終了を追加。平均骨回転差1.7395865度は前回と一致。実人物/本家完全一致/ユーザー見た目評価の合格とは扱わない。
+- 再現はtools/prepare_physbone_reference.py→tools/render_physbone_comparison.py。--encode-existingで撮影データを保持して字幕・半速を再生成。デスクトップtanakacap-compare-physbone.batを追加し既存batも更新。docs/PHYSBONE_REFERENCE.md、READMEを更新。SDK/アバター/動画/結果はGit除外。
+- 次は完成動画で揺れの差を確認し、必要なら残る衝突・初期過渡・停止後の差へ対応。その他の現状・未達は下記引き継ぎを継続。
+
+## 2026-09-13 — 将来UIの負荷倍率表示
+
+ユーザー指定で、各オプション/構成の重さを整数倍率（約N倍）でUI表示する要件をSPEC/フェーズ5/AGENTS/HANDOFFへ記録。今回UIは実装しない。基準と計測範囲は設計時に確定し、今回の推論内訳の実測と条件を判断材料にする。
