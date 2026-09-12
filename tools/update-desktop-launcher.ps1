@@ -16,6 +16,10 @@ $taskComparisonScript = Join-Path $taskRoot 'run-comparison-lab.ps1'
 $taskFaceCapture = Join-Path $taskDesktop 'tanakacap-face-capture.bat'
 [IO.File]::WriteAllText($taskFaceCapture,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode capture -Profile face-head`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskFaceCapture
+$taskHeadFollowVideo=Join-Path $taskRoot 'results/avatar-videos/head-follow/face-closeup.mp4'
+$taskHeadFollowBat=Join-Path $taskDesktop 'tanakacap-compare-head-follow.bat'
+[IO.File]::WriteAllText($taskHeadFollowBat,"@echo off`r`nstart `"`" `"$taskHeadFollowVideo`"`r`n",[Text.Encoding]::Default)
+Write-Output $taskHeadFollowBat
 foreach ($taskMode in @('capture','analyze')) {
     $taskComparisonTarget = Join-Path $taskDesktop ("tanakacap-compare-$taskMode.bat")
     $taskComparisonContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode $taskMode`r`npause`r`n"
