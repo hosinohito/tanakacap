@@ -970,3 +970,11 @@ builds/demos/haolan-custom-browsへPlayerと専用.tcapを保存。汎用版と�
 2504820で表情モードをコミット。results/avatar-videos/expression-mappingの単独3本/左右3方式/顔拡大の計5動画が完成し、全編decode成功。各185.033秒/30fps/5,551描画。3入力のSHA一致、同じ5,187packet/時計で比較。左から保存デモ6806913、既存キー2504820、自動独自キー2504820。各DLL/アバター/動画hashはreport.jsonへ保存。眉専用動画なし、ユーザーが映像品質を確認する。
 
 仕上げでRead/Write無効メッシュの通常形状再生にCPU頂点アクセスを要求しないよう修正。自動生成は警告して省略する。UploadMeshData(true)を使う合成検査と再ビルド/両モードの実Player回帰成功。*-readability.log、HAOLAN対応表は比較ビルドと完全一致。HAOLANは読み取り可能で追加ガードの影響がないため動画は生成済みのものを保持し、その古いDLLのhashを最終DLLのhashにすり替えない。README/SPEC/引き継ぎ/フェーズ残件を更新。全アバター・SDK各Descriptorの実機互換や見た目の品質は未確認。
+
+## 2026-09-13 — 通常口角の任意調整・Perfect Syncキー非対称検証
+
+ユーザー指定で通常existingはガンマ1/開口上げ抑制0/強調0を既定とした。以前の通常固定2/.9を撤去し、JSONと起動引数/将来UI用プロパティで任意調整。auto-custom既定2/.9/0、保存デモは維持。JSONの追加2項目はnullでモード既定。起動値優先、範囲/非有限を検査。頭/口推論・中立校正/時間処理や揺れ物は変更なし。
+
+追加の質問に対し、既存ARKit mouthLeft/Rightと左右smile/frownの横寄せ/非対称は実装済みとコード確認。合成メッシュで左右横寄せ、片側笑顔/反対への字、反転後の旧重み消去を検証した。通常無作用・明示ガンマ/抑制/強調、への字側非抑制も成功。Unity最終ビルドと実Player通常/auto/通常調整2/.9/.5のmotion-check成功、results/corner-options。実Perfect Syncモデルの目視検証ではない。
+
+PowerShell起動mockで既定省略/明示指定受け渡しと構文確認、デスクトップbat更新。実カメラ不使用。README/SPEC0.70/HANDOFF/AGENTS/表情文書更新。過去の比較動画は通常にも2/.9が掛かった時点なので新既定の動画と扱わない。今回再生成なし。

@@ -16,6 +16,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--motion-check',action='store_true',help='Also check actual bone rotation paths with synthetic trajectories')
     parser.add_argument('--expression-mode',choices=['existing','auto-custom'],default='existing')
+    parser.add_argument('--mouth-corner-gamma',type=float)
+    parser.add_argument('--mouth-open-smile-suppression',type=float)
+    parser.add_argument('--mouth-corner-emphasis',type=float)
     parser.add_argument('--obs',action='store_true',help='Check RGBA output and live Spout sender registration')
     parser.add_argument('--gaze-bones',action='store_true',help='Compare original eye-bone gaze rendering')
     parser.add_argument('--no-face-distance',action='store_true',help='Disable relative avatar depth')
@@ -43,6 +46,9 @@ def main():
         probe.bind(('127.0.0.1',0))
         test_port=probe.getsockname()[1]
     render_args=['--expression-mode',args.expression_mode]
+    for key in ('mouth_corner_gamma','mouth_open_smile_suppression','mouth_corner_emphasis'):
+        value=getattr(args,key)
+        if value is not None:render_args+=['--'+key.replace('_','-'),str(value)]
     for key in ('output_width','output_height'):
         value=getattr(args,key)
         if value is not None:

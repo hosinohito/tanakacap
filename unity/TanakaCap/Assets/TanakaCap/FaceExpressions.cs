@@ -6,6 +6,8 @@ namespace TanakaCap {
  [Serializable] public class FaceBinding {public string channel,renderer,shape,source;public int priority;}
  [Serializable] public class FaceProfile {public FaceBinding[] bindings=new FaceBinding[0];public string leftEye,rightEye;}
  public sealed class FaceExpressions {
+  public float CornerGamma {get;set;}=1;
+  public float OpenSmileSuppression {get;set;}=0;
   public readonly Dictionary<string,FaceBinding> Report=new Dictionary<string,FaceBinding>();
   readonly Dictionary<string,Slot> slots=new Dictionary<string,Slot>();
   readonly Dictionary<(SkinnedMeshRenderer,int),float> weights=new Dictionary<(SkinnedMeshRenderer,int),float>();
@@ -23,6 +25,7 @@ namespace TanakaCap {
   public static string PathOf(Transform t,Transform root){if(t==root)return "";return t.parent==root?t.name:PathOf(t.parent,root)+"/"+t.name;}
   public FaceExpressions(Transform root,SkinnedMeshRenderer[] meshes,FaceProfile profile=null,bool auto=false,Dictionary<(SkinnedMeshRenderer,string),float> cornerGains=null){
    this.root=root;this.meshes=meshes;
+   if(auto){CornerGamma=2;OpenSmileSuppression=.9f;}
    this.cornerGains=cornerGains;
    Add("jaw",new[]{"jawOpen"});
    Add("a",null,new[]{"あ"},new[]{"vrc.v_aa"});Add("i",null,new[]{"い"},new[]{"vrc.v_ih","vrc.v_E"});
@@ -107,7 +110,7 @@ namespace TanakaCap {
     Put("funnel",open*round);Put("pucker",round*(1-open*.5f));
    }
    Group(new[]{"wideL","wideR"},new[]{Mathf.Max(0,width),Mathf.Max(0,width)});
-   float left=ExpressiveCorner(lc,open),right=ExpressiveCorner(rc,open);
+   float left=ExpressiveCorner(lc,open,CornerGamma,OpenSmileSuppression),right=ExpressiveCorner(rc,open,CornerGamma,OpenSmileSuppression);
    float gain=Mathf.Lerp(1,2,Mathf.Clamp01(emphasis));
    Group(new[]{"smileL","smileR"},new[]{Corner("smileL",left,true,emphasis,gain),Corner("smileR",right,true,emphasis,gain)});
    Group(new[]{"frownL","frownR"},new[]{Corner("frownL",left,false,emphasis,gain),Corner("frownR",right,false,emphasis,gain)});
@@ -138,9 +141,9 @@ namespace TanakaCap {
    return residual;
   }
   public void Commit(){foreach(var item in weights)item.Key.Item1.SetBlendShapeWeight(item.Key.Item2,item.Value);}
-  public static float ExpressiveCorner(float corner,float opening){
-   corner=Mathf.Clamp(corner,-1,1);corner*=Mathf.Abs(corner);
-   return corner<=0?corner:corner*(1-.9f*Mathf.SmoothStep(0,1,Mathf.Clamp01(opening/.65f)));
+  public static float ExpressiveCorner(float corner,float opening,float gamma=2,float suppression=.9f){
+   corner=Mathf.Clamp(corner,-1,1);corner=Mathf.Sign(corner)*Mathf.Pow(Mathf.Abs(corner),Mathf.Clamp(gamma,.25f,4));
+   return corner<=0?corner:corner*(1-Mathf.Clamp01(suppression)*Mathf.SmoothStep(0,1,Mathf.Clamp01(opening/.65f)));
   }
   public void CheckMouthMotion(){
    var saved=owned.Select(k=>k.Item1.GetBlendShapeWeight(k.Item2)).ToArray();

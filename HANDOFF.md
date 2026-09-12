@@ -1,5 +1,15 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 通常口角の無作用既定・任意調整とARKit非対称確認
+
+ユーザー指定で通常existingのガンマ/開口時上げ抑制/強調は既定1/0/0（追加調整による影響なし）。以前は通常版にも2/.9が固定適用されていたが、今回外して任意設定へ変更。auto-customのモード既定は2/.9/0のまま。tracking-settings.jsonのmouth_corner_gamma/mouth_open_smile_suppressionはnullでモード既定、数値で共通上書き。PowerShell -MouthCornerGamma（.25〜4）/-MouthOpenSmileSuppression（0〜1）、既存-MouthCornerEmphasis（0〜1）を優先。Playerにも同名kebab引数。Driverプロパティは将来UI接続用、UI画面はまだない。
+
+追加質問：通常版もPerfect Sync/ARKit mouthLeft/Right、mouthSmileLeft/Right、mouthFrownLeft/Rightで横寄せ/非対称を既に駆動する。合成メッシュで横寄せ±70%、笑顔左80%/への字右60%と反転、前の重みの消去を検査し成功。実Perfect Syncアバターの見た目検証とは区別。HAOLAN通常版のキー不足を全体の未実装としない。
+
+検証：Unity Editorの無作用/調整/への字非抑制/追加強調/ARKit左右検査と最終ビルド成功。実Playerの通常既定/auto既定/通常調整2/.9/.5が全てmotion-check成功（results/corner-options/{normal,auto,adjusted}.log）。カメラなし、口/目/腕/手首回帰あり。PowerShellは起動をmockして既定時省略と明示値受け渡しを検査、カメラ起動せず。デスクトップbat更新、保存デモは不変。
+
+既存比較動画は変更前の通常ガンマ2/.9であり、新しい無作用既定の動画ではない。再生成要求はなく今回動画生成なし。README/SPEC0.70/EXPRESSION_PORTABILITYを更新。次はユーザーの見た目評価/指定作業。その他の残件は下記。
+
 ## 2026-09-13 — 眉追加・保存デモ・表情モードの汎用化
 
 現在のユーザー指定：眉を追加した従来版をデモ保存。その後、通常は機能別ARKit/Perfect Sync→MMD→VRCの既存キーだけで口/眉/まばたき/目線を動かす。Perfect Sync推論そのものは作らない。追加のauto-customは過去の実験（左右口角、唇帯のみ横4mm、瞳限定移動、ガンマ2、開口上げ抑制、強調0）を踏襲する任意モード。眉専用動画は不要。

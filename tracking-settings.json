@@ -22,5 +22,7 @@
   "detector_graph": true,
   "preprocess_mode": "crop",
   "batch_eyes": true,
-  "mouth_corner_emphasis": 0.0
+  "mouth_corner_emphasis": 0.0,
+  "mouth_corner_gamma": null,
+  "mouth_open_smile_suppression": null
 }

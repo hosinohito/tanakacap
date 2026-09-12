@@ -95,6 +95,8 @@ namespace TanakaCap
         float mouth, mouthWidth,mouthRound,mouthSmile,blinkLeft, blinkRight;
         float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
         public float MouthCornerEmphasis { get; set; } = 0;
+        public float MouthCornerGamma { get; set; } = 1;
+        public float MouthOpenSmileSuppression { get; set; } = 0;
         readonly Dictionary<(SkinnedMeshRenderer,string),float> cornerGains=new Dictionary<(SkinnedMeshRenderer,string),float>();
         bool detailedMouth;
         BrowExpressions browExpressions; // Standalone authored-brow regression probe.
@@ -247,6 +249,9 @@ namespace TanakaCap
             Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
+            MouthCornerGamma=ReadExpressionOption(args,"--mouth-corner-gamma",autoExpressions?2:1,.25f,4);
+            MouthOpenSmileSuppression=ReadExpressionOption(args,"--mouth-open-smile-suppression",autoExpressions?.9f:0,0,1);
+            Debug.Log("TANAKACAP_CORNER_OPTIONS gamma="+MouthCornerGamma+" suppression="+MouthOpenSmileSuppression);
             int emphasisArg=Array.IndexOf(args,"--mouth-corner-emphasis");
             if(emphasisArg>=0)
             {
@@ -437,10 +442,20 @@ namespace TanakaCap
             }
             expressions.ApplyBrows(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
             if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
+            expressions.CornerGamma=MouthCornerGamma;expressions.OpenSmileSuppression=MouthOpenSmileSuppression;
             expressions.ApplyMouth(mouth,mouthWidth,mouthRound,detailedMouth?mouthLeftCorner:mouthSmile,
                 detailedMouth?mouthRightCorner:mouthSmile,mouthShift,mouthBow,MouthCornerEmphasis);
             expressions.Blink(blinkLeft,blinkRight);
             expressions.Commit();
+        }
+
+        static float ReadExpressionOption(string[] args,string key,float fallback,float minimum,float maximum)
+        {
+            int index=Array.IndexOf(args,key);if(index<0)return fallback;
+            if(index+1>=args.Length || !float.TryParse(args[index+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out float value)
+                || float.IsNaN(value) || float.IsInfinity(value) || value<minimum || value>maximum)
+                throw new ArgumentException(key+" must be "+minimum+".."+maximum);
+            return value;
         }
 
         // HAOLAN's resting mouth needs a downward offset. Fade it at either
