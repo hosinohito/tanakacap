@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+最新検証方針（2026-09-13）：検証は既存録画を基本とする。ユーザーが明示的に指示するまで、エージェントは実カメラを開いて試験しない。録画では確認できず実カメラが不可欠と考える場合は、目的・録画で代替できない理由を説明して事前に相談する。一般的な自走許可を実カメラ試験の許可と解釈しない。ユーザー自身が起動するカメラ用batは維持する。
+
 ## 2026-09-13 — 全部ON高速化B→C→Dを実装・比較
 
 - 最新ユーザー指定：全部ONでB→C→D、A（TensorRT/FP16）/E（部位更新間隔）は保留。揺れ物は触らない。RTMW3Dは体/手が共同推論なので、手に影響する胴体停止案は採用しない。
@@ -11,7 +13,8 @@
 - 実Player+隔離OBS/720p60/AAあり/各60秒/既存録画最大速度：従来20.24Hz→B+C32.63Hz、任意D35.60Hz、描画全て約60fps。透過合成/画像変化/正常終了成功。results/optimization-obs-{baseline,bc,bcd}。実カメラの新規観測Hz・センサー表示遅延と混同しない。
 - 実カメラ1/MSMF1280x720/30fpsは取得成功、120観測で人物確定0。results/20260912T164948-822875Z-rtmw-l-384。人物不在とは断定せず、この試験を追従品質・全部ON実カメラ性能の成功に数えない。
 - README、SPEC、PROGRESS、PHASE4_VALIDATION、IMPLEMENTATION_PHASES、THIRD_PARTY、PERFORMANCE_OPTIONS更新。ユーザーの部位別経路の質問へINFERENCE_PIPELINE.md追加。詳細・条件・再現はFULL_MODE_OPTIMIZATION.md。
-- 次：更新済みtest.batで実人物のC有無（-DetectorInterval 1）を確認。新構成の実カメラ+OBS30分、露光〜表示遅延、腕/肩/左指・遮蔽品質、フェーズ5UI/配布環境/汎用アバター/許諾監査が残る。A/Eや揺れ物を勝手に再開しない。
+- 次：既存録画でC有無（-DetectorInterval 1）や長時間安定性を確認。実カメラ試験はユーザーの指示待ち。新構成の実カメラ+OBS30分、露光〜表示遅延、腕/肩/左指・遮蔽品質、フェーズ5UI/配布環境/汎用アバター/許諾監査が残る。A/Eや揺れ物を勝手に再開しない。
+- 追加高速化はPERFORMANCE_OPTIONS.md末尾のF〜Iを提案。未実装・効果未測定。現行B+C設定は維持、A/E保留。
 - pytestは通常sandboxの`.venv/Scripts/python.exe -m pytest -q`で実行可能。tests/conftest.pyのWindows tmp_pathがworkspace ACLを継承、OS権限変更なし。
 
 

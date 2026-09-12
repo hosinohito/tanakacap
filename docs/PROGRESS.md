@@ -827,3 +827,10 @@ Windowsのmode700で作った一時ディレクトリでは同じsandboxから�
 既存録画+実Player+隔離OBS/720p60/AAあり/各60秒、受信20.24→32.63Hz、D35.60Hz、描画約60fps。RGBA合成・画像変化・正常終了確認。results/optimization-obs-{baseline,bc,bcd}、同一録画位置/900観測比較はresults/full-optimization-{B,C,D}-*、6区間品質差はresults/person-optimization-audit-1789231118191184300。詳細・一次資料はFULL_MODE_OPTIMIZATION.md。
 
 実カメラ1の取得は成功したが人物確定0/120であり追従・性能成功とは扱わない（results/20260912T164948-822875Z-rtmw-l-384）。新構成の実人物品質、実カメラ+OBS30分、実遅延は残る。デスクトップtestを全部ONへ更新、live/head-only/motionの非記録無期限を維持。README/仕様/引き継ぎ/フェーズ状態を更新。ユーザーの経路説明要求はINFERENCE_PIPELINE.mdへ部位別表で記録。モデル/録画/アバター/結果をGitへ入れず、外部pushなし。
+
+
+## 2026-09-13 — 録画中心の検証方針と追加高速化案
+
+ユーザー指定で、今後は既存録画での検証を基本とし、実カメラは明示指示がある場合、または録画では代替できない必要性を事前相談した場合だけ実施する。包括的な自走許可より本指定を優先。AGENTS/SPEC/HANDOFF/READMEへ反映、ユーザー自身のカメラ起動batは維持。
+
+追加高速化はF（同じ人物モデルの固定部Graph化）、G（顔/体入力準備共有）、H（同一観測の並行処理）、I（左右眼一括）を提案としてPERFORMANCE_OPTIONSへ記録。実測内訳を根拠にF→Gを推奨、効果未測定・実装未着手。A/E保留、B+C通常設定は維持。本ターンは文書変更のみで実カメラ/推論/テストは実行していない。
