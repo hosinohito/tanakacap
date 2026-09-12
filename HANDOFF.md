@@ -1,5 +1,14 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 描画共有・自由解像度・プレビュー非表示を実装
+
+- ユーザー指定の3案を実装。通常はOBS用RGBAをプレビューへGPU合成して二重アバター描画を省く。MainCameraは姿勢参照用に有効のままcullingMask=0。出力AAのみ1回、UIはOBSへ入らない。--legacy-preview / -LegacyPreviewで旧方式へ戻せる。
+- Full HD（1920×1080）を既定化。--output-width/height、両launcherの-OutputWidth/-OutputHeightで各64〜4096、幅省略は16:9。異なる比率は横FOVが変わる、プレビューは余白付き。--no-preview/-NoPreview/F8でプレビュー画像だけ省略、出力/追跡は維持。desktop test-no-preview追加、通常test/live/motionは表示あり、非記録無期限は維持。
+- 同じ既存録画・全部ON G+I/body3d/pnp_depthmouth/OBS60・各60秒。旧Full HD受信44.04Hz→共有44.93→非表示45.49、描画59.83〜59.99fps。共有960×960も44.91Hz/60fps。4条件とも透過合成/画像変化/正常終了成功。GPU使用率は下がらず、小差を確実な省電力改善と断言しない。短期3標本の全体GPU値。結果results/shared-preview-*、docs/SHARED_PREVIEW.md。
+- 実Player合成入力3条件と画像数値照合に成功。上下/色/余白のRGB平均差0.17階調未満、非表示は背景のみでSpoutのアバター維持。tools/check_preview_pixels.py。Unityビルド・構文確認・desktop更新済み。実カメラ/映像目視なし、F8実キー・長時間見た目未評価。揺れ物ソルバーは変更なし。
+- 将来UI：推論切替と同じ場所へ60/推論同期/30/自由入力。推論が指定描画数値を超える場合は開始前に待機して推論を同じ上限まで抑える予定。現行へ上限制御を追加したわけではない。同期モードの上限表示/欠測時更新等はUI設計時に具体化。部位間引きEとは別。UIの約N倍表示要件も維持。
+- 次はユーザーの優先指示または既存フェーズ残件。A/E保留、H再導入禁止、揺れ物調整終了、録画検証を維持。README/SPEC0.62/LAUNCH_MODES/INFERENCE_BREAKDOWNに反映。
+
 ## 2026-09-13 — 描画30固定対60固定の比較完了
 
 - Player --render-fps 30|60、run-avatar-lab.ps1 -RenderFps、既定60。デスクトップtanakacap-test-30fps.bat追加、通常test/live/motion維持。Unity再ビルド・構文確認済み。

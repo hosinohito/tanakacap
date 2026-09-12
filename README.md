@@ -200,14 +200,16 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 
 軽量な輪郭AAは既定ON。プレビューと透過Spout出力に同じGPUフィルターを適用する。時間方向の蓄積を使わず、RGBとアルファを同じ比率で処理する。F7、または起動時の`-NoEdgeAA`で従来の表示に戻せる（元の4倍MSAAは残る）。追加ライブラリは不要。[方式と検証](docs/ANTIALIASING.md)。
 
-出力は従来どおり1280×720が既定。フルHDで使う場合は次のように指定する。構図は同じで、カメラ入力の解像度やモデルは変えない。OBS側のキャンバス/ソースサイズも合わせる。
+出力はFull HD（1920×1080）が既定。幅・高さを自由指定できる（各64〜4096、幅省略時は高さから16:9で計算）。カメラ入力の解像度やモデルは変えない。OBS側のソースサイズも合わせる。異なる縦横比は出力カメラの水平視野が変わり、プレビューは縦横比を保って余白を付ける。
 
 ```powershell
-.\run-avatar-lab.ps1 -Camera 1 -NoLog -OutputHeight 1080
-.\run-motion-lab.ps1 -OutputHeight 1080
+.\run-avatar-lab.ps1 -Camera 1 -NoLog -OutputWidth 1280 -OutputHeight 720
+.\run-motion-lab.ps1 -OutputWidth 960 -OutputHeight 960
 # 追加AAだけを無効化して比較
 .\run-motion-lab.ps1 -NoEdgeAA
 ```
+
+OBS用画像をプレビューにも再利用し、アバターの二重描画を省く。`-NoPreview`またはF8でプレビューだけ非表示にでき、OBS出力・追跡・操作用ウインドウは継続する。F8で再表示。`-LegacyPreview`で旧二重描画へ戻せる。どちらもavatar/motion両起動スクリプトで使用可能。詳細は[描画共有と解像度](docs/SHARED_PREVIEW.md)。
 
 ## 自分のアバターを書き出す
 

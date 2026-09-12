@@ -23,6 +23,10 @@ def main():
     parser.add_argument('--replay-file',type=Path,help='Numeric packet JSONL for actual-bone audit after snapshot')
     parser.add_argument('--packet-file',type=Path,help='Hold one recorded/reprocessed packet to verify bone transfer, not capture accuracy')
     parser.add_argument('--output',type=Path,help='Explicit snapshot output for automated comparisons')
+    parser.add_argument('--output-width',type=int)
+    parser.add_argument('--output-height',type=int)
+    parser.add_argument('--no-preview',action='store_true')
+    parser.add_argument('--legacy-preview',action='store_true')
     args=parser.parse_args()
     if args.motion_check and args.replay_file:
         parser.error('Run motion-check and replay-file separately: they must not share modified joint history')
@@ -37,7 +41,15 @@ def main():
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
         probe.bind(('127.0.0.1',0))
         test_port=probe.getsockname()[1]
-    process = subprocess.Popen([str(player)]+([] if args.obs else ['-batchmode'])+['--snapshot',str(output),
+    render_args=[]
+    for key in ('output_width','output_height'):
+        value=getattr(args,key)
+        if value is not None:
+            if not 64<=value<=4096:parser.error('Output dimensions must be 64..4096')
+            render_args+=['--'+key.replace('_','-'),str(value)]
+    if args.no_preview:render_args+=['--no-preview']
+    if args.legacy_preview:render_args+=['--legacy-preview']
+    process = subprocess.Popen([str(player)]+render_args+([] if args.obs else ['-batchmode'])+['--snapshot',str(output),
                                 '--port',str(test_port),'--gaze-gain',str(args.gaze_gain),
                                 '-logFile',str(output.with_suffix('.log'))]+(['--face-distance-translate'] if args.face_distance_translate else [])+(['--no-face-distance'] if args.no_face_distance else [])+(['--gaze-bones'] if args.gaze_bones else [])+(['--obs'] if args.obs else [])+(['--motion-check'] if args.motion_check else [])+(['--replay-file',str(args.replay_file.resolve())] if args.replay_file else []),cwd=ROOT,
                                creationflags=subprocess.CREATE_NO_WINDOW)
@@ -110,7 +122,7 @@ def main():
         if fixture is None:
             for side, expected in [('left',[0,25,30]+[35,65,45]*4),('right',[0,20,25]+[20,40,30]*4)]:
                 assert all(abs(a-b)<1 for a,b in zip(actual[side+'FingerAngles'],expected)), actual
-        assert output.exists() and output.stat().st_size > 10000
+        assert output.exists() and output.stat().st_size > (1000 if args.no_preview else 10000)
         print(f'Actual Unity receiver and rendering succeeded: {output}')
     finally:
         sender.close()

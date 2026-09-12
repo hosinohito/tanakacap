@@ -109,6 +109,8 @@ namespace TanakaCap.Editor
             camera.backgroundColor = new Color(.06f, .07f, .09f);
             var output=camera.gameObject.AddComponent<AlphaOutput>();
             output.edgeShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/TanakaCap/EdgeAntialiasing.shader");
+            output.previewShader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/TanakaCap/PreviewComposite.shader");
+            if(!output.previewShader || !output.previewShader.isSupported)throw new Exception("Preview shader unavailable");
             if(!output.edgeShader || !output.edgeShader.isSupported)throw new Exception("Edge AA shader unavailable");
             output.resources=AssetDatabase.LoadAssetAtPath<Klak.Spout.SpoutResources>("Packages/jp.keijiro.klak.spout/Editor/SpoutResources.asset");
             if(!output.resources)throw new Exception("Spout resources missing");
