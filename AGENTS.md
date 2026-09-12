@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：現行/SAM DINOv3/SAM ViT-H全編3方式動画4本完成。results/avatar-videos/body-three-models。顔等・補正固定、ライブ採用なし。CPU/GPU質問は単独profilerで細かいkernel起動と同期を確認、4090演算能力の限界と断定しない。docs/BODY_MODEL_COMPARISON.md、docs/SAM_PERFORMANCE.md。全編ジョブは終了、HANDOFF先頭優先。
+
 - 最新（2026-09-12）：現行RTMW3D-X / SAM DINOv3 / SAM ViT-Hの動画比較をユーザー指定。接続と600frame結合検証、全基準再現成功。両モデル受領・CUDA検証済み、全編推論と自動動画化が進行中。docs/BODY_MODEL_COMPARISON.mdとHANDOFF先頭参照。
 
 - 最新（2026-09-12）：現行対HaMeR指の実アバター動画3本完成。SAM承認・資産受領済み、生CUDA推論まで成功（単独中央値約716ms）。身体共通補正接続は未完了。docs/AVATAR_COMPARISON_VIDEOS.md、docs/SAM_INITIAL_VALIDATION.mdとHANDOFF先頭参照。

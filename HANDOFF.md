@@ -1,6 +1,19 @@
 # 引き継ぎ：現在の状態
 
+## 最新：2026-09-12 — 3方式の全編動画完成、CPU/CUDA負荷を計測
+
+- ユーザー指定の現行RTMW3D-X / SAM DINOv3 / SAM ViT-Hを全5187フレームで完了。results/comparisons/body-three-models、results/avatar-videos/body-three-models。個別3本とside-by-side.mp4、各5551frame/185.033秒、全編復号成功。横並び左から現行/DINO/ViT-H。85秒/148秒の実画像確認済み。人物品質合格やリアルタイム動画と扱わない。
+- 基準全パケット差0、顔/口/目/距離と補正固定。SAM各5185予測/2欠測、投影最大差0.00022px未満。共通可視性の時間集計完了、SAMで左肘の大きな深度変動と指の棄却が減る。正解姿勢との誤差は未評価。docs/BODY_MODEL_COMPARISON.md。
+- 全編推論/自動動画化/単独profilerの各セッションは正常終了。待機ジョブや追加ダウンロードは不要。重複実行しない。デスクトップtanakacap-compare-body.batで完成フォルダーを開ける。
+- 最新質問はGPU低負荷・CPU2コア。CPU各ワーカー約1コア、CUDA実行あり。動画後の単独プロファイルで1frame約2.8〜3万kernel/2425同期、同期132〜147ms。MHR26回/314〜339ms。計測器負荷あり、GPU注釈と実演算を区別。4090演算能力の限界とは言わない。docs/SAM_PERFORMANCE.md。
+- tools/profile_sam_runtime.py、tools/audit_sam_profile.py、results/sam-setup/runtime-profile/trace-audit.jsonで再現。初期summaryのCPU/GPU同名区間混同を訂正し旧版保持、元traceは不変。実4trace集計と新規3テスト成功。本体177テスト成功済み、通常追跡や補正を変更していない。
+- 次：完成動画のユーザー評価を受け、MHR/動的処理/同期の実行経路を出力同等性を守って最適化検証。TensorRT・ネイティブMHR・低頻度併用は候補のみ、採用/30fpsは未決定。通常モデルは現行のまま。OBS実取り込み等の既存未確認事項も残る。
+
+
 ## 最新：2026-09-12 — ViT-H受領、2モデル全編推論と自動動画化を開始
+
+- 追記：DINO全5187frame完了、5185推論/15555 CUDA backbone calls。ViT-Hは継続中。追加要求「GPU低負荷・CPU2コア」の観測はresults/sam-setup/observed-load.json（CPU約0.99/0.85コア、別5標本GPU平均74%/165.5W）。使用率だけでCPU演算律速かGPU待ちか断定しない。動画後に単独プロファイルを行うと回答。
+- tools/profile_sam_runtime.py --output results/sam-setup/runtime-profile --wait-for-videos をSAM venvでセッション89447に起動済み。動画完成後にDINO/ViT-H各12frame、3warmup後2frameのCPU/CUDAトレースを取る。ログresults/sam-setup/runtime-profile.log。この結果の分析と文書更新も終了前に必要。診断計測は通常スループットと区別。
 
 - 追記：ユーザーはリアルタイム処理の可否を質問。現在のSAM fullはDINO単独約530ms/フレーム（約1.9Hz）で、そのまま滑らかな実時間駆動は厳しいと回答。30fps動画はオフライン再生。エンジン最適化/身体only/高速モデルとの低頻度併用は提案のみ、未採用。動画作成の中止指示はない。
 - 追記：全177pytest成功。共通の連続可視ペアだけで生肘深度/補正後/ヨーを集計するtools/summarize_body_comparison.pyを追加。欠測・案内区間をまたいだ差を除外するテスト成功。基準5187frameで実行検証済み。
