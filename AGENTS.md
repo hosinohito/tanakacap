@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新（2026-09-13）：bat整理。desktop直下はtanakacap.bat/test/face-capture/live/motionの5本のみ。比較・個別試行・デモの補助batはdesktop/tanakacap-toolsへ。tools/update-desktop-launcher.ps1がこの配置を維持する。補助batを直下へ再増殖させない。過去記述の補助bat配置は本項を優先。
+
 最新確定（2026-09-13）：ユーザー指定で頭角度の既定はpnpへ復帰。size2dは任意試行。旧size2d既定記述より本項を優先。頭の可変追従は別の未採用試行で、通常は固定速度。
 
 最新試行（2026-09-13）：頭角度size2dを可逆既定へ。眼間距離と鼻位置のXY比率でpitch/yaw、眼軸でroll、口・眉の既存PnP補正は維持。UI頭角度/pnpまたは-HeadPoseMode pnpで復帰。頭のみ専用モデルは対象外。既存録画の数値だけではpitchのガタつき改善は確認できず、採用品質は未確定。docs/HEAD_SIZE_TRIAL.md/HANDOFF先頭。旧通常pnp記述より本項を優先。

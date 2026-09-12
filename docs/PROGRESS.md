@@ -1024,3 +1024,7 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 ## 2026-09-13 — 頭角度の既定をpnpへ復帰
 
 ユーザー指定でtracking-settings、UI初期値、通常検証batをpnpへ変更。保存済みUIもpnpであることと生成コマンドを確認。size2dは任意選択で残し、可変追従は未採用のまま。文書を訂正。実カメラ試験・再ビルドなし。
+
+## 2026-09-13 — デスクトップbatを29本から5本へ整理
+
+ユーザーの整理指定。UI/test/face-capture/live/motionの5本を直下へ残し、既知の補助24本はdesktop/tanakacap-toolsへ移動。比較動画やデモ、個別試行は同フォルダーから利用可能。更新スクリプトも補助の生成先を変更し、直下への復活を防ぐ。移動は絶対親パスを確認、同名競合は上書きせず停止。5本/24本の配置を確認。アプリ・カメラは起動せず、素材/録画/設定の削除なし。README/SPEC/HANDOFF/AGENTSを更新。
