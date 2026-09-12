@@ -11,5 +11,6 @@
   "head_pitch_gain": 1.8,
   "mouth_lip_depth_scale": 1.5,
   "face_distance_filter": "stable",
-  "arm_depth_mode": "front_projection"
+  "arm_depth_mode": "front_projection",
+  "shoulder_yaw_mode": "face_ratio"
 }
