@@ -111,6 +111,8 @@ def benchmark(args):
         from .head_only import run
         return run(args)
     if getattr(args, 'no_body', False): args.body3d=False
+    if args.head_pose_mode == 'depth3d' and args.face_source != 'body3d':
+        raise ValueError('depth3d requires --face-source body3d')
     face_name = 'rtmw3d-x-384' if args.face_source == 'body3d' else args.model
     output = None if args.no_log else output_folder(face_name)
     print(f'Results: {output}', flush=True)
@@ -126,6 +128,9 @@ def benchmark(args):
     face_distance=FaceDistance(args.observation_block,args.observation_stride,args.face_distance_filter)
     from .head_pose import HeadPose
     head_pose=HeadPose(args.head_pitch_gain,args.mouth_lip_depth_scale) if args.head_pose_mode=="pnp" else None
+    if args.head_pose_mode == 'depth3d':
+        from .head_pose3d import HeadPose3D
+        head_pose = HeadPose3D(args.head_pitch_gain)
     rows = deque(maxlen=1) if args.no_log else []
     try:
         if args.unity_port:
@@ -236,7 +241,8 @@ def benchmark(args):
                     timing["head_pose_ms"]=0.
                     if head_pose:
                         pose_start=time.perf_counter()
-                        head_pose.update(points,scores,packet,(image.shape[1],image.shape[0]))
+                        pose_extra = dict(depth=model.depth if pose_executed else None, depth_scores=model.depth_scores if pose_executed else None) if args.head_pose_mode == 'depth3d' else {}
+                        head_pose.update(points,scores,packet,(image.shape[1],image.shape[0]),**pose_extra)
                         timing["head_pose_ms"]=(time.perf_counter()-pose_start)*1000
                         timing["pipeline_ms"]+=timing["head_pose_ms"]
                     if gaze:
@@ -487,7 +493,7 @@ def main():
             sub.add_argument('--observation-stride',type=int,choices=(1,3),default=1,help='1: overlapping means, 3: disjoint means (block size 3 only)')
             sub.add_argument('--observation-block',type=int,choices=(1,3),default=3,help='1: original confirmation; 3: three-frame means (stride controls overlap)')
             sub.add_argument('--body3d', action='store_true', help='Add RTMW3D body inference; keep the existing face model')
-            sub.add_argument('--head-pose-mode',choices=['pnp','legacy'],default='pnp')
+            sub.add_argument('--head-pose-mode',choices=['pnp','legacy','depth3d'],default='pnp')
             sub.add_argument('--head-pitch-gain',type=float,default=1.8)
             sub.add_argument('--mouth-lip-depth-scale',type=float,default=1.5)
             sub.add_argument('--face-distance-filter',choices=['stable','legacy'],default='stable')

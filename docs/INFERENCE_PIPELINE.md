@@ -1,5 +1,7 @@
 # 現在の推論経路
 
+追加試行：body3d顔＋head_pose_mode=depth3dでは、PnP/仮定唇深度を使わず、既存推論の顔Zから回転を求めて口輪郭を正面へ戻す。[可逆操作・計測](FACE_DEPTH_TRIAL.md)。通常pnpを維持。
+
 追加試行：`face_source=body3d`では下記RTMW-Lを省略し、RTMW3D-Xの同じ1回のXY出力を顔にも使う。虹彩モデル・補正は維持。通常はseparate。[切替・比較](FACE_SOURCE_TRIAL.md)。
 
 2026-09-13。通常は全部ON、B+C（graph/人物検出3間隔/YOLOX-M）。入力→人物ROI→RTMW-L→RTMW3D→頭/虹彩/表情/距離/体補正→UDP→Unityの順に処理する。部位ごとに別スレッドで並列推論しているわけではない。人物検出を省く観測でも、詳細モデルは実行する。

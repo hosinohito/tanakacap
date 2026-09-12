@@ -4,7 +4,7 @@ $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
 $taskTarget = Join-Path $taskDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar-lab.ps1'
-$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -Diagnose -Frames 1800`r`npause`r`n"
+$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode depth3d -Diagnose -Frames 1800`r`npause`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget
@@ -77,11 +77,16 @@ Write-Output $taskPhysTarget
 
 # Face source trial: original camera shortcut and recorded avatar comparison.
 $taskFaceOriginalTarget = Join-Path $taskDesktop 'tanakacap-test-face-original.bat'
-$taskFaceOriginalContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource separate -Diagnose -Frames 1800`r`npause`r`n"
+$taskFaceOriginalContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource separate -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
 [IO.File]::WriteAllText($taskFaceOriginalTarget,$taskFaceOriginalContents,[Text.Encoding]::Default)
 Write-Output $taskFaceOriginalTarget
 $taskFaceCompareTarget = Join-Path $taskDesktop 'tanakacap-compare-face.bat'
-$taskFaceVideo = Join-Path $taskRoot 'results/avatar-videos/face-source-trial/face-closeup.mp4'
+$taskFaceVideo = Join-Path $taskRoot 'results/avatar-videos/face-depth-trial/face-closeup.mp4'
 $taskFaceCompareContents = "@echo off`r`nexplorer.exe /select,`"$taskFaceVideo`"`r`n"
 [IO.File]::WriteAllText($taskFaceCompareTarget,$taskFaceCompareContents,[Text.Encoding]::Default)
 Write-Output $taskFaceCompareTarget
+
+$taskFacePnpTarget = Join-Path $taskDesktop 'tanakacap-test-face-pnp.bat'
+$taskFacePnpContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
+[IO.File]::WriteAllText($taskFacePnpTarget,$taskFacePnpContents,[Text.Encoding]::Default)
+Write-Output $taskFacePnpTarget

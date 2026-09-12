@@ -845,3 +845,14 @@ Windowsのmode700で作った一時ディレクトリでは同じsandboxから�
 - 216 tests成功、PowerShell構文確認。別の録画30観測で共有RTMW3D/虹彩/人物検出のCUDA主要演算を監査、CPU主要計算なし。results/20260912T172632-336891Z-rtmw3d-x-384。実カメラは開いていない。
 - デスクトップtest.batを共有試行へ更新、test-face-original.batで従来、compare-face.batで拡大動画の保存先。直接-FaceSource separateで戻せる。live非記録無期限は従来既定、head-only/motion維持。
 - 次：比較動画のユーザー評価を受けて採用/調整を判断。共有側の口/瞬き、顔距離による表示サイズ差、独立2D整合参照を失う影響が評価残件。新構成OBS性能・実カメラ品質は未確認。A/E保留、揺れ物は触らない。詳細と再現はdocs/FACE_SOURCE_TRIAL.md。
+
+## 2026-09-13 — 顔Zからピッチ・口角を同時に求める試行と動画完成
+
+- ユーザー指定でHeadPose3Dとhead_pose_mode=depth3dを実装。RTMW3Dの同じ推論のXY/Zからカメラ距離を近似し、鼻/眼端9点の剛体回転でピッチと口輪郭の正面座標を計算。PnP/LM、標準唇の仮の奥行き・1.5倍補正は新経路で使わない。標準の鼻/眼形状と近似カメラは残る。既存gain1.8・10観測校正・時間ゲート・モーフ・揺れ物は維持。
+- 通常はseparate/pnpのまま。-FaceSource body3d -HeadPoseMode depth3dで試行、-HeadPoseMode pnpで今回の対照へ戻す。-FaceSource separate -HeadPoseMode pnpでRTMW-Lへも戻せる。depth3dはbody3d顔が必須。頭専用・通常live/motionは維持。
+- 比較は両側とも同じRTMW3DのXY/Z・ROI・撮影時刻・5187観測、ピッチ/口輪郭処理のみ変更。左body3d=旧PnP、右depth3d=顔Z。results/comparisons/face-depth-trial。前回のRTMW-L対RTMW3D比較とは区別する。
+- 動画はresults/avatar-videos/face-depth-trialのbody3d.mp4/depth3d.mp4/side-by-side.mp4/face-closeup.mp4。各185.03秒/30fps/5551フレーム。4本全編デコード成功・時刻/フレーム整合確認。ユーザー指定で映像抽出や目視確認はせず、見た目の判断はユーザー担当。
+- 対象計算の平均0.589→0.220ms、両方頭fit有効の3841観測だけでも0.594→0.236ms。全体fpsやOBS併用速度ではない。頭fit5118→3898/口輪郭5104→3588、顔Zのpitch p95が40度上限。既存姿勢ゲートへの波及で視線4951→3266/顔距離4911→3380。軽いことを品質改善と扱わない。追加補正で隠さず比較動画に残す。通常採用は保留。
+- 224 tests、PowerShell構文確認成功。別の録画300観測で実benchmark経路の共有1セッション/GPU主要演算を監査、CPU主要計算なし。results/20260912T174517-019568Z-rtmw3d-x-384。実カメラ未使用、Unity変更/再ビルドなし。
+- desktop test.batは顔Z、test-face-pnp.batは今回の対照、test-face-original.batはRTMW-L、compare-face.batは新比較の保存先へ更新。README/SPEC/AGENTS/関連文書更新。動画・実写・重み・アバターはGitへ入れない。
+- 次：ユーザーが動画を確認。顔Z方式の有効率低下・ピッチ上限・表情差を含めて採用判断する。勝手な補正追加/通常採用をしない。今回の映像目視確認はユーザー担当。A/E保留、揺れ物調整終了、録画検証方針を維持。詳細・公式座標根拠・再現はdocs/FACE_DEPTH_TRIAL.md。
