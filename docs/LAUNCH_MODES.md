@@ -1,3 +1,5 @@
+2026-09-13表示ルール：実写は通常/診断/比較撮影でも非表示。完全一致の長い専用起動オプションのみ許可（README参照）。通常batへ自動追加しない。アバター表示とOBSは従来どおり。
+
 # 起動モード（2026-09-13）
 
 最新試行（2026-09-13）：通常body3d/pnp、ピッチはPnPを維持し、口輪郭から推定Zを外す。`-HeadPoseMode pnp_depthmouth`で直前のZ口輪郭へ戻す。顔の向きを補正する固定テンプレートは残す。[比較動画と設定](MOUTH_NO_Z_TRIAL.md)。
@@ -6,14 +8,14 @@
 
 | bat | 用途 | 動作記録 | 終了 |
 |---|---|---|---|
-| tanakacap-test.bat | 全部ON・PnPピッチ＋推定Zなし口輪郭 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
-| tanakacap-test-mouth-z.bat | 全部ON・直前の推定Z口輪郭 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
-| tanakacap-test-face-pnp.bat | 全部ON・同じRTMW3D-X顔でPnP対照 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
-| tanakacap-test-face-original.bat | 全部ON・従来RTMW-L顔方式 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test.bat | 全部ON・PnPピッチ＋推定Zなし口輪郭 | 数値/診断ログあり | 1800フレーム、またはアバターを閉じる/Ctrl+C |
+| tanakacap-test-mouth-z.bat | 全部ON・直前の推定Z口輪郭 | 数値/診断ログあり | 1800フレーム、またはアバターを閉じる/Ctrl+C |
+| tanakacap-test-face-pnp.bat | 全部ON・同じRTMW3D-X顔でPnP対照 | 数値/診断ログあり | 1800フレーム、またはアバターを閉じる/Ctrl+C |
+| tanakacap-test-face-original.bat | 全部ON・従来RTMW-L顔方式 | 数値/診断ログあり | 1800フレーム、またはアバターを閉じる/Ctrl+C |
 | tanakacap-compare-face.bat | 顔比較動画の保存先を開く | なし・カメラ不使用 | Explorerで確認 |
 | tanakacap-compare-f.bat | 高速化FのOFF／ON比較動画の保存先を開く | なし・カメラ不使用 | Explorerで確認 |
-| tanakacap-head-only.bat | 頭専用auto | なし | 制限なし。アバターを閉じるかQ/Esc |
-| tanakacap-live.bat | 普段使いのカメラ版 | なし | 制限なし。アバターを閉じるかプレビューでQ/Esc |
+| tanakacap-head-only.bat | 頭専用auto | なし | 制限なし。アバターを閉じるかCtrl+C |
+| tanakacap-live.bat | 普段使いのカメラ版 | なし | 制限なし。アバターを閉じるかCtrl+C |
 | tanakacap-motion.bat | カメラを使わないモーション版 | なし | 制限なし。アバターを閉じる |
 
 通常版はいずれも更新した外部haolan.tcapを読み、表情はexisting（既存キー優先）が既定。F6は髪・服の揺れON/OFF、F3はOBS向け表示。Spoutの送信名TanakaCapは共通。使いたい版を一つ起動する。

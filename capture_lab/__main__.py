@@ -1,3 +1,4 @@
+from . import camera_display
 import argparse
 import importlib.metadata
 import json
@@ -106,6 +107,7 @@ def parent_running(pid):
 
 
 def benchmark(args):
+    args.preview = camera_display.allowed()
     if args.observation_block==1: args.observation_stride=1
     if getattr(args, 'head_only', False):
         from .head_only import run
@@ -339,7 +341,7 @@ def benchmark(args):
                     if body_model and sender:
                         cv2.putText(display,body_retarget.calibration.status,(12,125),cv2.FONT_HERSHEY_SIMPLEX,.55,(0,255,255),2)
                     cv2.putText(display,f'Confirmation: mean {args.observation_block}, stride {args.observation_stride}',(12,150),cv2.FONT_HERSHEY_SIMPLEX,.55,(0,255,255),2)
-                    cv2.imshow('tanakacap capture lab', display)
+                    camera_display.show('tanakacap capture lab', display)
                     key=cv2.waitKey(1) & 0xff
                     if key in (27, ord('q')):
                         break
@@ -464,13 +466,13 @@ def main(argv=None, *, inference_mode=None):
     inference_mode = inference_mode or DEFAULT_INFERENCE_MODE
     if inference_mode not in ('run','binding','graph','graph-fp16'):
         raise ValueError('Unknown internal inference mode')
-    parser = argparse.ArgumentParser(description='GPU capture evaluation (development only)')
+    parser = argparse.ArgumentParser(allow_abbrev=False, description='GPU capture evaluation (development only)')
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('environment')
     downloader = commands.add_parser('fetch')
     downloader.add_argument('models', nargs='+', choices=list(catalog()))
     for command in ('benchmark', 'probe-camera'):
-        sub = commands.add_parser(command)
+        sub = commands.add_parser(command, allow_abbrev=False)
         sub.add_argument('--camera', type=int, default=0)
         sub.add_argument('--width', type=int, default=1280)
         sub.add_argument('--height', type=int, default=720)
@@ -499,7 +501,7 @@ def main(argv=None, *, inference_mode=None):
             sub.add_argument('--fixed-roi', action='store_true', help='Skip person detection; diagnostic only, may predict on an empty scene')
             sub.add_argument('--warmup', type=int, default=20)
             sub.add_argument('--threshold', type=float, default=.3)
-            sub.add_argument('--preview', action='store_true')
+            camera_display.add_argument(sub)
             sub.add_argument('--snapshot', action='store_true', help='Explicitly save one annotated diagnostic frame locally')
             sub.add_argument('--landmarks', action='store_true', help='Save numeric landmarks locally; never raw camera frames')
             sub.add_argument('--unity-port', type=int, help='Send experimental controls to Unity over loopback UDP')

@@ -978,3 +978,9 @@ builds/demos/haolan-custom-browsへPlayerと専用.tcapを保存。汎用版と�
 追加の質問に対し、既存ARKit mouthLeft/Rightと左右smile/frownの横寄せ/非対称は実装済みとコード確認。合成メッシュで左右横寄せ、片側笑顔/反対への字、反転後の旧重み消去を検証した。通常無作用・明示ガンマ/抑制/強調、への字側非抑制も成功。Unity最終ビルドと実Player通常/auto/通常調整2/.9/.5のmotion-check成功、results/corner-options。実Perfect Syncモデルの目視検証ではない。
 
 PowerShell起動mockで既定省略/明示指定受け渡しと構文確認、デスクトップbat更新。実カメラ不使用。README/SPEC0.70/HANDOFF/AGENTS/表情文書更新。過去の比較動画は通常にも2/.9が掛かった時点なので新既定の動画と扱わない。今回再生成なし。
+
+## 2026-09-13 — 実写画面表示の明示起動制限
+
+ユーザーが長い専用起動オプション以外でのカメラ表示禁止を今後一貫して要求。従来の通常launcher常時--preview、頭のselectROI、比較撮影Tk画像を確認し共通camera_displayガードへ移行。完全一致の --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only の実sys.argvだけ許可し、旧--preview/省略形を拒否。JSON/環境/診断/ホットキー/UIによる代替を設けない。録画プレビューも対象。比較撮影は実写なしの文字ガイド/録画を維持、固定頭ROIは通常数値指定。保存やアバター/OBS出力は変更なし。
+
+245 tests成功。無許可表示API/Tk変換不達、頭選択の設定値迂回拒否、旧/短縮拒否と完全一致受理、許可非永続、表示API集中の構造検査。実カメラと実写画面表示は行わない。通常検証でもPlayer終了へ推論を追従させ、映像窓なしで終了できるようにした。PowerShell構文検査、デスクトップbat更新、README/SPEC0.71/AGENTS/HANDOFF/起動/頭専用文書更新。Unity再ビルド不要。将来の表示API追加時も共通ガードと検査更新を必須とする。
