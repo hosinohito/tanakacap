@@ -75,8 +75,9 @@ class SimCCModel:
         if 'CUDAExecutionProvider' not in ort.get_available_providers():
             raise RuntimeError('CUDAExecutionProvider is unavailable. CPU fallback is not allowed.')
         options = ort.SessionOptions()
-        options.enable_profiling = True
-        options.profile_file_prefix = str(output_dir / name)
+        self.profiling = output_dir is not None
+        options.enable_profiling = self.profiling
+        if self.profiling: options.profile_file_prefix = str(output_dir / name)
         options.log_severity_level = 3
         options.intra_op_num_threads = 2
         self.session = ort.InferenceSession(str(path), sess_options=options,
@@ -123,6 +124,8 @@ class SimCCModel:
                                'pipeline_ms': (finished-start)*1000}
 
     def finish(self):
+        if not self.profiling:
+            return {'profiling': False, 'providers': self.session.get_providers(), 'inference_calls': self.calls}
         from pathlib import Path
         path = Path(self.session.end_profiling())
         report = provider_summary(path)

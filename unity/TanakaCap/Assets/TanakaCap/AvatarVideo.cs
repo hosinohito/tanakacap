@@ -22,6 +22,7 @@ namespace TanakaCap
             int input=Array.IndexOf(args,"--render-replay");
             if(input<0)return false;
             videoMode=true;
+            var secondary=GetComponent<SecondaryMotion>();if(secondary)secondary.externalClock=true;
             int output=Array.IndexOf(args,"--video-output"),encoder=Array.IndexOf(args,"--ffmpeg");
             if(input+1>=args.Length || output<0 || output+1>=args.Length || encoder<0 || encoder+1>=args.Length)
                 throw new ArgumentException("Video mode requires replay, output and ffmpeg paths");
@@ -50,7 +51,9 @@ namespace TanakaCap
             {
                 probeDelta=(float)Math.Min(interval,1.0/60);
                 lastReceived=Time.unscaledTime;
+                var secondary=GetComponent<SecondaryMotion>();if(secondary)secondary.Restore();
                 LateUpdate();
+                if(secondary)secondary.Step(probeDelta);
                 interval-=probeDelta;
             }
             probeDelta=0;

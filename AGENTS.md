@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：髪服は元PhysBone設定の互換変換を優先するユーザー指定。SDK本体は同梱せず独立近似。docs/SECONDARY_MOTION.md。本家一致は未確認。非記録/無期限のtanakacap-live.bat、自作モーションのtanakacap-motion.batを既存検証版とは別に維持。docs/LAUNCH_MODES.md。モーション専用0BSDで、アバター許諾とは別。
+
 - 最新（2026-09-12）：フェーズ3のHAOLAN限定.tcap書出し/外部読込/隔離OBS実受信を検証済み。通常Playerは外部avatars/haolan.tcapが必要。AlphaOutput明示描画を維持。docs/PHASE3_PACKAGE_OBS.md。通常OBSシーンのユーザー確認、揺れ物・汎用改変対応・配布環境は残る。
 
 - 最新（2026-09-12）：ユーザーが肩face_ratio/腕front_projectionを通常採用し次へ進むと指定。前項の通常legacy/採用保留は旧状態。品質残件は残してフェーズ3の最小書出し・外部読込・OBS実受信へ進む。docs/IMPLEMENTATION_PHASES.mdの最新監査参照。

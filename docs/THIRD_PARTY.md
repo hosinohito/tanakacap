@@ -60,3 +60,7 @@ Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。captur
 
 - Unity標準AssetBundle module1.0.0（Unity2022.3.22f1付属）を有効化。既存Unityの標準機能であり新推論依存なし。
 - OBS Spout plugin1.12.0を公式releaseから取得し、OBS32.2.2で実受信検証。https://github.com/Off-World-Live/obs-spout2-plugin/releases/tag/1.12.0 。DLL SHA256 B998DF1C4C609D1EF27CA0561203FD1E196D7ED6FBCA7EDA45A4B0DD13D3DADD。導入済みOBSのコピーはローカル検証用、当プロジェクトの配布物へ同梱したと扱わない。再配布時は元ライセンスと依存DLLを再監査する。
+
+## 自作の繰り返しモーション
+
+ProceduralMotion.csは外部クリップ/実写記録を使わない独自の数式モーション。ソースと生成データは0BSD、docs/PROCEDURAL_MOTION_LICENSE.txt。アバター本体の配布条件は別。PhysBoneのSDKコード/DLLは同梱せず、docs/SECONDARY_MOTION.mdの独立互換変換を使う。
