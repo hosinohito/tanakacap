@@ -138,6 +138,7 @@ def benchmark(args):
         profile_output = None if getattr(args, 'no_ort_profile', False) else output
         execution = {} if args.inference_mode=='run' else dict(execution_mode=args.inference_mode)
         pose_execution={**execution}
+        if args.gpu_decode:pose_execution['gpu_decode']=True
         if args.preprocess_mode!='legacy': pose_execution['preprocess_mode']=args.preprocess_mode
         model = SimCCModel(face_name, profile_output, **pose_execution)
         report['face_source'] = args.face_source
@@ -483,6 +484,7 @@ def main():
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
             sub.add_argument('--batch-eyes',action='store_true')
             sub.add_argument('--preprocess-mode',choices=('legacy','crop'),default='legacy')
+            sub.add_argument('--gpu-decode',action='store_true')
             sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
             sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)

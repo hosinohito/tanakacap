@@ -68,7 +68,7 @@ def provider_summary(path):
 
 
 class SimCCModel:
-    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False, preprocess_mode='legacy'):
+    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False, preprocess_mode='legacy', gpu_decode=False):
         if preprocess_mode not in ('legacy','crop'): raise ValueError('Unknown preprocessing mode')
         self.preprocess_mode=preprocess_mode
         self.info = catalog()[name]
@@ -86,6 +86,10 @@ class SimCCModel:
         options.intra_op_num_threads = 2
         dynamic = self.info.get('kind') == 'detector'
         original_path=path
+        self.gpu_decode=gpu_decode and self.info.get('dimensions')==3
+        if self.gpu_decode:
+            from .onnx_variants import compact_simcc_model
+            path=compact_simcc_model(path)
         tail_path=None
         if detector_graph:
             if not dynamic: raise ValueError('Split graph is only for detectors')
@@ -119,6 +123,7 @@ class SimCCModel:
         self.refine_body_peaks = True
         self.decode_diagnostics = None
         self.identity = {'id': name, 'sha256': sha256(original_path),
+                         'gpu_decode':self.gpu_decode,
                          'execution_mode':self.runner.mode,
                          'providers': self.session.get_providers(), 'input_shape': shape,
                          'onnxruntime_version': ort.__version__}
@@ -134,7 +139,10 @@ class SimCCModel:
         outputs = self.runner.run(tensor,self.input_name)
         self.calls += 1
         inferred = time.perf_counter()
-        if self.info.get('dimensions') == 3:
+        if self.gpu_decode:
+            points,scores,self.depth,self.depth_scores,self.decode_diagnostics=decode_compact_simcc3d(
+                outputs[0],center,scale,self.info['input_wh'],self.info['z_range'],self.refine_body_peaks)
+        elif self.info.get('dimensions') == 3:
             points, scores, self.depth, self.depth_scores = decode_simcc3d(outputs, center, scale, self.info['input_wh'],self.info['z_range'],refine_body=self.refine_body_peaks)
             ids=[5,6,7,8,11,12]
             self.decode_diagnostics={'mode':'local_peak' if self.refine_body_peaks else 'integer',
@@ -169,6 +177,33 @@ class SimCCModel:
         if report['cpu_compute_ops']:
             raise RuntimeError(f'Core compute fell back to CPU: {report["cpu_compute_ops"]}')
         return report
+
+
+def decode_compact_simcc3d(compact,center,scale,input_wh,z_range,refine_body=True):
+    indices=compact[:,:,0].astype(np.float64)
+    scores=np.minimum(compact[0,:,1],compact[1,:,1])
+    points=indices[:2].T.astype(np.float32)/2/np.asarray(input_wh)*scale+center-scale/2
+    depth=(indices[2]/288-1)*z_range
+    ids=[5,6,7,8,11,12]
+    refined=indices[:,ids].copy()
+    for axis,bins in enumerate((576,768,576)):
+        triplet=compact[axis,ids,2:].astype(float)
+        k=indices[axis,ids]
+        valid=(k>0)&(k<bins-1)&np.isfinite(triplet).all(axis=1)&(triplet>0).all(axis=1)
+        logs=np.log(np.maximum(triplet,1e-30))
+        curvature=logs[:,0]-2*logs[:,1]+logs[:,2]
+        valid &= curvature < -1e-6
+        offset=np.zeros(len(ids))
+        offset[valid]=.5*(logs[valid,0]-logs[valid,2])/curvature[valid]
+        refined[axis]+=np.clip(offset,-.5,.5)
+    if refine_body:
+        points[ids]=refined[:2].T/2/np.asarray(input_wh)*scale+center-scale/2
+        depth[ids]=(refined[2]/288-1)*z_range
+    depth_scores=compact[2,:,1].copy()
+    points[scores<=0]=np.nan;depth[depth_scores<=0]=np.nan
+    diagnostic={'mode':'local_peak' if refine_body else 'integer','joint_ids':ids,
+                'integer_z_bins':indices[2,ids].astype(int).tolist(),'refined_z_bins':refined[2].tolist()}
+    return points,scores,depth,depth_scores,diagnostic
 
 
 def local_peak_positions(distribution):
