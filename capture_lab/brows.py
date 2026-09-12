@@ -39,7 +39,9 @@ def frontal_brows(points,frontal,rotation,translation,image_size):
 
 
 class BrowFilter:
-    def __init__(self,block,stride):
+    def __init__(self,block,stride,gain=2.):
+        self.gain=float(gain)
+        if not np.isfinite(self.gain) or not .5<=self.gain<=4:raise ValueError('brow gain must be 0.5..4')
         self.gate=DirectionGate(.015,float('inf'),block,stride)
         self.samples=[]; self.reference=None
 
@@ -60,4 +62,4 @@ class BrowFilter:
                 return
         output=self.gate.update(np.clip((values-self.reference)/.10,-1,1),now)
         packet['browTracked']=output is not None
-        if output is not None:packet.update(zip(KEYS,map(float,output)))
+        if output is not None:packet.update(zip(KEYS,map(float,np.clip(output*self.gain,-1,1))))

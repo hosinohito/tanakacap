@@ -5,6 +5,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet(1,3)][int]$ObservationStride = 1,
     [ValidateSet("legacy","width_only","face_ratio")][string]$ShoulderYawMode,
     [string]$Avatar,
+    [switch]$DemoAvatar,
     [switch]$NoLog,
     [ValidateRange(64,4096)][int]$OutputHeight=1080,
     [ValidateRange(64,4096)][int]$OutputWidth,
@@ -114,6 +115,12 @@ try {
     if ($NoBody -or $taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }
     if ($taskGazeSettings.face_distance_mode -eq 'seated') { $taskPlayerArgs+='--face-distance-seated' }
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
+    if ($DemoAvatar) {
+        if ($Avatar) { throw 'DemoAvatar cannot be combined with Avatar' }
+        $taskDemoAvatar=Join-Path $PSScriptRoot 'builds/demos/haolan-custom-brows/avatars/haolan.tcap'
+        if (-not (Test-Path -LiteralPath $taskDemoAvatar)) { throw 'Saved demo avatar is missing' }
+        $taskPlayerArgs+=@('--avatar',('"'+$taskDemoAvatar+'"'),'--use-demo-shape-keys')
+    }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @('--face-source',$FaceSource,'--detector-interval',$DetectorInterval.ToString(),'--detector-model',$DetectorModel)
     if (-not $PreprocessMode) { $PreprocessMode=$taskGazeSettings.preprocess_mode }
@@ -130,6 +137,9 @@ try {
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
     if (-not $NoGaze -and $taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
     if ($HeadPoseMode) { $taskExtra += @('--head-pose-mode',$HeadPoseMode) }
+    if ($taskGazeSettings.PSObject.Properties.Name -contains 'brow_gain') {
+        $taskExtra+=@('--brow-gain',([double]$taskGazeSettings.brow_gain).ToString([Globalization.CultureInfo]::InvariantCulture))
+    }
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'head_pitch_gain') {
         $taskPitchGain=[double]$taskGazeSettings.head_pitch_gain
         if ([double]::IsNaN($taskPitchGain) -or $taskPitchGain -lt .5 -or $taskPitchGain -gt 3) { throw 'head_pitch_gain must be 0.5..3' }

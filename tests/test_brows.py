@@ -10,6 +10,27 @@ def face():
     return p,s
 
 
+def test_gain_after_gate_preserves_neutral_and_caps_range():
+    models=[BrowFilter(3,1,gain=g) for g in (1,2)]
+    p,s=face()
+    for i in range(16):
+        for model in models:
+            packet=dict(faceTracked=True);observe(p,s,packet);model.update(packet,i/30)
+            if packet['browTracked']:assert packet['browLeftInner']==0
+    p[23+22:23+27,1]-=1
+    outputs=[]
+    for model in models:
+        for i in range(16,30):
+            packet=dict(faceTracked=True);observe(p,s,packet);model.update(packet,i/30)
+        outputs.append(packet['browLeftInner'])
+        assert packet['browRightInner']==0
+    assert np.isclose(outputs[1],outputs[0]*2)
+    p[23+22:23+27,1]-=8
+    for i in range(30,45):
+        packet=dict(faceTracked=True);observe(p,s,packet);models[1].update(packet,i/30)
+    assert packet['browLeftInner']==1
+
+
 def test_brows_anatomical_left_and_eye_lids_do_not_drive_brows():
     p,s=face();initial=measure(p,s)
     p[23+22:23+27,1]-=6

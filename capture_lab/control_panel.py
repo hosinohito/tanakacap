@@ -75,7 +75,7 @@ def commands(config, port, status_port, player_pid=0):
     body=c['mode']=='full' and c['body']
     infer+=['--face-source',tracking.get('face_source','body3d') if body else 'separate']
     for key,default in [('observation_block',3),('observation_stride',1),('head_pose_mode','pnp'),('head_pitch_gain',1.8),
-                        ('mouth_lip_depth_scale',1.5),('face_distance_filter','stable'),('arm_depth_mode','front_projection'),
+                        ('brow_gain',2.),('mouth_lip_depth_scale',1.5),('face_distance_filter','stable'),('arm_depth_mode','front_projection'),
                         ('shoulder_yaw_mode','face_ratio'),('gaze_reference','contour'),('preprocess_mode','crop'),
                         ('detector_interval',3),('detector_model','yolox-m-human')]:
         value=tracking.get(key,default)

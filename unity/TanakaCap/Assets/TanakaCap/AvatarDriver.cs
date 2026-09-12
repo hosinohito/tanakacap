@@ -251,8 +251,9 @@ namespace TanakaCap
             int expressionIndex=Array.IndexOf(renderArgs,"--expression-mode");
             string expressionMode=expressionIndex<0?"existing":expressionIndex+1<renderArgs.Length?renderArgs[expressionIndex+1]:"";
             if(expressionMode!="existing" && expressionMode!="auto-custom")throw new ArgumentException("--expression-mode must be existing or auto-custom");
-            autoExpressions=expressionMode=="auto-custom";
-            if(autoExpressions){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
+            bool demoShapes=Array.IndexOf(renderArgs,"--use-demo-shape-keys")>=0;
+            autoExpressions=expressionMode=="auto-custom" || demoShapes;
+            if(autoExpressions && !demoShapes){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
             expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
             Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
             browExpressions=new BrowExpressions(meshes);
