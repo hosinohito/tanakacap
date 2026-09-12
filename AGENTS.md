@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：フェーズ3のHAOLAN限定.tcap書出し/外部読込/隔離OBS実受信を検証済み。通常Playerは外部avatars/haolan.tcapが必要。AlphaOutput明示描画を維持。docs/PHASE3_PACKAGE_OBS.md。通常OBSシーンのユーザー確認、揺れ物・汎用改変対応・配布環境は残る。
+
 - 最新（2026-09-12）：ユーザーが肩face_ratio/腕front_projectionを通常採用し次へ進むと指定。前項の通常legacy/採用保留は旧状態。品質残件は残してフェーズ3の最小書出し・外部読込・OBS実受信へ進む。docs/IMPLEMENTATION_PHASES.mdの最新監査参照。
 
 - 最新（2026-09-12）：肩の前傾対策へモデル首/肩/胴体Zを使わないユーザー指定。顔肩距離比と支持最大幅を試行、肩基準短縮禁止。shoulder_yaw_mode=face_ratioで試行、legacyが通常既定。終盤静止ヨーが残り採用保留。専用tanakacap-test-shoulder.bat、docs/SHOULDER_FACE_RATIO_TRIAL.md参照。

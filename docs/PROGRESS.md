@@ -732,3 +732,21 @@
 - 採用は全品質合格の意味ではない。終盤静止ヨー/腕の大きな跳び/左指等の未確認課題は残件として維持し、これらの微調整でフェーズ3への進行を止めない。前傾判定へモデル首/肩/胴体Zを使わない方針も維持。
 - docs/IMPLEMENTATION_PHASES.mdへ6フェーズの現状を追加。1は主要比較/候補選択済み、カメラ要因の分離など残り。2は駆動実装・反復評価済み、部位の品質残件あり。3はSpout送信のみ先行、最小Exporter/ファイル形式/Runtime読込/OBS実受信が未完了。4は揺れ物・OBS併用性能/30分・実遅延未確認。5は配布UI/依存導入/非破壊汎用変換/ライセンス全体監査未完了。6は追加表情・指・視線を一部先行、仮想カメラ/コラボ/全身/軽量化は後日。
 - 次の具体作業：haolanの書き出しコピー→最小バージョン付きパッケージ→外部ファイル読込の経路を作り、OBS Spout実受信を確認する。髪/服は現検証シーンにPhysBone互換を主張できる実装なし、自然な揺れはフェーズ4の主要残件。SPEC本文の旧ロスト待機姿勢/ローカルクロマキー案も最新指示へ整合した。
+
+## 2026-09-12 — フェーズ3進行中：外部アバター成功、OBS実受信を検証中
+
+- ユーザーはフェーズ3開始を指定し、Astra使用量への配慮を要求。モデル交換や多重エージェントは使っていない。
+- AvatarExporter.cs/AvatarPackage.cs/AvatarPackageLoader.cs追加。HAOLANプロファイル限定の.tcap（manifest+AssetBundle ZIP）、Unity2022.3.22f1/Windows64一致・SHA256照合。原本コピーだけ加工、未対応scriptはエラー、欠損VRC挙動は対象パス付き報告、標準RotationConstraintは保持。汎用MA/PhysBoneは未対応。
+- BuildLabは書き出し後に組込みavatarを除去しLoaderのみのPlayerへ。builds/lab/avatars/haolan.tcap（約26MB）、TanakaCapExporter.unitypackage。--avatarパス/F5読み込み。通常デフォルトはexe隣のavatars/haolan.tcap。
+- results/phase3/package-smoke.png/log：外部パッケージの骨/表情/掌/透明画素/Spout登録のsmoke成功。com.unity.modules.assetbundle=1.0.0追加。初期module不足/CompressionLevel衝突/標準RotationConstraint拒否は修正済み。
+- OBS32.2.2をresults/phase3-obs/appへ隔離コピー、公式Spout1.12.0 portableを導入。ユーザーの通常OBS設定は変更なし。検証OBS PID24940、認証設定はignored config内でチャットへ出さない。tools/obs_phase3.pyで127.0.0.1:4456へ接続。配信/録画開始はしていない。
+- OBSはsenderを検出するが初回の実受信画像は透明一色。合格扱いしない。AlphaOutputをLateUpdate明示Renderへ変更してビルド中（session56015）。build後に--demo --obsで送信を再起動し、実OBS source/合成画像を再検査する。検証Player PIDはresults/phase3/obs-player.pid、停止はそのpid/commandlineだけ。ユーザーの別OBSは停止しない。
+- 未完了：OBS実画素検証、パッケージ不良入力検査、完成文書・Gitコミット。通常肩face_ratio/腕front_projectionは維持。実写動画はGit除外のまま。
+
+## 2026-09-12 — フェーズ3最小経路を実装・検証
+
+- HAOLAN限定Exporter、.tcap（manifest＋AssetBundle）、外部ファイルLoader、OBS実受信/背景合成まで成功。docs/PHASE3_PACKAGE_OBS.md。通常tanakacap-test.batは外部builds/lab/avatars/haolan.tcapを読み込む。F5/--avatar/-Avatarでファイル指定。Exporterはbuilds/lab/TanakaCapExporter.unitypackage。
+- ビルド済みシーンから組込みavatarを除去。原本依存hash前後一致25babac2d68f0ee4c5323cd154f54b98、骨/表情/掌等の実Player smoke成功（results/phase3/package-verified）。不正形式/Unity版/shaをcode2で拒否（invalid-final/report.json）。単体ソフトの一般配布用依存同梱はフェーズ5のまま。
+- AlphaOutputの通常自動描画ではOBS画像が透明一色になる問題を実受信で発見。LateUpdate明示Renderへ変更し、GPU送信を維持。最終OBS32.2.2/Spout1.12.0の透明677443/不透明240913/中間3244画素、2秒変化69033画素、背景合成を確認（results/phase3/obs-report.json、obs-composite-final.png）。デモでの検査、実人物/30分/遅延合格ではない。
+- 通常OBSへC:/ProgramData/obs-studio/plugins/win-spoutを配置済み。次回起動後Spout2 Capture→TanakaCap→Premultiplied Alpha。通常ユーザーのシーン/配信設定は変更せず、実受信は隔離コピーで検証。通常シーンでのユーザー確認は残る。Program Files配置はOS権限で失敗し、公式推奨ProgramDataに成功した。
+- 検証用Player/隔離OBSは終了済み。ユーザーの別OBSは停止していない。配信/録画は開始していない。次は通常OBSでの利用確認、フェーズ4の自然な髪服揺れとOBS併用品質/性能。汎用MA/PhysBone変換・一般向け導入は未完了。肩face_ratio/腕front_projection維持。

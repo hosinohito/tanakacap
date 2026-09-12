@@ -1,11 +1,11 @@
 # 開発版のOBS透過出力
 
-前回のマゼンタ背景・クロマキー案は撤回。現在はアルファ付き画像をSpoutで送る。汎用変換・ファイル読み込み・OBS実合成は未完了。
+最新（2026-09-12）：HAOLAN限定の書き出し・外部.tcap読み込み・隔離OBSでの実受信/背景合成まで成功。[成果と残件](PHASE3_PACKAGE_OBS.md)。マゼンタ/クロマキー案は撤回のまま。以下の未実施表記は以前の検証時点。通常OBSの既存シーンでの確認は残る。
 
 1. デスクトップの `tanakacap-test.bat` で起動する。Spout送信元 `TanakaCap` が自動的に公開される。
-2. OBSへ [Spout2プラグイン](https://github.com/Off-World-Live/obs-spout2-plugin/releases)を導入する。OBS側の導入は今回未実施。
+2. OBSへ [Spout2プラグイン](https://github.com/Off-World-Live/obs-spout2-plugin/releases)を導入する。Spout1.12.0を通常OBS向けProgramDataへ配置済み。次回OBS起動で反映。
 3. OBSで `Spout2 Capture` ソースを追加し、送信元 `TanakaCap` を選ぶ。
-4. Composite modeは `Premultiplied Alpha` から確認する。下に背景を置き、髪・輪郭・瞳の色と透過を確認する。実合成時の設定確定は未実施。[プラグイン公式手順](https://knowledge.offworld.live/articles/5059810-spout-plugin-for-obs-studio)
+4. Composite modeは `Premultiplied Alpha` から確認する。下に背景を置き、髪・輪郭・瞳の色と透過を確認する。隔離OBS32.2.2ではPremultiplied Alpha（内部値4）で実合成を確認済み。[プラグイン公式手順](https://knowledge.offworld.live/articles/5059810-spout-plugin-for-obs-studio)
 
 プレビュー背景はそのままだが送信背景は透明。ステータスは送信に含まれない。F3/`--obs` はプレビューGUIを隠すだけで送信開始には不要。
 

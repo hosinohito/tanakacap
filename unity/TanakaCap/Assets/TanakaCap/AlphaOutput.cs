@@ -6,6 +6,7 @@ using Klak.Spout;
 namespace TanakaCap
 {
     // A separate camera keeps preview/UI out of the RGBA texture sent to OBS.
+    [DefaultExecutionOrder(1000)]
     public sealed class AlphaOutput : MonoBehaviour
     {
         public SpoutResources resources;
@@ -14,6 +15,7 @@ namespace TanakaCap
         SpoutSender sender;
         bool quitting;
         bool readyToQuit;
+        [NonSerialized] public int exitCode;
 
         void Start()
         {
@@ -32,6 +34,7 @@ namespace TanakaCap
             outputCamera.allowHDR=false;
             outputCamera.allowMSAA=true;
             outputCamera.targetTexture=texture;
+            outputCamera.enabled=false;
             sender=outputCamera.gameObject.AddComponent<SpoutSender>();
             sender.SetResources(resources);
             sender.spoutName="TanakaCap";
@@ -40,6 +43,12 @@ namespace TanakaCap
             sender.keepAlpha=true;
             Debug.Log("TANAKACAP_ALPHA_OUTPUT_READY 1280x720 RGBA Spout=TanakaCap");
             Application.wantsToQuit+=WantsToQuit;
+        }
+
+        void LateUpdate()
+        {
+            // Explicit offscreen rendering also runs when the preview is hidden.
+            if(outputCamera && texture && !quitting)outputCamera.Render();
         }
 
         // Readback is diagnostic-only; normal output stays on the GPU.
@@ -80,7 +89,7 @@ namespace TanakaCap
             yield return null;
             yield return null;
             readyToQuit=true;
-            Application.Quit();
+            Application.Quit(exitCode);
         }
 
         void ReleaseOutput()

@@ -136,6 +136,25 @@ namespace TanakaCap.Editor
         {
             CheckArmSolver();
             Prepare();
+            Directory.CreateDirectory("../../builds/lab/avatars");
+            string package="../../builds/lab/avatars/haolan.tcap";
+            // This generated output is replaceable; original BOOTH assets remain untouched.
+            string pending=package+"."+DateTime.UtcNow.Ticks+".new";
+            var original=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/HAOLAN/Phys_Haolan.prefab");
+            var sourceHash=AssetDatabase.GetAssetDependencyHash(AssetDatabase.GetAssetPath(original));
+            AvatarExporter.Export(original,pending);
+            if(sourceHash!=AssetDatabase.GetAssetDependencyHash(AssetDatabase.GetAssetPath(original)))throw new Exception("Source avatar dependencies changed during export");
+            if(File.Exists(package))File.Move(package,package+"."+DateTime.UtcNow.Ticks+".bak");
+            File.Move(pending,package);
+            File.Copy(pending+".report.json",package+".report.json",true);
+            File.Delete(pending+".report.json");
+            Debug.Log("TANAKACAP_SOURCE_UNCHANGED "+sourceHash);
+            var embedded=UnityEngine.Object.FindObjectOfType<AvatarDriver>();
+            if(!embedded)throw new Exception("Lab avatar missing before externalization");
+            UnityEngine.Object.DestroyImmediate(embedded.gameObject);
+            new GameObject("Avatar Loader").AddComponent<AvatarPackageLoader>();
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(),"Assets/TanakaCap/Scenes/HaolanLab.unity");
+            AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/Editor/AvatarExporter.cs"},"../../builds/lab/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
             Directory.CreateDirectory("../../builds/lab");
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { "Assets/TanakaCap/Scenes/HaolanLab.unity" },

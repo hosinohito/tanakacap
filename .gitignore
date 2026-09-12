@@ -33,3 +33,9 @@ unity/**/Assets/TanakaCap/Scenes/*.unity.meta
 *.[mM]4[vV]
 *.[mM][pP][gG]
 *.[mM][pP][eE][gG]
+
+# Local avatar packages and temporary export copies.
+*.tcap
+*.tcap.*
+unity/**/Assets/TanakaCapExport-*/
+unity/**/Assets/TanakaCapExport-*.meta
