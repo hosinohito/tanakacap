@@ -44,3 +44,9 @@ $taskShoulderTest = Join-Path $taskDesktop 'tanakacap-test-shoulder.bat'
 $taskShoulderTestContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -Diagnose -Frames 1800 -ShoulderYawMode face_ratio`r`npause`r`n"
 [IO.File]::WriteAllText($taskShoulderTest,$taskShoulderTestContents,[Text.Encoding]::Default)
 Write-Output $taskShoulderTest
+
+$taskPackageTarget = Join-Path $taskDesktop 'tanakacap-avatar-files.bat'
+$taskPackageFolder = Join-Path $taskRoot 'builds/lab'
+$taskPackageContents = "@echo off`r`nexplorer.exe `"$taskPackageFolder`"`r`n"
+[IO.File]::WriteAllText($taskPackageTarget,$taskPackageContents,[Text.Encoding]::Default)
+Write-Output $taskPackageTarget

@@ -1,5 +1,7 @@
 # tanakacap
 
+2026-09-12：HAOLANの.tcap書き出し・外部読み込み・OBS透過実受信まで検証済み。[フェーズ3の使い方](docs/PHASE3_PACKAGE_OBS.md)。通常起動はデスクトップtanakacap-test.bat、F5でファイル指定。
+
 2026-09-12：肩ヨーface_ratio・腕奥行きfront_projectionを通常採用。次は書き出し→外部読み込み→OBS実受信。[各フェーズの達成状況と残件](docs/IMPLEMENTATION_PHASES.md)。
 
 改変済みのVRChat向け3Dアバターを、Webカメラ1台でリアルタイムに動かすためのプロジェクト。名称はフォルダ名に基づく仮称。

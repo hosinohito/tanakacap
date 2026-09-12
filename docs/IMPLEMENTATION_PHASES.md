@@ -33,3 +33,7 @@
 根拠：docs/SHOULDER_FACE_RATIO_TRIAL.md、docs/ARM_FRONT_PROJECTION_TRIAL.md、docs/BODY_MODEL_COMPARISON.md、docs/OBS_LAB.md、docs/SAM_PERFORMANCE.md、unity/TanakaCap/Assets/TanakaCap/Editor/BuildLab.cs。OBS送信元登録の成功はOBS実受信の成功ではない。実写録画はGit管理対象外のまま利用する。
 
 重いゲームとの同時実行保証、Discord仮想カメラ、遠隔コラボ、全身は初期版の完了条件へ追加しない。
+
+## 2026-09-12 フェーズ3更新
+
+上表のフェーズ3未実装項目のうち、HAOLAN限定の最小Exporter/バージョン付き.tcap/外部Runtime読込/隔離OBSでの実受信・アルファ合成は今回実装検証済み。通常OBSにもプラグイン配置済みだが既存シーンへソース追加は未実施、利用者の通常シーンでの確認は残る。docs/PHASE3_PACKAGE_OBS.md。汎用改変対応/揺れ物/配布環境を達成済みへ繰り上げない。
