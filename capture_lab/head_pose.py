@@ -72,7 +72,7 @@ class HeadPose:
         self.last_pitch=0.
         self.diagnostics={}
 
-    def update(self,points,scores,packet,image_size):
+    def update(self,points,scores,packet,image_size,normalize_mouth=True):
         legacy_pitch=packet.get('headPitch',0.)
         pose=fit_pose(points,scores,image_size) if packet.get('faceTracked') else None
         self.diagnostics=dict(tracked=pose is not None,legacy_pitch=legacy_pitch,lip_depth_scale=self.lip_depth_scale)
@@ -88,6 +88,9 @@ class HeadPose:
                 self.reference=float(np.median(self.samples))
         self.last_pitch=0. if self.reference is None else float(np.clip((angles[0]-self.reference)*self.gain,-40,40))
         packet['headPitch']=self.last_pitch
+        if not normalize_mouth:
+            self.diagnostics.update(pitch=self.last_pitch,pitch_reference=self.reference,raw_pitch=float(angles[0]),pose_angles=angles.tolist(),normalized_reprojection_error=error,mouth_normalized=False)
+            return self.diagnostics
         frontal=frontal_landmarks(points,rotation,translation,image_size,self.lip_depth_scale)
         detail=contour_controls(frontal,scores) if frontal is not None else None
         packet['mouthContourTracked']=detail is not None

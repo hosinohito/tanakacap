@@ -1,5 +1,7 @@
 # 起動モード（2026-09-13）
 
+最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
+
 デスクトップのbatは `tools/update-desktop-launcher.ps1` で生成・更新する。
 
 | bat | 用途 | 動作記録 | 終了 |

@@ -49,3 +49,20 @@ def test_missing_lip_depth_holds_expression_without_losing_head():
     model=HeadPose3D();packet=dict(faceTracked=True)
     model.update(p,s,packet,(1280,720),z,zs)
     assert model.diagnostics['tracked'] and not packet['mouthContourTracked']
+
+
+def test_mixed_mode_preserves_pnp_pitch_and_depth_lips_independently():
+    from capture_lab.head_pose import HeadPose
+    from capture_lab.head_pose3d import PnPPitchDepthMouth
+    models=[HeadPose(),HeadPose3D(),PnPPitchDepthMouth()]
+    for pitch in [0]*10+[20,-20,10]:
+        p,s,z,zs=observed(pitch,expression=.003)
+        packets=[dict(faceTracked=True,headYaw=0,headRoll=0) for _ in models]
+        models[0].update(p,s,packets[0],(1280,720))
+        for model,packet in zip(models[1:],packets[1:]): model.update(p,s,packet,(1280,720),z,zs)
+        assert packets[2]['headPitch']==pytest.approx(packets[0]['headPitch'])
+        for key in ('mouthLeftCorner','mouthRightCorner','mouthShift','mouthContourTracked'):
+            assert packets[2][key]==packets[1][key]
+    models[2].update(p,s,packets[2],(1280,720))
+    assert packets[2]['headPitch']==pytest.approx(packets[0]['headPitch'])
+    assert not packets[2]['mouthContourTracked']

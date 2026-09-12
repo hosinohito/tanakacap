@@ -856,3 +856,11 @@ Windowsのmode700で作った一時ディレクトリでは同じsandboxから�
 - 224 tests、PowerShell構文確認成功。別の録画300観測で実benchmark経路の共有1セッション/GPU主要演算を監査、CPU主要計算なし。results/20260912T174517-019568Z-rtmw3d-x-384。実カメラ未使用、Unity変更/再ビルドなし。
 - desktop test.batは顔Z、test-face-pnp.batは今回の対照、test-face-original.batはRTMW-L、compare-face.batは新比較の保存先へ更新。README/SPEC/AGENTS/関連文書更新。動画・実写・重み・アバターはGitへ入れない。
 - 次：ユーザーが動画を確認。顔Z方式の有効率低下・ピッチ上限・表情差を含めて採用判断する。勝手な補正追加/通常採用をしない。今回の映像目視確認はユーザー担当。A/E保留、揺れ物調整終了、録画検証方針を維持。詳細・公式座標根拠・再現はdocs/FACE_DEPTH_TRIAL.md。
+
+## 2026-09-13 — ピッチPnP・口角Zを通常採用
+
+ユーザーは顔Zのピッチが大きくがたつくと評価し従来方式を選択、口角はZ方式でよいと明示。通常設定をface_source=body3d / head_pose_mode=pnp_depthmouthへ変更。PnPでピッチを求め、口角・口輪郭は前回と同じ推定Z方式を維持する。PnPの口正面化は省略し二重処理を避ける。頭以外の推論・揺れ物は維持。
+
+既存5187観測の生データで従来PnPとのピッチ差0、顔Z方式との口角/横寄せ/弓形差0・口輪郭有効フラグ一致を確認。results/face-pnp-depthmouth-audit.json。CPU単独の再計算平均はPnP全処理0.476ms/混合0.346ms、前回GPU併用計測とは別条件。225 tests成功。実カメラ・動画目視・追加動画作成は行っていない。口角Zの欠測は既存通り保持し、PnPピッチを止めない。
+
+デスクトップtest/liveは採用構成、test-face-pnpは同じRTMW3Dでピッチ/口ともPnPへ復帰、test-face-originalはRTMW-L/pnp。depth3dは過去比較の再現用に残すが通常へ戻さない。頭専用は維持。既存のface-depth-trial動画は混合採用前の比較である。次は採用構成で必要があれば録画検証、顔Z口輪郭欠測など既知残件を扱う。
