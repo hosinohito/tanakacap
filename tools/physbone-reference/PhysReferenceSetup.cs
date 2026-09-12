@@ -10,6 +10,7 @@ using TanakaCap;
 using TanakaCap.Editor;
 public static class PhysReferenceSetup {
  public static void Run(){
+  var args=Environment.GetCommandLineArgs();int videoIndex=Array.IndexOf(args,"--phys-video");
   EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
   var source=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/HAOLAN/Phys_Haolan.prefab");
   if(!source)throw new Exception("Missing source prefab");
@@ -21,7 +22,7 @@ public static class PhysReferenceSetup {
   if(phys==0)throw new Exception("Reference has no real SDK PhysBones");
   foreach(var root in new[]{reference,independent}){
    foreach(var c in root.GetComponentsInChildren<Animator>(true))c.enabled=false;
-   foreach(var c in root.GetComponentsInChildren<Renderer>(true))c.enabled=false;
+   if(videoIndex<0)foreach(var c in root.GetComponentsInChildren<Renderer>(true))c.enabled=false;
   }
   foreach(var c in independent.GetComponentsInChildren<Component>(true))
    if(c && c.GetType().Namespace!=null && c.GetType().Namespace.StartsWith("VRC"))UnityEngine.Object.DestroyImmediate(c);
@@ -32,6 +33,7 @@ public static class PhysReferenceSetup {
   var record=driver.gameObject.AddComponent<PhysReferenceRecord>();record.original=reference.transform;record.independent=independent.transform;record.dataJson=JsonUtility.ToJson(data);
   File.WriteAllText(Path.GetFullPath("../manifest.json"),JsonUtility.ToJson(data,true));
   File.WriteAllLines(Path.GetFullPath("../warnings.txt"),warnings);
+  if(videoIndex>=0){var video=driver.gameObject.AddComponent<PhysReferenceVideo>();video.original=reference.transform;video.independent=independent.transform;video.outputDirectory=args[videoIndex+1];}
   reference.SetActive(true);independent.SetActive(true);
   EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(),"Assets/Comparison/Compare.unity");
   Debug.Log("TANAKACAP_PHYS_REFERENCE_READY sdkPhysBones="+phys);

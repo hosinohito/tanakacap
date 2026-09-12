@@ -294,3 +294,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 -HeadOnly（デスクトップtanakacap-head-only.bat）は、別の小型モデルで頭の向きだけを推定する可逆な試験モードです。起動時に頭を矩形で囲んでEnter、Pで停止/再開、Rで範囲再選択。顔ランドマーク・虹彩・体・人物検出の各モデルを読み込みません。固定範囲から外れた頭の自動再検出は未実装。音声口パクも今後の課題です。通常モードの品質を置き換えるものではありません。追加重みの取得・条件・制限は[頭専用モード](docs/HEAD_ONLY.md)、処理時間は[推論内訳](docs/INFERENCE_BREAKDOWN.md)を参照してください。
 
 同じアプリの起動オプション-TrackingMode full / face_head / head_only、またはtracking-settings.jsonのtracking_modeで構成を選べます。fullが既定。face_headは従来の顔表情・頭のみ、head_onlyは直接頭姿勢モデルのみです。-HeadOnlyはhead_onlyの別名であり、別製品・別Playerではありません。部位の反映だけでなく不要な推論モデルの生成を止めます。
+
+本家PhysBoneと独自揺れ物の比較動画は、生成済みの環境ではデスクトップtanakacap-compare-physbone.batから開けます。正面/髪の拡大、通常速度/半速の4本。再生成手順と比較条件は[本家比較](docs/PHYSBONE_REFERENCE.md)を参照してください。

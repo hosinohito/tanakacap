@@ -37,3 +37,22 @@ SDKの条件：https://hello.vrchat.com/legal/sdk
 結果：same-clock-baseline、frequency-sweep.json、damping-sweep.json、damping-validation.json、validation-damping-1.0/1.5のframes.jsonl。平均は動いていない骨も含み、動いた骨だけの精度や見た目の合格率ではない。開始時の服の衝突による過渡・停止直後の急変には大きな差があり、最大差を隠さない。
 
 通常独自ソルバーの減衰項へ1.5倍を適用。元PhysBoneの値/カーブ/ファイル形式は変えない。Playerの--legacy-secondary-response、起動ps1の-LegacySecondaryResponseで旧減衰へ戻る。髪・服の実人物での自然さ、別アバター、非一様scale、全てのPhysBoneバージョン/モード/衝突の一致は未確認。SDKをそのまま実行する機能を製品へ加えたものではない。
+
+## 2026-09-13 比較動画
+
+本家SDKを動かした同じEditorシーンから、左をPhysBone/右を現在の独自実装として同時撮影した。独自側は採用済み減衰1.5倍。通常アプリ/ソルバーの変更はない。
+
+保存先：results/avatar-videos/physbone-vs-independent。
+
+| 動画 | 内容 |
+|---|---|
+| front.mp4 | 正面・服を含む全体、21秒 |
+| hair-closeup.mp4 | 髪の拡大・斜め25度の共通カメラ、21秒 |
+| front-half-speed.mp4 | 正面の半速、約42秒 |
+| hair-closeup-half-speed.mp4 | 髪の拡大の半速、約42秒 |
+
+全て1920x1080/60fps/H.264、音声なし。字幕で本家/独自と動作区間を明示。0〜3秒は静止、3〜9秒は頭振り、9〜15秒は胸pitch/roll、15〜21秒は停止後の収束。原Prefabの腕Tポーズを共通使用。カメラ実写や認識モデルを使う動画ではなく、揺れ物の同一入力比較。初期化の最初のdtだけ20ms、その後は双方1/60秒。半速は同じ撮影フレームの再生時間を延ばしたもの（物理の時間刻みを変更しない）。
+
+再現：tools/prepare_physbone_reference.pyで同期し、tools/render_physbone_comparison.py。既存出力がある場合は意図しない上書きを避けて停止する。--encode-existingは撮影を再実行せず、ラベル付き動画/半速版を再生成する。元raw動画と当該撮影の計測JSONLは保持する。
+
+両ソルバーの骨変化、通常版1260フレーム、半速2519フレーム（末尾端数1フレーム）、全編ffmpegデコード、ラベル/構図の目視を検証。report.jsonのstatus=complete。数値比較の平均差は前回と同じ1.7395865度。動画の見た目をユーザーが評価したことにはしない。SDK/アバター/動画はGitへ入れない。デスクトップtanakacap-compare-physbone.batで正面動画の場所を開ける。
