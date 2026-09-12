@@ -964,3 +964,9 @@ builds/demos/haolan-custom-browsへPlayerと専用.tcapを保存。汎用版と�
 237 Python tests、Unity合成の優先順位/空キー/明示VRC名/平均/目線軸代替/原本不変と実Player両モード回帰成功。自動唇外不変と両方向4mm、瞳2,178頂点の方向/範囲外不変、強調0/.5/1も成功。results/expression-mapping/{existing-final,auto-custom-final}.log。初回Unity import途中に新クラス未検出エラーが出たが、再コンパイル後の最終ビルドと検査は成功。揺れ物/推論モデル/頭/腕補正変更なし。
 
 通常/保存デモ/自動方式bat更新、PowerShell構文検査成功。旧デモは6806913とdemo-checkpoint.jsonにhashを保存。既存録画5,187packetを使う3方式比較を生成中。README/SPEC0.69/AGENTS/HANDOFF/起動文書更新。実カメラ・動画目視なし、実写/結果/素材のGit追加なし。
+
+## 2026-09-13 — 表情比較動画完成・読み込み互換の仕上げ
+
+2504820で表情モードをコミット。results/avatar-videos/expression-mappingの単独3本/左右3方式/顔拡大の計5動画が完成し、全編decode成功。各185.033秒/30fps/5,551描画。3入力のSHA一致、同じ5,187packet/時計で比較。左から保存デモ6806913、既存キー2504820、自動独自キー2504820。各DLL/アバター/動画hashはreport.jsonへ保存。眉専用動画なし、ユーザーが映像品質を確認する。
+
+仕上げでRead/Write無効メッシュの通常形状再生にCPU頂点アクセスを要求しないよう修正。自動生成は警告して省略する。UploadMeshData(true)を使う合成検査と再ビルド/両モードの実Player回帰成功。*-readability.log、HAOLAN対応表は比較ビルドと完全一致。HAOLANは読み取り可能で追加ガードの影響がないため動画は生成済みのものを保持し、その古いDLLのhashを最終DLLのhashにすり替えない。README/SPEC/引き継ぎ/フェーズ残件を更新。全アバター・SDK各Descriptorの実機互換や見た目の品質は未確認。

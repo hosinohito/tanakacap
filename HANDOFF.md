@@ -10,9 +10,11 @@
 
 237 tests、Editor優先順位/空キー/Descriptor名優先/両側平均/目線軸代替/既存メッシュ不変の検査、両モードの実Player回帰成功。results/expression-mapping/{existing-final,auto-custom-final}.log。autoの唇外不変/両方向4mm、瞳2,178頂点の方向/範囲外不変、強調連続を確認。通常実アバターはHAOLANのみ。SDK設定はローカル3.10.5公式Editorソースで確認したが、全Descriptor型の実SDK書出し検証は未実施。
 
-比較生成中：results/avatar-videos/expression-mapping、左からcustom-demo/existing/auto-custom。5,187の同一packet/時計、185秒録画。tools/render_comparison_videos.pyのセッション結果とreport.jsonのstatusを確認して完了へ更新する。実カメラ/エージェント動画目視なし。desktop tanakacap-compare-expressions.bat、test-auto-expressions、motion-auto-expressions追加済み。README/SPEC0.69とdocs/EXPRESSION_PORTABILITY.mdに方式/限界を記載。映像の品質判断はユーザー。通常の汎用アバター対応やフェーズ5全体の完成とは扱わない。
+比較完成：results/avatar-videos/expression-mapping、左からcustom-demo/existing/auto-custom。5,187の同一packet/時計、各185.033秒/30fps/5,551描画。単独3本＋side-by-side/face-closeupの計5本、全編decode検査成功、report.json status=complete。再生入力3本のSHA256一致。保存デモ6806913、通常/自動の比較ビルドは2504820。実カメラ/エージェント動画目視なし。desktop tanakacap-compare-expressions.bat、test-auto-expressions、motion-auto-expressions追加済み。README/SPEC0.69とdocs/EXPRESSION_PORTABILITY.mdに方式/限界を記載。映像の品質判断はユーザー。汎用アバター対応やフェーズ5全体の完成とは扱わない。
 
-次：比較動画の全編decode検査完了→文書を完了状況へ更新→ローカルGitコミット。外部push、実写/素材/resultsのGit追加なし。
+最後にCPU頂点Read/Write無効のメッシュでも既存キー方式を起動できるようガード追加。自動生成は省略して警告/既存方式へ戻す。合成Read/Write無効メッシュ検査と再ビルド、両モードの実Player回帰成功（results/expression-mapping/*-readability.log）。HAOLANはRead/Write有効なので比較動画の分岐には影響せず、両モードの対応表も完全一致。動画は上記比較ビルドのまま保持、最終DLLと動画のDLLのSHAは異なる。
+
+次：ユーザーが比較動画の見た目を評価。今回の実装・保存デモ・比較生成は完了。残件は未知の形状名/分割renderer、実SDK各Descriptor種、別アバターでの表情・骨/構図/改変対応、将来UI等。外部push、実写/素材/resultsのGit追加なし。
 
 ## 2026-09-13 — FP16通常採用、FP32起動選択の撤去
 

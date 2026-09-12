@@ -27,7 +27,7 @@ HAOLANでは既存MMD眉の上/下/困る/怒りを使用する。左右独立�
 | 眉 | ARKit内/外/下げ、次にMMD上/下/困る/怒り | 同じ既存眉キー。無根拠な眉形状は生成しない |
 | まばたき | eyeBlink左右、次にMMDウィンク、次にDescriptor blink | 同じ既存キー対応 |
 
-キー名は大小文字・区切り記号を正規化して照合。機能ごと・左右ごとに優先順位を適用する。空のダミーキーは除外。両側一体のキーへ左右入力が入った場合は平均し、加算で倍にしない。対応キーがない制御を勝手な別形状へ割り当てない。複数rendererに同じキーがある場合は最初の一致を採るため、分割メッシュ全体への自動配線や曖昧な命名は残件。
+キー名は大小文字・区切り記号を正規化して照合。機能ごと・左右ごとに優先順位を適用する。頂点を読める場合は空のダミーキーを除外。Read/Write無効でも既存形状の再生は可能なため、実行時の空キー検査を省いて対応名を使う。この場合、自動生成は省略/警告する。両側一体のキーへ左右入力が入った場合は平均し、加算で倍にしない。対応キーがない制御を勝手な別形状へ割り当てない。複数rendererに同じキーがある場合は最初の一致を採るため、分割メッシュ全体への自動配線や曖昧な命名は残件。
 
 VRC DescriptorがあるEditorでは、SDK 3.10.5のローカル公式Editorソースで確認したVisemeSkinnedMesh/VisemeBlendShapes、MouthOpenBlendShapeName、customEyeLookSettingsを読み、SDKコンポーネント除去前に対応表へ保存する。明示visemeがVRC名推測より優先するが、ARKit/MMDを上書きしない。JawFlapBoneやAnimatorによる表情は未対応と報告。SDKが欠けた既存HAOLAN素材は名前照合へ戻る。本番SDKで全種類のDescriptorを実機検証したとは扱わない。
 
@@ -50,4 +50,6 @@ VRC DescriptorがあるEditorでは、SDK 3.10.5のローカル公式Editorソ�
 
 実HAOLANで両モードのmotion-check成功。results/expression-mapping/{existing-final,auto-custom-final}.log。眉・口・目・欠測保持・腕/手首の回帰を含む。自動生成の口横寄せは両方向4mm、唇外不変。瞳2,178頂点の方向と範囲外不変を確認。強調0/.5/1も連続。見た目の品質はユーザー確認前。
 
-比較動画はresults/avatar-videos/expression-mappingへ生成する。左からcustom-demo（眉追加時点の旧口/瞳）、existing、auto-custom。全身と顔拡大は同じ比較の表示違いで、眉専用の比較動画は作らない。録画は既存5,187観測のみ、実カメラ/エージェントによる動画目視はなし。最終生成状況と各Player/アバターのSHA256は同フォルダーのreport.json。
+比較動画はresults/avatar-videos/expression-mappingへ生成完了。左からcustom-demo（眉追加時点の旧口/瞳）、existing、auto-custom。単独3本とside-by-side.mp4/face-closeup.mp4の計5本、全編decode成功。各185.033秒/30fps/5,551描画。上半身と顔拡大は同じ比較の表示違いで、眉専用動画は作らない。録画は既存5,187観測のみ、3方式でpacketと時計のSHA256一致。実カメラ/動画目視なし。各Player/アバターのSHA256は同フォルダーreport.json。
+
+動画のソースは旧6806913/新2504820。生成後にRead/Write無効時のガードだけ追加して最終ビルドした。HAOLANの通る処理に変更はなく、対応表完全一致・再度の実Player両モード回帰成功（*-readability.log）。動画の旧DLLのhashを最終DLLで上書きせず、生成時点を記録したまま保持する。
