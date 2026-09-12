@@ -91,7 +91,7 @@ def main():
     parser.add_argument('--batch-eyes',action='store_true')
     parser.add_argument('--no-batch-eyes',action='store_true')
     parser.add_argument('--detector-graph',action='store_true')
-    parser.add_argument('--inference-mode',choices=('run','binding','graph'),default='run')
+    parser.add_argument('--inference-mode',choices=('run','binding','graph','graph-fp16','trt-fp32','trt-fp16'),default='run')
     parser.add_argument('--detector-interval',type=int,choices=(1,2,3),default=1)
     parser.add_argument('--detector-model',choices=('yolox-m-human','yolox-tiny-human'),default='yolox-m-human')
     args=parser.parse_args()

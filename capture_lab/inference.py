@@ -63,6 +63,8 @@ def provider_summary(path):
                 cpu_ops[args.get('op_name', 'unknown')] += 1
     return {'node_events_by_provider': dict(counts), 'cpu_ops': dict(cpu_ops),
             'cuda_executed': counts['CUDAExecutionProvider'] > 0,
+            'tensorrt_executed': counts['TensorrtExecutionProvider'] > 0,
+            'gpu_executed': counts['CUDAExecutionProvider']+counts['TensorrtExecutionProvider'] > 0,
             'cpu_compute_ops': {op: count for op, count in cpu_ops.items()
                                 if op in {'Conv', 'FusedConv', 'Gemm', 'MatMul', 'Attention'}}}
 
@@ -92,9 +94,12 @@ class SimCCModel:
             from .onnx_variants import split_detector
             path,tail_path=split_detector(path)
             dynamic=False
-            execution_mode='graph'
+            if execution_mode not in ('graph-fp16','trt-fp32','trt-fp16'): execution_mode='graph'
+        if execution_mode=='graph-fp16':
+            from .onnx_variants import fp16_model
+            path=fp16_model(path)
         self.session = ort.InferenceSession(str(path), sess_options=options,
-                                           providers=provider_options(execution_mode,dynamic))
+                                           providers=provider_options(execution_mode,dynamic,path))
         self.runner = GpuRunner(self.session,execution_mode,dynamic)
         self.tail_session=None
         if tail_path is not None:
@@ -104,10 +109,11 @@ class SimCCModel:
             if self.profiling: tail_options.profile_file_prefix=str(output_dir/(name+'-nms'))
             self.tail_session=ort.InferenceSession(str(tail_path),sess_options=tail_options,providers=provider_options('binding',True))
             self.tail_session.disable_fallback()
-            self.runner=SplitDetectorRunner(self.session,self.tail_session)
+            self.runner=SplitDetectorRunner(self.session,self.tail_session,execution_mode)
         self.session.disable_fallback()
-        if self.session.get_providers()[0] != 'CUDAExecutionProvider':
-            raise RuntimeError('CUDA initialization failed; refusing a CPU-only session.')
+        from .tensorrt_backend import require_provider
+        require_provider(self.session,execution_mode)
+        self.tensorrt_required=execution_mode in ('trt-fp32','trt-fp16')
         shape = self.session.get_inputs()[0].shape
         iw, ih = self.info['input_wh']
         if len(shape) != 4 or shape[1:] != [3, ih, iw] or (isinstance(shape[0], int) and shape[0] != 1):
@@ -164,8 +170,10 @@ class SimCCModel:
             report['tail_profile']=str(tail_path)
             if report['tail_execution']['cpu_compute_ops']: raise RuntimeError('NMS tail core compute on CPU')
         # CPU shape/control nodes are reported, not hidden. Compute must execute on CUDA.
-        if self.calls and not report['cuda_executed']:
+        if self.calls and not report['gpu_executed']:
             raise RuntimeError(f'No measured CUDA execution in {path}')
+        if self.calls and self.tensorrt_required and not report['tensorrt_executed']:
+            raise RuntimeError('TensorRT requested but no TensorRT execution measured')
         if report['cpu_compute_ops']:
             raise RuntimeError(f'Core compute fell back to CPU: {report["cpu_compute_ops"]}')
         return report

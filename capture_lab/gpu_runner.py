@@ -9,7 +9,7 @@ import onnxruntime as ort
 
 class GpuRunner:
     def __init__(self, session, mode='run', dynamic_output=False):
-        if mode not in ('run','binding','graph'): raise ValueError('Unknown inference mode')
+        if mode not in ('run','binding','graph','graph-fp16','trt-fp32','trt-fp16'): raise ValueError('Unknown inference mode')
         self.session = session
         self.mode = 'binding' if dynamic_output and mode == 'graph' else mode
         self.dynamic = dynamic_output
@@ -56,10 +56,10 @@ class GpuRunner:
 
 class SplitDetectorRunner:
     """Graph the fixed prefix and pass CUDA buffers directly to unchanged NMS."""
-    def __init__(self, core, tail):
-        self.core=GpuRunner(core,'graph')
+    def __init__(self, core, tail, mode='graph'):
+        self.core=GpuRunner(core,mode)
         self.tail=tail
-        self.mode='split_graph'
+        self.mode='split_'+mode
         self.binding=tail.io_binding()
 
     def run(self,tensor,input_name,output_names=None):
@@ -72,6 +72,9 @@ class SplitDetectorRunner:
         return self.binding.copy_outputs_to_cpu()
 
 
-def provider_options(mode, dynamic_output=False):
+def provider_options(mode, dynamic_output=False, model_path=None):
+    if mode in ('trt-fp32','trt-fp16'):
+        from .tensorrt_backend import providers
+        return providers(mode,model_path)
     return [('CUDAExecutionProvider', {'device_id':0,
-        'enable_cuda_graph': '1' if mode=='graph' and not dynamic_output else '0'})]
+        'enable_cuda_graph': '1' if mode in ('graph','graph-fp16') and not dynamic_output else '0'})]
