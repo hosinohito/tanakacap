@@ -122,7 +122,6 @@ def benchmark(args):
               'quality_note': 'Confidence coverage is not measured accuracy. Synthetic input is performance-only.'}
     if output is not None: write_json(output / 'report.json', report)
     model = body_model = detector = camera = video = sender = gaze = None
-    gaze_worker=None
     body_retarget = BodyRetarget(args.observation_block,args.observation_stride,args.arm_depth_mode,args.shoulder_yaw_mode)
     face_filter = FaceFilter(args.observation_block,args.observation_stride)
     from .face_distance import FaceDistance
@@ -145,9 +144,6 @@ def benchmark(args):
         if args.gaze:
             from .gaze import IrisGaze
             gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **execution)
-            if args.parallel_gaze:
-                from .parallel_gaze import ParallelGaze
-                gaze_worker=ParallelGaze(gaze)
         if args.body3d:
             body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **pose_execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
@@ -252,9 +248,7 @@ def benchmark(args):
                         head_pose.update(points,scores,packet,(image.shape[1],image.shape[0]),**pose_extra)
                         timing["head_pose_ms"]=(time.perf_counter()-pose_start)*1000
                         timing["pipeline_ms"]+=timing["head_pose_ms"]
-                    if gaze_worker:
-                        gaze_worker.start(image,points,scores,packet,time.perf_counter())
-                    elif gaze:
+                    if gaze:
                         gaze.update(image,points,scores,packet,time.perf_counter())
                         timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
                         timing['pipeline_ms']+=timing['gaze_ms']
@@ -273,12 +267,6 @@ def benchmark(args):
                             reference_xy=points,reference_scores=scores)
                     timing['retarget_ms']=(time.perf_counter()-retarget_start)*1000
                     timing['pipeline_ms']+=timing['retarget_ms']
-                    if gaze_worker:
-                        join_start=time.perf_counter()
-                        gaze_worker.join(packet)
-                        timing['gaze_wait_ms']=(time.perf_counter()-join_start)*1000
-                        timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
-                        timing['pipeline_ms']+=timing['gaze_wait_ms']
                     # Windows 3.11 perf_counter is system-wide QPC, shared with
                     # the Player's diagnostic-only QueryPerformanceCounter.
                     if getattr(args, 'no_body', False):
@@ -418,7 +406,6 @@ def benchmark(args):
                 report['detector_profile_error'] = str(profile_error)
         raise
     finally:
-        if gaze_worker:gaze_worker.close()
         if gaze:
             try: report['gaze_execution']=gaze.finish()
             except Exception as exc: report['gaze_profile_error']=str(exc)
@@ -492,7 +479,6 @@ def main():
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
-            sub.add_argument('--parallel-gaze',action='store_true')
             sub.add_argument('--preprocess-mode',choices=('legacy','crop'),default='legacy')
             sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
