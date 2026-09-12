@@ -67,7 +67,7 @@ def provider_summary(path):
 
 
 class SimCCModel:
-    def __init__(self, name, output_dir, execution_mode='run'):
+    def __init__(self, name, output_dir, execution_mode='run', detector_graph=False):
         self.info = catalog()[name]
         path = model_path(name)
         if not path.exists():
@@ -82,9 +82,26 @@ class SimCCModel:
         options.log_severity_level = 3
         options.intra_op_num_threads = 2
         dynamic = self.info.get('kind') == 'detector'
+        original_path=path
+        tail_path=None
+        if detector_graph:
+            if not dynamic: raise ValueError('Split graph is only for detectors')
+            from .onnx_variants import split_detector
+            path,tail_path=split_detector(path)
+            dynamic=False
+            execution_mode='graph'
         self.session = ort.InferenceSession(str(path), sess_options=options,
                                            providers=provider_options(execution_mode,dynamic))
         self.runner = GpuRunner(self.session,execution_mode,dynamic)
+        self.tail_session=None
+        if tail_path is not None:
+            from .gpu_runner import SplitDetectorRunner
+            tail_options=ort.SessionOptions();tail_options.intra_op_num_threads=2;tail_options.log_severity_level=3
+            tail_options.enable_profiling=self.profiling
+            if self.profiling: tail_options.profile_file_prefix=str(output_dir/(name+'-nms'))
+            self.tail_session=ort.InferenceSession(str(tail_path),sess_options=tail_options,providers=provider_options('binding',True))
+            self.tail_session.disable_fallback()
+            self.runner=SplitDetectorRunner(self.session,self.tail_session)
         self.session.disable_fallback()
         if self.session.get_providers()[0] != 'CUDAExecutionProvider':
             raise RuntimeError('CUDA initialization failed; refusing a CPU-only session.')
@@ -98,7 +115,7 @@ class SimCCModel:
         self.depth_scores = None
         self.refine_body_peaks = True
         self.decode_diagnostics = None
-        self.identity = {'id': name, 'sha256': sha256(path),
+        self.identity = {'id': name, 'sha256': sha256(original_path),
                          'execution_mode':self.runner.mode,
                          'providers': self.session.get_providers(), 'input_shape': shape,
                          'onnxruntime_version': ort.__version__}
@@ -135,6 +152,11 @@ class SimCCModel:
         report = provider_summary(path)
         report['profile'] = str(path)
         report['inference_calls'] = self.calls
+        if self.tail_session is not None:
+            tail_path=Path(self.tail_session.end_profiling())
+            report['tail_execution']=provider_summary(tail_path)
+            report['tail_profile']=str(tail_path)
+            if report['tail_execution']['cpu_compute_ops']: raise RuntimeError('NMS tail core compute on CPU')
         # CPU shape/control nodes are reported, not hidden. Compute must execute on CUDA.
         if self.calls and not report['cuda_executed']:
             raise RuntimeError(f'No measured CUDA execution in {path}')
@@ -187,8 +209,8 @@ def decode_simcc3d(outputs, center, scale, input_wh, z_range=2.1744869,refine_bo
 
 
 class PersonDetector(SimCCModel):
-    def __init__(self, output_dir, execution_mode='run', name='yolox-m-human'):
-        super().__init__(name, output_dir,execution_mode)
+    def __init__(self, output_dir, execution_mode='run', name='yolox-m-human', detector_graph=False):
+        super().__init__(name, output_dir,execution_mode,detector_graph)
         iw, ih = self.info['input_wh']
         grid_parts, stride_parts = [], []
         for stride in (8, 16, 32):

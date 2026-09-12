@@ -330,3 +330,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 結果・条件・残る検証は[全部ON高速化](docs/FULL_MODE_OPTIMIZATION.md)を参照。A（TensorRT/FP16）とE（部位ごとの更新頻度）は保留。
 
 部位別のモデル、補正、表示までの経路は[現在の推論経路](docs/INFERENCE_PIPELINE.md)を参照。
+
+追加高速化F：`-DetectorGraph`で同じ人物検出の固定部分をGraph化、`-NoDetectorGraph`で解除。効果が小さいため通常はOFF。[F〜Iの進捗・測定条件](docs/FURTHER_OPTIMIZATION.md)。

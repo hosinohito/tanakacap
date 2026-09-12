@@ -17,7 +17,7 @@ class GpuRunner:
         self.binding = None
         self.outputs = []
 
-    def run(self, tensor, input_name, output_names=None):
+    def run(self, tensor, input_name, output_names=None, return_device=False):
         if self.mode == 'run':
             return self.session.run(output_names, {input_name:tensor})
         tensor = np.ascontiguousarray(tensor, dtype=np.float32)
@@ -51,6 +51,24 @@ class GpuRunner:
             for name in names:
                 self.binding.bind_output(name, 'cuda', 0)
         self.session.run_with_iobinding(self.binding)
+        return self.binding.get_outputs() if return_device else self.binding.copy_outputs_to_cpu()
+
+
+class SplitDetectorRunner:
+    """Graph the fixed prefix and pass CUDA buffers directly to unchanged NMS."""
+    def __init__(self, core, tail):
+        self.core=GpuRunner(core,'graph')
+        self.tail=tail
+        self.mode='split_graph'
+        self.binding=tail.io_binding()
+
+    def run(self,tensor,input_name,output_names=None):
+        values=self.core.run(tensor,input_name,return_device=True)
+        for name,value in zip(self.core.names,values):
+            self.binding.bind_ortvalue_input(name,value)
+        self.binding.clear_binding_outputs()
+        for output in self.tail.get_outputs():self.binding.bind_output(output.name,'cuda',0)
+        self.tail.run_with_iobinding(self.binding)
         return self.binding.copy_outputs_to_cpu()
 
 

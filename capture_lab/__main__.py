@@ -158,6 +158,7 @@ def benchmark(args):
         region_tracker = None
         if args.source != 'synthetic' and args.roi is None and not args.fixed_roi:
             detector_options = {} if args.detector_model == 'yolox-m-human' else {'name': args.detector_model}
+            if args.detector_graph: detector_options['detector_graph']=True
             detector = PersonDetector(profile_output, **execution, **detector_options)
             report['detector'] = detector.identity
             region_tracker = PersonRegionTracker(detector, args.detector_interval)
@@ -476,6 +477,7 @@ def main():
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
+            sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
             sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')
