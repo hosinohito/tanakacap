@@ -40,7 +40,7 @@ def run(output,comparison=None):
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  rendered=videos+[combined]
- if list(inputs) in (['separate','body3d'], ['body3d','depth3d']):
+ if list(inputs) in (['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z']):
   closeup=output/'face-closeup.mp4'
   close_labels=[label.replace('pad=iw:', 'crop=640:480:320:0,scale=960:720,pad=iw:') for label in labels]
   close_filter=';'.join(close_labels)+';[v0][v1]hstack=inputs=2[out]'

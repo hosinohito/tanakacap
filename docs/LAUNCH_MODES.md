@@ -1,12 +1,13 @@
 # 起動モード（2026-09-13）
 
-最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
+最新試行（2026-09-13）：通常body3d/pnp、ピッチはPnPを維持し、口輪郭から推定Zを外す。`-HeadPoseMode pnp_depthmouth`で直前のZ口輪郭へ戻す。顔の向きを補正する固定テンプレートは残す。[比較動画と設定](MOUTH_NO_Z_TRIAL.md)。
 
 デスクトップのbatは `tools/update-desktop-launcher.ps1` で生成・更新する。
 
 | bat | 用途 | 動作記録 | 終了 |
 |---|---|---|---|
-| tanakacap-test.bat | 全部ON・RTMW3D-X顔Zピッチ/口角試行 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test.bat | 全部ON・PnPピッチ＋推定Zなし口輪郭 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test-mouth-z.bat | 全部ON・直前の推定Z口輪郭 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
 | tanakacap-test-face-pnp.bat | 全部ON・同じRTMW3D-X顔でPnP対照 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
 | tanakacap-test-face-original.bat | 全部ON・従来RTMW-L顔方式 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
 | tanakacap-compare-face.bat | 顔比較動画の保存先を開く | なし・カメラ不使用 | Explorerで確認 |

@@ -1,5 +1,19 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 口の推定Zなし試行・比較動画、配布ライセンス整理
+
+通常設定をbody3d/pnpへ変更。現行は口角もZを使用していたため、既存HeadPoseの固定テンプレート/PnP正面化を再利用して推定Zを口輪郭から外す。頭ピッチは維持、全身のモデルZは引き続き使用。pnp_depthmouthで直前のZ口輪郭へ可逆。時間処理3/1、口角追加強調0、他部位・揺れ物は不変。実装コードを重ねず設定で既存経路を選択した。
+
+既存face-depth-trialの保存済み5,187観測から口4制御/有効フラグだけを再計算し、頭・目・開口・体・腕・指の保存済み制御を固定して動画4本を作成。results/avatar-videos/mouth-no-z/{face-closeup,side-by-side,mouth-z,mouth-no-z}.mp4。各185.03秒/30fps/5551描画、全4本decode成功。左Z/右Zなし。口有効3588→5104、口角/横寄せの隣接変化p95縮小だが対象集合が違い実表情も含むため精度証明ではない。ピッチ差0。CPU姿勢/口平均0.383→0.456msと微増、GPU高速化ではない。見た目はユーザー未確認、実カメラ/目視なし。関連38 tests。詳細docs/MOUTH_NO_Z_TRIAL.md、生成tools/compare_mouth_depth.py。
+
+test/liveはZなし、desktop tanakacap-compare-face.batは新顔拡大動画、tanakacap-test-mouth-z.batは直前方式。通常testの明示HeadPoseModeもpnpへ更新済み。Unity変更/ビルドなし、現在Playerを使用。新撮影は不要。次はユーザーの比較評価を受けて口試行を判断し、既存品質・UI等の指定作業へ。
+
+docs/DISTRIBUTION_LICENSES.mdに製品/モデル/SDK/素材/比較ツールの条件と残件を整理。tools/audit_distribution.pyで22packages/48license files/16local ONNX SHAをresults/distribution-audit-20260913へ収集。配布承認や完全SBOMではない。HAOLANは条件付き再配布許諾があり一律禁止と扱わない。頭専用重み等は未確定、MANOは用途/再配布制限、FFmpeg実体GPLv3は開発用途、SDK本体は製品から除外する方針。製品EULA/全DLL照合/モデル通知同梱・新PCは残件。
+
+TensorRTは今回見送り。通常版はランタイム再配布可能だが条件継承・通知/執行等の義務、RTX版はさらに性能情報の第三者開示制限。ユーザーの追加制約回避を優先して依存を増やさない判断。通常版の主な配布条件は既存CUDAにも同種のものがあり、TensorRTだけ特別厳しいとは断言しない。ユーザーが通常版の条件を許容すれば再検討可能。今回は未導入/未実装/未計測。A/FP16/Eの高速化は現状維持、H/J/K/L復活なし。
+
+以下は過去の状態。最新の通常pnpを、以前のpnp_depthmouth採用記述より優先する。
+
 ## 2026-09-13 — 口角強調度完了、J/K/Lは比較後すべてrevert
 
 口角強調度0〜1、既定0（追跡OFFではなく追加モーフ増幅なし）、1は従来。5085cb5、mouth_corner_emphasis/両launcher -MouthCornerEmphasis/Player --mouth-corner-emphasis/将来UI用プロパティを追加。実モーフ0/0.5/1・左右/腕/透過回帰成功。ガンマ・口閉じ校正・開口時上げ抑制・横寄せは維持。実人物の新しい口角の見た目は未確認。
