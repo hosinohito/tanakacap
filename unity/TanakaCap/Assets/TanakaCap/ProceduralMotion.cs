@@ -11,6 +11,8 @@ namespace TanakaCap {
     headYaw=28*Mathf.Sin(w*t*3),headPitch=10*Mathf.Sin(w*t*2),headRoll=9*Mathf.Sin(w*t*4),
     torsoYaw=18*Mathf.Sin(w*t),torsoRoll=7*Mathf.Sin(w*t*2),torsoPitch=5*Mathf.Sin(w*t*2),
     mouth=.15f+.2f*(1+Mathf.Sin(w*t*6)),leftBlink=Blink(t),rightBlink=Blink(t),
+    browTracked=true,browLeftInner=.7f*Mathf.Sin(w*t*2),browLeftOuter=.5f*Mathf.Sin(w*t*2+1),
+    browRightInner=.7f*Mathf.Sin(w*t*2+.5f),browRightOuter=.5f*Mathf.Sin(w*t*2+1.5f),
     gazeTracked=true,gazeYaw=4*Mathf.Sin(w*t*3),gazePitch=1.5f*Mathf.Sin(w*t*2),
     leftArmTracked=true,rightArmTracked=true,leftHandTracked=true,rightHandTracked=true,
     leftElbow=new Vector3(-.14f,-.22f+.12f*left,.10f),rightElbow=new Vector3(.14f,-.22f+.12f*right,.10f),

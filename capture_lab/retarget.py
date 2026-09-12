@@ -69,6 +69,8 @@ def packet_from_landmarks(points, scores, sequence, threshold=.3):
     detail=contour_controls(p,s)
     result.update(mouthContourTracked=detail is not None,mouthLeftCorner=0.,mouthRightCorner=0.,mouthBow=0.)
     if detail is not None:result.update(detail)
+    from .brows import observe
+    observe(p,s,result)
     result['tracked'] = result['faceTracked'] or result['leftArmTracked'] or result['rightArmTracked']
     return result
 
@@ -80,6 +82,8 @@ class FaceFilter:
         self.head=DirectionGate(.25,float('inf'),block_size,stride)
         self.expression=DirectionGate(.015,float('inf'),block_size,stride)
         self.contour=DirectionGate(.015,float('inf'),block_size,stride)
+        from .brows import BrowFilter
+        self.brows=BrowFilter(block_size,stride)
         self.corner_samples=[]
         self.corner_neutral=None
         self.bow_samples=[]
@@ -88,6 +92,7 @@ class FaceFilter:
         self.shift_neutral=None
 
     def update(self,packet,now):
+        self.brows.update(packet,now)
         packet.setdefault('mouthWidth',0.)
         packet.setdefault('mouthRound',0.)
         packet.setdefault('mouthSmile',0.)

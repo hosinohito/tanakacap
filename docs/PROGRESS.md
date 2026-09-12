@@ -948,3 +948,9 @@ TensorRTは「CUDAと同条件なら」という条件付き指定。通常版10
 ユーザーがFP16を採用しFP32は起動オプションから消して将来UIの口だけ保持するよう指定。DEFAULT_INFERENCE_MODEをgraph-fp16へ、通常launcherの-InferenceMode・Python CLI/soakの--inference-mode・設定inference_modeを削除。mainの内部引数と既存モデルAPIは保持。旧B〜I性能回帰ツールは内部APIを使い、過去のFP32条件を黙ってFP16へ変えない。UI追加は未確定として記録。通常test/liveもFP16、test-fp16は同一内容の互換用。
 
 初回テストは既定runを仮定したmockの引数不一致で5件失敗、mockでFP16指定を検証する形へ更新。新しい既定/内部FP32口/公開精度引数拒否の検査を含む234 tests成功。既存録画60観測の全機能を精度指定なしで実行成功、results/fp16-default-smoke.log。実カメラ不使用。README/SPEC0.68/HANDOFF/AGENTS/比較/起動文書を更新。FP32原本・比較動画は保持、TensorRTは不採用継続。
+
+## 2026-09-13 — 眉を追加し旧HAOLANデモを保存
+
+ユーザーが既存キー優先の機能別対応を承認。眉を先行実装し従来の口/目線表現ごと保存、その後全独自キーを通常版から排除して比較する指定。さらに実験用自動独自キーモードを追加し、従来の実験を踏襲する指定。眉は追加推論なし、眼端基準とPnP固定平面、安定10観測中立、3/1ゲート、欠測保持。MMD既存眉で実Player頂点変形と従来の口/目/腕回帰成功、237 tests。既存FP16録画の5,071/5,187で眉有効、正解精度の証明ではない。眉動画は不要の指定通り生成しない。
+
+builds/demos/haolan-custom-browsへPlayerと専用.tcapを保存。汎用版と自動生成の実装は次の作業。仕様の詳細はEXPRESSION_PORTABILITY.md。眉以外の制御を固定した比較用replayを準備、全方式共通で使用する。実カメラなし、素材/動画/ビルドはGit除外。
