@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新確定（2026-09-13）：ユーザー指定で頭角度の既定はpnpへ復帰。size2dは任意試行。旧size2d既定記述より本項を優先。頭の可変追従は別の未採用試行で、通常は固定速度。
+
 最新試行（2026-09-13）：頭角度size2dを可逆既定へ。眼間距離と鼻位置のXY比率でpitch/yaw、眼軸でroll、口・眉の既存PnP補正は維持。UI頭角度/pnpまたは-HeadPoseMode pnpで復帰。頭のみ専用モデルは対象外。既存録画の数値だけではpitchのガタつき改善は確認できず、採用品質は未確定。docs/HEAD_SIZE_TRIAL.md/HANDOFF先頭。旧通常pnp記述より本項を優先。
 
 最新（2026-09-13）：操作UIを実装。desktop tanakacap.bat / run-ui.ps1、capture_lab/control_panel.py。開くだけではカメラ起動なし。実写表示なし、UIから許可フラグを渡さない。設定はui-settings.json（Git除外）、保存して適用は再起動。3推論モード、部位OFF、推論Hz/描画fps/受信Hz、60/同期/30/自由fpsと推論開始前の上限制御、解像度、AA、表情を実装済み。docs/CONTROL_PANEL.md。倍率は頭のみ=1の推論ms/観測、測定済み約2/2/1、個別組み合わせは未測定と表示。旧「UI未実装」より本項優先。RTMW-LだけFP16 Graph非互換のためFP32 CUDA Graphへ明示固定、全部ON RTMW3DはFP16維持。

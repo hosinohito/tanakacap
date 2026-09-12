@@ -1020,3 +1020,7 @@ LiveStatusは入力取得前に上限待機し、最新カメラ入力を処理�
 ユーザーの提案を受け比較動画の作成指定。4フレーム法後の目標と表示頭のQuaternion角度差で追従率を変更。0〜12度をsmoothstep、rate6〜45、指数Slerp。--adaptive-head-followで可逆試行、通常は固定45のまま。新しい顔録画853観測を全部ON CUDA FP16/size2dで再推論、顔有効849。推論出力を完全一致で両方式へ渡し、表情auto-customも同一。Unityビルドとmotion-check（速度係数、微小収束、既存受信/関節/表情）成功。results/head-follow-smoke。
 
 results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4動画、各30.033秒、901描画frame、全デコード成功。入力ハッシュ同一を確認。30fpsオフライン比較で実時間遅延を表すものではない。実カメラ起動・実写表示・エージェントによる目視はなし。desktop tanakacap-compare-head-follow.batを追加。README/SPEC/HANDOFF/HEAD_FOLLOW_COMPARISONを更新。通常採用はユーザー評価待ち。
+
+## 2026-09-13 — 頭角度の既定をpnpへ復帰
+
+ユーザー指定でtracking-settings、UI初期値、通常検証batをpnpへ変更。保存済みUIもpnpであることと生成コマンドを確認。size2dは任意選択で残し、可変追従は未採用のまま。文書を訂正。実カメラ試験・再ビルドなし。
