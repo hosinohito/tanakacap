@@ -72,3 +72,7 @@ EdgeAntialiasing.cs / EdgeAntialiasing.shaderは本プロジェクトで記述�
 ## 開発評価の追加（2026-09-12）
 
 頭姿勢：yakhyo/head-pose-estimationのMobileNet V3 small ONNX。コードMITの表記はHEAD_MODEL_LICENSE.txt。学習元300W-LPを含む重み配布条件の監査は未完了、通常配布物/Exporterへ同梱しない。HEAD_ONLY.md。PhysBone：公式SDK3.10.5はresults内の別Unity Editorで参照動作比較だけに使用、SDK/DLL/ソルバーソースを配布物やGitへ入れない。PHYSBONE_REFERENCE.md。
+
+## 2026-09-13 — 頭領域YuNet
+
+OpenCV Zoo face_detection_yunet_2023mar.onnx、SHA256 8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4。公式ディレクトリのモデルを含むMIT表示を確認しYUNET_LICENSE.txtを保存。新依存なし、既存ORT CUDAで実行。モデルの最新dynamic版は固定入力の今回には不要。取得元・入出力・検証はHEAD_ONLY.md。MobileNet姿勢重みの配布監査未完了という別の制約は解消していない。

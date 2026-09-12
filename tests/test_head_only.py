@@ -37,7 +37,7 @@ def test_head_only_never_loads_other_models_or_creates_logs(monkeypatch):
     monkeypatch.setattr(head_only.cv2,"VideoCapture",lambda p:Video())
     monkeypatch.setattr(head_only,"LocalSender",Sender)
     monkeypatch.setattr(sys,"argv",["capture_lab","benchmark","--source","video","--video","dummy",
-                                  "--head-only","--no-log","--frames","5","--warmup","0",
+                                  "--head-only","--head-roi-mode","fixed","--no-log","--frames","5","--warmup","0",
                                   "--roi","0","0","32","32","--unity-port","39549"])
     app.main()
     assert len(packets)==5 and packets[-1]["headTracked"]

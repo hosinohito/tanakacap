@@ -50,3 +50,7 @@
 -NoBodyはモデル生成と体/腕/掌/指/顔距離による胴体制御を停止し、残った2D点で腕が動く代替経路も止める。目線OFFは虹彩推論の停止で、顔モデル由来のまばたきは残る。-NoPersonDetectorは人物の在不在判定を失う診断用。head_onlyは別の専用モデルへ内部切替する。詳しくはHEAD_ONLY.md。
 
 --no-ort-profileは計測JSONを残してORT node traceだけOFFにする開発引数。--no-logは従来通り全記録/詳細profileを停止。新たな性能ログに実写画像は保存しない。head-onlyの最終CUDA証拠はresults/20260912T145144-131515Z-head-only/report.json、CUDA node 5643、CPU node 0。配置された重みのSHA256も照合した。
+
+## 2026-09-13 頭専用auto
+
+自動頭領域YuNetを追加した頭専用autoは同じ先頭930入力/900測定、単独/previewなし/ORT traceOFFでループ中央値8.601ms、領域3.828ms、姿勢2.339ms、decode1.892ms。900/900が追跡有効（精度の正解率ではない）。results/20260912T155231-635213Z-head-only/report.json。旧fixed3.177msとは機能が異なり、同時再測定ではない。上の既存full内訳は未変更。再現スクリプトはhead-only-fixedとhead-only-autoを分けるよう更新。通常構成の高速化はまだ実装せず、PERFORMANCE_OPTIONS.mdの案に対する優先順位指定待ち。

@@ -15,7 +15,8 @@ def main():
     output=ROOT/"results"/("inference-stages-"+str(time.time_ns()));output.mkdir()
     modes={"full":["--body3d","--gaze"],"without-body":["--no-body","--gaze"],
            "face-head":["--no-body"],"face-head-fixed":["--no-body","--fixed-roi"],
-           "head-only":["--head-only","--roi","618","246","170","165"]}
+           "head-only-fixed":["--head-only","--head-roi-mode","fixed","--roi","618","246","170","165"],
+           "head-only-auto":["--head-only"]}
     reports={}
     for name,extra in modes.items():
         command=[sys.executable,"-m","capture_lab","benchmark","--source","video","--video",str(args.video),

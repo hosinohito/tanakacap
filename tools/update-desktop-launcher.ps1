@@ -4,7 +4,7 @@ $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
 $taskTarget = Join-Path $taskDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar-lab.ps1'
-$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -Diagnose -Frames 1800`r`npause`r`n"
+$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -HeadOnly -Diagnose -Frames 1800`r`npause`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget
@@ -62,7 +62,7 @@ $taskDemoContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Byp
 [IO.File]::WriteAllText($taskDemoTarget,$taskDemoContents,[Text.Encoding]::Default)
 Write-Output $taskDemoTarget
 
-# Opt-in direct head-pose prototype: manual crop, no face/body/gaze models or logs.
+# Head-only with automatic CUDA region acquisition; no expression/body/gaze or logs.
 $taskHeadTarget = Join-Path $taskDesktop 'tanakacap-head-only.bat'
 $taskHeadContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -HeadOnly -NoLog`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskHeadTarget,$taskHeadContents,[Text.Encoding]::Default)
