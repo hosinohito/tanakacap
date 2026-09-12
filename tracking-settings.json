@@ -7,7 +7,7 @@
   "gaze_reference": "contour",
   "face_distance_enabled": true,
   "face_distance_mode": "framed",
-  "head_pose_mode": "pnp_depthmouth",
+  "head_pose_mode": "pnp",
   "head_pitch_gain": 1.8,
   "mouth_lip_depth_scale": 1.5,
   "face_distance_filter": "stable",

@@ -14,16 +14,16 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 |---|---|---|
 | `tanakacap-live.bat` | カメラでアバターを動かす | 動作ログなし・無制限 |
 | `tanakacap-motion.bat` | カメラなしで自作モーションを繰り返す | 動作ログなし・無制限 |
-| `tanakacap-test.bat` | 採用構成：PnPピッチ＋Z口角 | 診断ログあり・1800フレーム |
+| `tanakacap-test.bat` | 試行構成：PnPピッチ＋推定Zなしの口輪郭 | 診断ログあり・1800フレーム |
 | `tanakacap-test-face-pnp.bat` | 同じRTMW3D-Xで旧PnP補正を試す | 診断ログあり・1800フレーム |
 | `tanakacap-test-face-original.bat` | 従来のRTMW-L顔方式を試す | 診断ログあり・1800フレーム |
 | `tanakacap-compare-face.bat` | 顔方式の比較動画の保存先を開く | カメラ不使用 |
 
 通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
 
-採用構成は`-FaceSource body3d -HeadPoseMode pnp_depthmouth`。ピッチ・口角の両方にZを使う過去試行は`-HeadPoseMode depth3d`、`-HeadPoseMode pnp`で従来計算へ戻せる。通常設定はbody3d/pnp_depthmouth（PnPピッチ＋Z口角）。[同時3D化の比較](docs/FACE_DEPTH_TRIAL.md)。
+現在の試行設定は`-FaceSource body3d -HeadPoseMode pnp`。頭はPnPを維持し、口輪郭も固定テンプレートで正面化して、モデルの推定Zを使わない。`-HeadPoseMode pnp_depthmouth`で直前のZ口輪郭へ戻せる。比較動画は`tanakacap-compare-face.bat`、旧Z方式の実カメラ起動は`tanakacap-test-mouth-z.bat`。[今回の比較と時間フィルター](docs/MOUTH_NO_Z_TRIAL.md)。ピッチもZにする過去試行`depth3d`は通常へ戻さない。
 
-顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来方式へ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/Z口角の採用構成。頭専用モードは変更しない。[比較条件・動画生成手順](docs/FACE_SOURCE_TRIAL.md)。
+顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。頭専用モードは変更しない。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 
@@ -45,6 +45,8 @@ Set-Location D:\work\tanakacap
 ## 新しい環境のセットアップ
 
 手順は現行スクリプトと照合済みだが、新しいPCでの一括導入試験は未実施。依存環境を同梱した一般配布用インストーラーはまだない。
+
+配布予定の部品・モデル・素材と未確定事項は[ライセンス棚卸し](docs/DISTRIBUTION_LICENSES.md)を参照。`tools/audit_distribution.py --output 新しい保存先`で実環境の依存版・通知・モデルSHAを記録できる。開発環境全体を配布可能と認定するツールではない。
 
 ### 1. 必要な環境
 

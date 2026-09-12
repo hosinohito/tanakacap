@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新（2026-09-13）：口輪郭の推定Zを外す試行を通常pnpへ設定。固定テンプレート/PnPによる顔向き補正は維持、直前pnp_depthmouthへ可逆。3平均/stride1、口角追加強調0。動画はresults/avatar-videos/mouth-no-z、見た目はユーザー評価。docs/MOUTH_NO_Z_TRIAL.md。配布棚卸しはdocs/DISTRIBUTION_LICENSES.md。TensorRTは今回見送り、通常版も再配布自体は可能、RTX版特有の性能開示制限と区別し既存CUDAにも同種の配布義務があることを隠さない。実装・性能検証済みと扱わない。
+
 最新結果（2026-09-13）：口角強調度0〜1連続、既定0で追加増幅なし、1で従来へ。将来UIに追加。J/K/Lは全てFull HD60＋OBSで比較しrevert済み。Jは同等で利点確認できず、Kは速いが推定差大、Lは僅かに遅い。G+Iを維持し試行フラグは残さない。最終228 tests。docs/MOUTH_EMPHASIS_AND_OPTIMIZATION_JKL.mdとHANDOFF先頭。
 
 最新UI要件（2026-09-13）：推論切替UIに実測の推論速度を表示する。描画fps/Player受信Hzと混同しない。UI実装は将来。docs/SHARED_PREVIEW.md参照。
