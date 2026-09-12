@@ -21,5 +21,6 @@
   "detector_interval": 3,
   "detector_model": "yolox-m-human",
   "preprocess_mode": "crop",
-  "batch_eyes": true
+  "batch_eyes": true,
+  "mouth_corner_emphasis": 0.0
 }

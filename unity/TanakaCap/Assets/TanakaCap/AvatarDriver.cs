@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -91,6 +92,8 @@ namespace TanakaCap
         float initialHeadCameraY;
         float mouth, mouthWidth,mouthRound,mouthSmile,blinkLeft, blinkRight;
         float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
+        public float MouthCornerEmphasis { get; set; } = 0;
+        readonly Dictionary<(SkinnedMeshRenderer,string),float> cornerGains=new Dictionary<(SkinnedMeshRenderer,string),float>();
         bool detailedMouth;
         float probeDelta;
         float FrameDelta => probeDelta>0?probeDelta:Time.unscaledDeltaTime;
@@ -224,6 +227,13 @@ namespace TanakaCap
             MakeMouthShapes();
             MakeGazeShapes();
             var args = Environment.GetCommandLineArgs();
+            int emphasisArg=Array.IndexOf(args,"--mouth-corner-emphasis");
+            if(emphasisArg>=0)
+            {
+                if(emphasisArg+1>=args.Length || !float.TryParse(args[emphasisArg+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var emphasis) || float.IsNaN(emphasis) || emphasis<0 || emphasis>1)
+                    throw new ArgumentException("--mouth-corner-emphasis must be 0..1");
+                MouthCornerEmphasis=emphasis;
+            }
             faceDistanceEnabled=Array.IndexOf(args,"--no-face-distance")<0;
             seatedDistance=Array.IndexOf(args,"--face-distance-translate")<0;
             framedDistance=seatedDistance && Array.IndexOf(args,"--face-distance-seated")<0;
@@ -407,10 +417,10 @@ namespace TanakaCap
                 SetShape(mesh,"vrc.v_ou",(1-mouth)*mouthRound*70);
                 float leftCorner=ExpressiveCorner(mouthLeftCorner,mouth),rightCorner=ExpressiveCorner(mouthRightCorner,mouth);
                 SetShape(mesh,"口角上げ",detailedMouth?0:ExpressiveCorner(mouthSmile,mouth)*100);
-                SetShape(mesh,"TC_LeftCornerUp",Mathf.Max(0,leftCorner)*100);
-                SetShape(mesh,"TC_RightCornerUp",Mathf.Max(0,rightCorner)*100);
-                SetShape(mesh,"TC_LeftCornerDown",CornerDownWeight(leftCorner));
-                SetShape(mesh,"TC_RightCornerDown",CornerDownWeight(rightCorner));
+                SetCornerShape(mesh,"TC_LeftCornerUp",Mathf.Max(0,leftCorner)*100);
+                SetCornerShape(mesh,"TC_RightCornerUp",Mathf.Max(0,rightCorner)*100);
+                SetCornerShape(mesh,"TC_LeftCornerDown",CornerDownWeight(leftCorner));
+                SetCornerShape(mesh,"TC_RightCornerDown",CornerDownWeight(rightCorner));
                 SetShape(mesh,"TC_MouthShiftLeft",Mathf.Max(0,mouthShift)*100);
                 SetShape(mesh,"TC_MouthShiftRight",Mathf.Max(0,-mouthShift)*100);
                 SetShape(mesh,"ω",mouthBow*65);
@@ -1038,9 +1048,20 @@ namespace TanakaCap
                         float weight=isLeft?leftWeight:1-leftWeight;
                         delta[i]*=weight*cornerGain;normals[i]*=weight*cornerGain;tangents[i]*=weight*cornerGain;
                     }
-                    mesh.AddBlendShapeFrame("TC_"+(isLeft?"Left":"Right")+"Corner"+(up?"Up":"Down"),100,delta,normals,tangents);
+                    string cornerName="TC_"+(isLeft?"Left":"Right")+"Corner"+(up?"Up":"Down");
+                    mesh.AddBlendShapeFrame(cornerName,100,delta,normals,tangents);
+                    cornerGains[(renderer,cornerName)]=cornerGain;
                 }
             }
+        }
+
+        void SetCornerShape(SkinnedMeshRenderer renderer,string name,float weight)
+        {
+            // Shapes retain the old baked gain: 1 reproduces the previous output,
+            // 0 removes only that gain, preserving gamma/calibration/open-mouth suppression.
+            if(cornerGains.TryGetValue((renderer,name),out float gain))
+                weight*=Mathf.Lerp(1/gain,1,Mathf.Clamp01(MouthCornerEmphasis));
+            SetShape(renderer,name,weight);
         }
 
         static void SetShape(SkinnedMeshRenderer renderer, string name, float weight)
@@ -1330,12 +1351,28 @@ namespace TanakaCap
                 if(renderer.sharedMesh.GetBlendShapeIndex("TC_LeftCornerUp")<0)continue;
                 var names=new[]{"TC_LeftCornerUp","TC_RightCornerDown","ω","TC_MouthShiftLeft"};
                 var weights=new[]{64f,55.2f,32.5f,75f};
+                for(int j=0;j<2;j++)
+                    if(cornerGains.TryGetValue((renderer,names[j]),out float gain))
+                        weights[j]*=Mathf.Lerp(1/gain,1,Mathf.Clamp01(MouthCornerEmphasis));
                 for(int j=0;j<names.Length;j++)
                 {
                     int index=renderer.sharedMesh.GetBlendShapeIndex(names[j]);
                     if(index<0 || Mathf.Abs(renderer.GetBlendShapeWeight(index)-weights[j])>.1f)
                         throw new Exception("Contour transfer failed: "+names[j]);
                 }
+                float savedEmphasis=MouthCornerEmphasis;
+                int cornerIndex=renderer.sharedMesh.GetBlendShapeIndex(names[0]);
+                var measured=new float[3];
+                for(int j=0;j<3;j++)
+                {
+                    MouthCornerEmphasis=j*.5f;SetCornerShape(renderer,names[0],64);
+                    measured[j]=renderer.GetBlendShapeWeight(cornerIndex);
+                }
+                MouthCornerEmphasis=savedEmphasis;
+                SetCornerShape(renderer,names[0],64);
+                if(Mathf.Abs(measured[2]-64)>.001f || measured[0]>measured[2] || Mathf.Abs(measured[1]-(measured[0]+measured[2])*.5f)>.001f)
+                    throw new Exception("Continuous corner emphasis failed");
+                Debug.Log("TANAKACAP_CORNER_EMPHASIS_OK 0/0.5/1="+string.Join(",",measured));
                 foreach(var name in new[]{leftBlinkShape,rightBlinkShape,"TC_LeftCornerUp","TC_RightCornerUp","TC_LeftCornerDown","TC_RightCornerDown"})
                 {
                     var mesh=renderer.sharedMesh;int index=mesh.GetBlendShapeIndex(name);
