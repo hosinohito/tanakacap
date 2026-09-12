@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+最新比較（2026-09-13）：眉の振動対策なし/ありの比較はresults/avatar-videos/brow-follow/face-closeup.mp4（左brow-direct/右brow-adaptive）。同じ新30秒録画の853packet、PnP/gain2/4フレーム法/左右分割デモアバターを固定し、--no-adaptive-brow-followの有無だけ変更。準備はtools/prepare_brow_follow_comparison.py、入力reportはresults/comparisons/brow-follow。頭や目閉じは変更せず、オフライン30fps比較。既存の眉倍率比較とは別。
+
 ## 2026-09-13 — 眉にも可変速度の振動対策
 
 ユーザー指定で眉の表示補間を追加。既存4フレーム法/gain2の後、表示値と目標の絶対差0〜0.3でrate6〜45をsmoothstep、係数1-exp(-dt*rate)。眉の左内/左外/右内/右外を個別更新、片側の大きい動きが反対側の補間を速めない。無効観測は既存の保持分岐。新しいデッドゾーン/観測待ちは追加しない。既定ON、--no-adaptive-brow-followで旧直接反映へ。頭の可変追従設定・口・目閉じ・揺れ物は変更なし。
