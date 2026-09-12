@@ -23,21 +23,41 @@ STAGES=[
  ('loss_return',15,'片手ずつ画面外へ・戻す','最後に顔を手で一瞬隠して戻してください。'),
  ('end_still',10,'最後に正面で静止','姿勢を戻して、そのまま終了を待ってください。')]
 
-def stage_at(seconds):
+FACE_STAGES=[
+ ('neutral',12,'正面で静止',''),
+ ('pitch_down',15,'下を向いて止まる → 正面（2回）',''),
+ ('pitch_up',15,'上を向いて止まる → 正面（2回）',''),
+ ('yaw',18,'左を向いて止まる → 正面 → 右 → 正面',''),
+ ('roll',15,'顔は正面のまま、頭を左右に傾ける',''),
+ ('quick_head',12,'小さく素早くうなずく・左右を向く → 静止',''),
+ ('distance',18,'顔は正面のまま、近づいて止まる → 戻る',''),
+ ('blink_gaze',18,'まばたき → 頭を固定して目線だけ左右・上下',''),
+ ('brows',15,'眉を上げる → 戻す → 眉を寄せる',''),
+ ('mouth_shapes',20,'あ・い・う・え・お（各形で止まる）',''),
+ ('mouth_corners',18,'小さく笑う → 大きく笑う → への字口',''),
+ ('mouth_shift',15,'口を閉じて左右に寄せる → 片側の口角を上げる',''),
+ ('pitch_expression',20,'下向きで口を開閉 → 上向きで口を開閉',''),
+ ('face_loss',12,'手で顔を2秒隠す → 戻して静止（2回）',''),
+ ('end_still',12,'自然な表情で正面静止','')]
+PROFILES={'body':STAGES,'face-head':FACE_STAGES}
+
+def stage_at(seconds,stages=None):
     elapsed=0.
-    for key,duration,title,instruction in STAGES:
+    for key,duration,title,instruction in (STAGES if stages is None else stages):
         if seconds<elapsed+duration:return key,title,instruction,elapsed+duration-seconds
         elapsed+=duration
     return None
 
 class TakeWriter:
-    def __init__(self,path,size,fps,settings,camera):
+    def __init__(self,path,size,fps,settings,camera,profile='body'):
+        stages=PROFILES[profile]
         self.path=Path(path);self.path.mkdir(parents=True,exist_ok=False)
         self.size=tuple(size);self.fps=fps;self.count=0;self.last_time=None;self.last_sequence=None;self.skipped=0
         self.writer=cv2.VideoWriter(str(self.path/'camera.avi'),cv2.CAP_FFMPEG,cv2.VideoWriter_fourcc(*'HFYU'),fps,self.size)
         if not self.writer.isOpened():raise RuntimeError('Lossless HuffYUV writer unavailable')
         self.log=(self.path/'frames.jsonl').open('w',encoding='utf-8')
         self.meta={'version':1,'status':'recording','codec':'HuffYUV','video_file':'camera.avi','size':size,'nominal_fps':fps,'settings':settings,'camera':camera,'stages':STAGES,'audio':False,'mirrored_file':False,'timestamp_note':'After camera read, not exposure. AVI/MKV nominal timestamps are not used for replay.'}
+        self.meta.update(profile=profile,stages=stages)
         self.save()
     def save(self):
         (self.path/'take.json').write_text(json.dumps(self.meta,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -59,10 +79,11 @@ class TakeWriter:
             self.meta['timeline_sha256']=sha256(self.path/'frames.jsonl')
         self.save()
 
-def record(camera_index=1):
+def record(camera_index=1,profile='body'):
     import tkinter as tk
     from tkinter import messagebox
     settings=json.loads((ROOT/'tracking-settings.json').read_text())
+    stages=PROFILES[profile];duration=sum(stage[1] for stage in stages)
     window=tk.Tk();window.title('TanakaCap モデル比較用 撮影');window.geometry('960x730')
     title=tk.StringVar(value='カメラを準備しています');hint=tk.StringVar(value='開始ボタンを押すまでは映像を保存しません。音声は録音しません。')
     tk.Label(window,textvariable=title,font=('Yu Gothic UI',21,'bold')).pack(pady=8)
@@ -84,12 +105,12 @@ def record(camera_index=1):
         countdown=time.perf_counter()+3;button.config(state='disabled')
     def close():
         finish();window.destroy()
-    button=tk.Button(window,text='撮影開始（約3分）',font=('Yu Gothic UI',15),command=start);button.pack(pady=10)
+    button=tk.Button(window,text=f'撮影開始（約{duration/60:.1f}分）',font=('Yu Gothic UI',15),command=start);button.pack(pady=10)
     tk.Button(window,text='中断',command=lambda:finish()).pack()
     window.protocol('WM_DELETE_WINDOW',close)
     try:
         camera=Camera(camera_index);camera.__enter__()
-        title.set('おなか〜頭、左右の手が映る位置へ')
+        title.set('顔・頭・表情の撮影：普段の着席位置へ' if profile=='face-head' else 'おなか〜頭、左右の手が映る位置へ')
         def tick():
             nonlocal take,started,countdown,last_sequence
             try:
@@ -100,13 +121,14 @@ def record(camera_index=1):
                 if countdown is not None:
                     title.set(f'撮影まで {max(1,int(countdown-clock)+1)}')
                     if clock>=countdown:
+                        if frame is None:raise RuntimeError('カメラから画像が届いていません。')
                         if shutil.disk_usage(ROOT).free<30*1024**3:raise RuntimeError('撮影には30GB以上の空きが必要です')
                         path=ROOT/'results'/'comparison-takes'/datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S-%fZ')
-                        take=TakeWriter(path,list(frame.image.shape[1::-1]),30,settings,camera.metadata)
+                        take=TakeWriter(path,list(frame.image.shape[1::-1]),30,settings,camera.metadata,profile)
                         started=frame.acquired;countdown=None;last_sequence=-1
                 if frame is not None and frame.sequence!=last_sequence:
                     if take:
-                        elapsed=frame.acquired-started;stage=stage_at(elapsed)
+                        elapsed=frame.acquired-started;stage=stage_at(elapsed,stages)
                         if stage is None:finish('complete')
                         else:
                             key,label,instruction,remaining=stage
@@ -125,5 +147,6 @@ def record(camera_index=1):
 
 def main():
     parser=argparse.ArgumentParser(allow_abbrev=False);camera_display.add_argument(parser);parser.add_argument('--camera',type=int,default=1)
-    args=parser.parse_args();record(args.camera)
+    parser.add_argument('--profile',choices=list(PROFILES),default='body')
+    args=parser.parse_args();record(args.camera,args.profile)
 if __name__=='__main__':main()

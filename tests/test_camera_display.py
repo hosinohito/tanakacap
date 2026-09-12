@@ -67,7 +67,7 @@ def test_complete_flag_is_accepted_by_both_entry_points(monkeypatch):
     monkeypatch.setattr(app, 'benchmark', lambda args: seen.append(args.preview))
     monkeypatch.setattr(sys, 'argv', ['capture_lab', 'benchmark', camera_display.DISPLAY_FLAG])
     app.main()
-    monkeypatch.setattr(comparison_capture, 'record', lambda index: seen.append(camera_display.allowed()))
+    monkeypatch.setattr(comparison_capture, 'record', lambda index, profile='body': seen.append(camera_display.allowed()))
     monkeypatch.setattr(sys, 'argv', ['comparison_capture', camera_display.DISPLAY_FLAG])
     comparison_capture.main()
     assert seen==[True, True]

@@ -1,10 +1,10 @@
-﻿param([ValidateSet('capture','analyze')][string]$Mode='capture',[string]$Take='')
+﻿param([ValidateSet('capture','analyze')][string]$Mode='capture',[string]$Take='',[ValidateSet('body','face-head')][string]$Profile='body')
 $ErrorActionPreference='Stop'
 Push-Location $PSScriptRoot
 try {
     if ($Mode -eq 'capture') {
         Write-Host 'モデル比較用の元カメラ映像を撮影します。開始ボタンを押すまでは保存しません。'
-        & '.\.venv\Scripts\python.exe' -m capture_lab.comparison_capture --camera 1
+        & '.\.venv\Scripts\python.exe' -m capture_lab.comparison_capture --camera 1 --profile $Profile
     } else {
         if (-not $Take) {
             $taskTakes=@()

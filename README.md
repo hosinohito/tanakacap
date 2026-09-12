@@ -1,5 +1,7 @@
 # tanakacap
 
+顔・頭・表情の検証録画はデスクトップの`tanakacap-face-capture.bat`（約4分）。開始ボタン後に短い動作名を表示し、実写画面・音声なしで保存する。保存先は`results/comparison-takes/<日時>/`。直接起動は`run-comparison-lab.ps1 -Mode capture -Profile face-head`。既存の全身用撮影は従来どおり。
+
 Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出力するWindows用プロジェクト。Unity Editorの書き出しプラグインと、外部アバターファイルを読み込む専用Unityアプリで構成する。
 
 着席時の頭・目・口・上半身・腕・掌・指を対象に、RTX 4090で品質を優先して開発している。元のシェーダーの見た目を保ち、髪・服は元PhysBoneの設定を独立した近似ソルバーへ変換する。軽量化は基準品質の確立後に追加する。
