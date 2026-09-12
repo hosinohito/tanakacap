@@ -21,6 +21,10 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 | `tanakacap-compare-f.bat` | 高速化FのOFF／ON比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-compare-fp16.bat` | CUDA FP32／FP16比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-test-fp16.bat` | 通常testと同じFP16起動（旧ショートカットの互換用） | ユーザーが起動するカメラ試験 |
+| `tanakacap-demo-custom-brows.bat` | 眉追加時点の従来表情デモを保存版Playerで再生 | カメラなし・非記録・無期限 |
+| `tanakacap-test-auto-expressions.bat` | 実験用の自動独自キー方式 | ユーザーが起動するカメラ試験 |
+| `tanakacap-motion-auto-expressions.bat` | 自動独自キー方式で自作モーション再生 | カメラなし・非記録・無期限 |
+| `tanakacap-compare-expressions.bat` | 従来デモ／既存キー／自動独自キーの顔拡大比較動画の場所を開く | 保存動画 |
 
 通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
 
@@ -203,7 +207,19 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 
 ## 描画品質と解像度
 
-口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし、1で以前の強調量。0でも口角追跡は続く。将来UIへ追加予定。[詳細](docs/MOUTH_EMPHASIS_AND_OPTIMIZATION_JKL.md)。
+口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。将来UIへ追加予定。[詳細](docs/EXPRESSION_PORTABILITY.md)。
+
+眉も既存顔点から追跡する。表情は通常`-ExpressionMode existing`で、機能別にPerfect Sync/ARKit→MMD→VRCの既存キーを使用し、独自キーは生成しない。目線も既存方向キー、なければ眼ボーンを使う。足りない機能は無効とし、変換レポートとPlayerログに対応表を残す。Perfect Syncの推論を再実装したものではない。
+
+`-ExpressionMode auto-custom`は実験用。既存キー優先を基本に、ARKitで不足する口角の左右分離・唇限定の横寄せ・瞳限定移動を実行時に生成する。既知の作者形状と眼ボーンが材料として必要で、任意アバターへの自動対応を保証しない。素材メッシュ原本は変更しない。
+
+```powershell
+.\run-motion-lab.ps1 -ExpressionMode auto-custom
+# 通常の既存キーだけへ戻す
+.\run-motion-lab.ps1 -ExpressionMode existing
+```
+
+眉を追加した従来版は`builds/demos/haolan-custom-brows/`に別保存し、通常ビルドで上書きしない。このローカル保存物はGitには含まれず、別PCではソースのチェックポイント`6806913`と正規取得した素材から再作成が必要。配布可能な自作モーションとアバター素材の許諾は別扱い。[方式・比較条件](docs/EXPRESSION_PORTABILITY.md)。
 
 軽量な輪郭AAは既定ON。プレビューと透過Spout出力に同じGPUフィルターを適用する。時間方向の蓄積を使わず、RGBとアルファを同じ比率で処理する。F7、または起動時の`-NoEdgeAA`で従来の表示に戻せる（元の4倍MSAAは残る）。追加ライブラリは不要。[方式と検証](docs/ANTIALIASING.md)。
 
@@ -220,10 +236,10 @@ OBS用画像をプレビューにも再利用し、アバターの二重描画�
 
 ## 自分のアバターを書き出す
 
-現行Exporterは**HAOLAN用表情プロファイル限定**。任意のVRCアバターやModular Avatarの改変をそのまま持ち出せる完成版ではない。
+表情のHAOLAN限定条件は撤去し、既存キーの対応表とVRC Descriptorのviseme・眼設定を保存する。実アバターの検証はHAOLAN 1.6が中心で、任意のVRCアバターやModular Avatarの改変をそのまま持ち出せる完成版ではない。骨・カメラ構図・改変処理の汎用化は別の残件。
 
 1. Unity **2022.3.22f1 / Built-in / Windows64**の作業用プロジェクトへ`TanakaCapExporter.unitypackage`を導入する。
-2. アバタールートを選択し、`TanakaCap > Export selected avatar (HAOLAN profile)`を実行する。
+2. アバタールートを選択し、`TanakaCap > Export selected avatar`を実行する。
 3. 新しい出力ファイル名を選ぶ。既存ファイルへの上書きは拒否される。
 4. 同名の`.report.json`で省略機能・警告を確認する。未知のスクリプト等はエラーで停止する。
 

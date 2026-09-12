@@ -23,7 +23,7 @@ namespace TanakaCap {
      var metadata=zip.GetEntry("manifest.json");var entry=zip.GetEntry("avatar.bundle");
      if(metadata.Length>1024*1024||entry.Length>1024L*1024*1024)throw new Exception("Avatar package exceeds supported size.");
      AvatarPackageManifest m;using(var reader=new StreamReader(metadata.Open()))m=JsonUtility.FromJson<AvatarPackageManifest>(reader.ReadToEnd());
-     if(m==null||m.formatVersion!=1||m.platform!="StandaloneWindows64"||m.profile!="haolan-1.6"||m.unityVersion!=Application.unityVersion||m.prefab!="avatar")throw new Exception("Unsupported avatar format, profile, platform or Unity version.");
+     if(m==null||m.formatVersion!=1||m.platform!="StandaloneWindows64"||(m.profile!="haolan-1.6"&&m.profile!="existing-expressions-1")||m.unityVersion!=Application.unityVersion||m.prefab!="avatar")throw new Exception("Unsupported avatar format, profile, platform or Unity version.");
      // Allocate exactly once. MemoryStream growth plus ToArray kept ~64 MB
      // of transient managed buffers alive after loading this ~26 MB package.
      byte[] bytes=new byte[checked((int)entry.Length)];
@@ -45,7 +45,7 @@ namespace TanakaCap {
      foreach(var r in avatar.GetComponentsInChildren<Renderer>(true))foreach(var mat in r.sharedMaterials)
       if(!mat||!mat.shader||!mat.shader.isSupported||mat.shader.name=="Hidden/InternalErrorShader")throw new Exception("Unsupported avatar material: "+r.name);
      animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
-     var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;
+     var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;driver.faceProfile=m.faceProfile;
      if(m.secondaryPhysics!=null && m.secondaryPhysics.bones.Length>0)avatar.AddComponent<SecondaryMotion>().Initialize(m.secondaryPhysics,animator);
      if(Array.IndexOf(Environment.GetCommandLineArgs(),"--secondary-check")>=0)avatar.AddComponent<SecondaryMotionProbe>();
      Debug.Log("TANAKACAP_PACKAGE_LOADED "+Path.GetFullPath(path)+" sha256="+hash);

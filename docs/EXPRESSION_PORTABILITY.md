@@ -12,4 +12,42 @@ HAOLANでは既存MMD眉の上/下/困る/怒りを使用する。左右独立�
 
 眉追加後・汎用化前のPlayer一式をbuilds/demos/haolan-custom-browsへ保存。旧HAOLAN固有の口/目線キーを含み、自作モーションの眉も動く。今後の通常ビルドで上書きしない。素材許諾・自作モーション0BSDは別扱い。一般公開の指示はない。
 
-汎用化と自動生成はこのチェックポイントの後に実装する。比較入力はresults/comparisons/expression-mapping/replay.jsonl。以前のFP16全編制御を維持して眉だけ一度追加し、全方式に全く同じpacket/時計を渡す。推論・眉そのものの比較ではなく、アバターへの対応方式の比較とする。
+比較入力はresults/comparisons/expression-mapping/replay.jsonl。以前のFP16全編制御を維持して眉だけ一度追加し、全方式に全く同じpacket/時計を渡す。推論・眉そのものの比較ではなく、アバターへの対応方式の比較とする。
+
+## 現在の実装
+
+通常Playerと両起動スクリプトは`existing`が既定。`--expression-mode auto-custom`（PowerShellは`-ExpressionMode auto-custom`）で実験方式へ変更する。推論・時間フィルター・頭・腕・揺れ物はモード間で共通。
+
+| 機能 | 既存キー方式 | 自動独自キー方式 |
+|---|---|---|
+| 開口・丸さ・横幅 | jawOpen等を優先、なければMMDあ/い/お/う、次にVRC viseme | 同じ既存キー対応 |
+| 口角 | mouthSmile/Frown左右、なければ両側MMDを平均駆動 | ARKit不足分に作者の口角上げ/下げを左右分割 |
+| 横寄せ | mouthLeft/Right、口_左/右等。なければ省略 | 作者の口_上を材料に唇帯だけ左右最大4mm |
+| 目線 | eyeLook方向キー、なければ軸ごとに眼ボーン | 瞳小の変位範囲×眼ボーン影響を使う瞳限定移動 |
+| 眉 | ARKit内/外/下げ、次にMMD上/下/困る/怒り | 同じ既存眉キー。無根拠な眉形状は生成しない |
+| まばたき | eyeBlink左右、次にMMDウィンク、次にDescriptor blink | 同じ既存キー対応 |
+
+キー名は大小文字・区切り記号を正規化して照合。機能ごと・左右ごとに優先順位を適用する。空のダミーキーは除外。両側一体のキーへ左右入力が入った場合は平均し、加算で倍にしない。対応キーがない制御を勝手な別形状へ割り当てない。複数rendererに同じキーがある場合は最初の一致を採るため、分割メッシュ全体への自動配線や曖昧な命名は残件。
+
+VRC DescriptorがあるEditorでは、SDK 3.10.5のローカル公式Editorソースで確認したVisemeSkinnedMesh/VisemeBlendShapes、MouthOpenBlendShapeName、customEyeLookSettingsを読み、SDKコンポーネント除去前に対応表へ保存する。明示visemeがVRC名推測より優先するが、ARKit/MMDを上書きしない。JawFlapBoneやAnimatorによる表情は未対応と報告。SDKが欠けた既存HAOLAN素材は名前照合へ戻る。本番SDKで全種類のDescriptorを実機検証したとは扱わない。
+
+新規.tcapのprofileは`existing-expressions-1`、旧`haolan-1.6`も新Playerで読み込める。旧保存デモには旧.tcapを専用に残す。書出しプラグインにSDK本体やPlayer/推論コードは含めない。
+
+## 自動生成へ引き継いだ実験
+
+- 口角は符号付きガンマ2。小さな変化を抑え、大きなへの字を残す。開口時は上げ側のみ最大90%抑制。強調0では作者の変形量、1で旧6mm正規化（最大3倍）。
+- 作者の日本語口角キーから生成した下げ側は、従来試行の中立30%を両端で減衰させる。これはHAOLANでの経験値であり、全アバターの中立口を自動同定した値ではない。ARKitや通常モードへ一律には加えない。
+- 横寄せは作者の口_上の支持頂点のみ。中心上下6mmは全量、14mmでゼロへ減衰し、顎・首へ漏らさない。安全な材料がなければ生成しない。全rendererへ一律変形した過去の失敗方式は使わない。
+- 瞳は作者の瞳小で動く頂点と眼ボーンの影響範囲の共通部分だけ。横4mm/縦2.5mm。原本のスキンウェイトを変更しない。目線欠測は従来どおりカメラ方向へゆっくり戻す。
+- メッシュは実行中のコピー。口の材料がなく瞳だけ生成できる場合にもコピーする。アバター破棄時に解放する。
+- 口輪郭の推定Zなし/PnP正面化・中立校正・3平均stride1は入力側でそのまま共有する。顔や全身のモデルを追加しない。
+
+材料の既知名称・原点/軸・アバター寸法に依存する試験的な方式。何も材料がないアバターへ幾何形状を想像して生成する機能ではない。
+
+## 検証
+
+237 Python tests成功。Unity Editorの合成キー検査で、部位/左右ごとの優先順位、空キーの代替、VRC明示名優先、両側平均、目線軸ごとの眼ボーン代替、既存方式のメッシュ参照/キー数不変を確認。results/unity-build.logのTANAKACAP_EXPRESSION_CHECKS_OK。
+
+実HAOLANで両モードのmotion-check成功。results/expression-mapping/{existing-final,auto-custom-final}.log。眉・口・目・欠測保持・腕/手首の回帰を含む。自動生成の口横寄せは両方向4mm、唇外不変。瞳2,178頂点の方向と範囲外不変を確認。強調0/.5/1も連続。見た目の品質はユーザー確認前。
+
+比較動画はresults/avatar-videos/expression-mappingへ生成する。左からcustom-demo（眉追加時点の旧口/瞳）、existing、auto-custom。全身と顔拡大は同じ比較の表示違いで、眉専用の比較動画は作らない。録画は既存5,187観測のみ、実カメラ/エージェントによる動画目視はなし。最終生成状況と各Player/アバターのSHA256は同フォルダーのreport.json。

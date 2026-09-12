@@ -16,7 +16,9 @@
 | tanakacap-live.bat | 普段使いのカメラ版 | なし | 制限なし。アバターを閉じるかプレビューでQ/Esc |
 | tanakacap-motion.bat | カメラを使わないモーション版 | なし | 制限なし。アバターを閉じる |
 
-いずれも更新した外部haolan.tcapを読む。F6は髪・服の揺れON/OFF、F3はOBS向け表示。Spoutの送信名TanakaCapは共通。比較のための同時起動ではなく、使いたい版を一つ起動する。
+通常版はいずれも更新した外部haolan.tcapを読み、表情はexisting（既存キー優先）が既定。F6は髪・服の揺れON/OFF、F3はOBS向け表示。Spoutの送信名TanakaCapは共通。使いたい版を一つ起動する。
+
+2026-09-13追加：両PowerShell起動スクリプトは`-ExpressionMode existing|auto-custom`を受ける。`tanakacap-test-auto-expressions.bat`はカメラ検証用、`tanakacap-motion-auto-expressions.bat`はカメラなし/非記録/無期限。`tanakacap-demo-custom-brows.bat`は例外としてbuilds/demos/haolan-custom-browsの旧Playerと専用.tcapを使う保存デモ（カメラなし/非記録/無期限）。通常ビルドで上書きしない。`tanakacap-compare-expressions.bat`は録画比較の顔拡大動画を選択表示する。詳細docs/EXPRESSION_PORTABILITY.md。
 
 非記録版ではframes.jsonl/結果レポート/校正レポート/スナップショット/ORT profilingを生成せず、メモリ内のフレーム履歴も1件に制限する。Unityは-nolog。GPUの明示指定とCPU-only拒否は維持するが、ノード別の実測監査は検証版で行う。起動エラーの画面表示やOS/ドライバーのキャッシュまで無くす機能ではない。過去の記録を消さない。
 

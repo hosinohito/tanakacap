@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEditor;
 namespace TanakaCap.Editor {
  public static class AvatarExporter {
-  [MenuItem("TanakaCap/Export selected avatar (HAOLAN profile)")]
+  [MenuItem("TanakaCap/Export selected avatar")]
   public static void ExportSelected() {
    var source=Selection.activeGameObject;
    if(!source)throw new Exception("Select the avatar root first.");
@@ -20,7 +20,7 @@ namespace TanakaCap.Editor {
    string scratch="Assets/TanakaCapExport-"+Guid.NewGuid().ToString("N");
    string build=Path.Combine("Temp",Guid.NewGuid().ToString("N"));
    GameObject copy=null;
-   var warnings=new List<string>{"HAOLAN 1.6 expression profile only.","VRChat behaviours and animator controllers are not reproduced.","Modular Avatar and other build-time modifications must not be silently omitted; unsupported scripts stop this exporter."};
+   var warnings=new List<string>{"Existing expressions: ARKit, MMD, then VRC per feature. Missing features remain unsupported.","VRChat behaviours and animator controllers are not reproduced.","Modular Avatar and other build-time modifications must not be silently omitted; unsupported scripts stop this exporter."};
    try {
     Directory.CreateDirectory(scratch);Directory.CreateDirectory(build);AssetDatabase.Refresh();
     copy=UnityEngine.Object.Instantiate(source);copy.name="avatar";
@@ -29,8 +29,7 @@ namespace TanakaCap.Editor {
     if(!animator||!animator.isHuman||!animator.avatar.isValid)throw new Exception("A valid Humanoid Animator is required on the selected root.");
     foreach(var bone in new[]{HumanBodyBones.Hips,HumanBodyBones.Spine,HumanBodyBones.Head,HumanBodyBones.LeftUpperArm,HumanBodyBones.LeftLowerArm,HumanBodyBones.LeftHand,HumanBodyBones.RightUpperArm,HumanBodyBones.RightLowerArm,HumanBodyBones.RightHand})
      if(!animator.GetBoneTransform(bone))throw new Exception("Missing required bone: "+bone);
-    var body=copy.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(x=>x.name=="Body"&&x.sharedMesh&&x.sharedMesh.GetBlendShapeIndex("vrc.v_aa")>=0);
-    if(!body)throw new Exception("This first exporter requires the HAOLAN Body/viseme profile.");
+    var faceProfile=FaceProfileExporter.Collect(copy,warnings);
     var secondary=SecondaryMotionExporter.Collect(source,copy,warnings);
     foreach(var t in copy.GetComponentsInChildren<Transform>(true)) {
      int count=GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(t.gameObject);
@@ -54,7 +53,7 @@ namespace TanakaCap.Editor {
     if(!result)throw new Exception("AssetBundle build failed");
     string bundle=Path.Combine(build,"avatar.bundle");
     string hash;using(var sha=SHA256.Create())using(var f=File.OpenRead(bundle))hash=BitConverter.ToString(sha.ComputeHash(f)).Replace("-","").ToLowerInvariant();
-    var manifest=new AvatarPackageManifest{unityVersion=Application.unityVersion,displayName=source.name,bundleSha256=hash,warnings=warnings.ToArray(),secondaryPhysics=secondary};
+    var manifest=new AvatarPackageManifest{profile="existing-expressions-1",faceProfile=faceProfile,unityVersion=Application.unityVersion,displayName=source.name,bundleSha256=hash,warnings=warnings.ToArray(),secondaryPhysics=secondary};
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destination)));
     string temp=destination+".partial";
     try {

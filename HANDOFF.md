@@ -1,5 +1,19 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 眉追加・保存デモ・表情モードの汎用化
+
+現在のユーザー指定：眉を追加した従来版をデモ保存。その後、通常は機能別ARKit/Perfect Sync→MMD→VRCの既存キーだけで口/眉/まばたき/目線を動かす。Perfect Sync推論そのものは作らない。追加のauto-customは過去の実験（左右口角、唇帯のみ横4mm、瞳限定移動、ガンマ2、開口上げ抑制、強調0）を踏襲する任意モード。眉専用動画は不要。
+
+眉のソースチェックポイント6806913。builds/demos/haolan-custom-browsへ旧Player一式と旧.tcapを別保存済み、通常ビルドで上書き禁止。desktop tanakacap-demo-custom-brows.batでカメラなし/非記録/無期限の自作モーション。眉は追加モデルなし、眼端基準/PnP固定平面/安定10観測中立/3平均stride1/欠測保持。既存録画5,071/5,187で有効、正解率とは扱わない。
+
+通常Playerはexisting既定、run-avatar-lab.ps1/run-motion-lab.ps1 -ExpressionMode auto-customで実験方式。新規.tcapはexisting-expressions-1と対応表を保存、旧haolan-1.6も新Playerで読める。通常ではメッシュ生成なし。auto-customだけ実行中コピーへ生成。HAOLAN既存方式はMMD口、左右独立の口角/横寄せは未対応、目線は弱い眼ボーンとなる。自動モードが任意モデルに適用できる保証はない。揺れ物/推論モデル/人体補正は変更なし。
+
+237 tests、Editor優先順位/空キー/Descriptor名優先/両側平均/目線軸代替/既存メッシュ不変の検査、両モードの実Player回帰成功。results/expression-mapping/{existing-final,auto-custom-final}.log。autoの唇外不変/両方向4mm、瞳2,178頂点の方向/範囲外不変、強調連続を確認。通常実アバターはHAOLANのみ。SDK設定はローカル3.10.5公式Editorソースで確認したが、全Descriptor型の実SDK書出し検証は未実施。
+
+比較生成中：results/avatar-videos/expression-mapping、左からcustom-demo/existing/auto-custom。5,187の同一packet/時計、185秒録画。tools/render_comparison_videos.pyのセッション結果とreport.jsonのstatusを確認して完了へ更新する。実カメラ/エージェント動画目視なし。desktop tanakacap-compare-expressions.bat、test-auto-expressions、motion-auto-expressions追加済み。README/SPEC0.69とdocs/EXPRESSION_PORTABILITY.mdに方式/限界を記載。映像の品質判断はユーザー。通常の汎用アバター対応やフェーズ5全体の完成とは扱わない。
+
+次：比較動画の全編decode検査完了→文書を完了状況へ更新→ローカルGitコミット。外部push、実写/素材/resultsのGit追加なし。
+
 ## 2026-09-13 — FP16通常採用、FP32起動選択の撤去
 
 ユーザーがFP16採用と、FP32は起動オプションから消して将来UIに追加する可能性に備えた口だけ保持するよう指定。通常test/live/Python CLI/soakは精度指定なしでgraph-fp16。launcherの-InferenceMode、CLI/soakの--inference-mode、tracking-settings.jsonのinference_modeを削除。古い設定値でFP32に戻る経路はない。DEFAULT_INFERENCE_MODEとmain(argv, inference_mode=...)・既存モデルAPIを内部接続として保持。UIへの追加は未確定で、勝手に実装予定へ格上げしない。過去のオフライン比較ツールは内部APIでFP32回帰が可能、通常起動の選択肢ではない。

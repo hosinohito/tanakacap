@@ -26,5 +26,6 @@ namespace TanakaCap {
   public string unityVersion,platform="StandaloneWindows64",profile="haolan-1.6",prefab="avatar",displayName,bundleSha256;
   public string[] warnings;
   public SecondaryPhysicsData secondaryPhysics;
+  public FaceProfile faceProfile;
  }
 }

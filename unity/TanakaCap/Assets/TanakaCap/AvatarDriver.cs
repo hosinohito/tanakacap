@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -97,7 +97,15 @@ namespace TanakaCap
         public float MouthCornerEmphasis { get; set; } = 0;
         readonly Dictionary<(SkinnedMeshRenderer,string),float> cornerGains=new Dictionary<(SkinnedMeshRenderer,string),float>();
         bool detailedMouth;
-        BrowExpressions browExpressions;
+        BrowExpressions browExpressions; // Standalone authored-brow regression probe.
+        public FaceProfile faceProfile;
+        FaceExpressions expressions;
+        bool autoExpressions;
+        readonly HashSet<Mesh> expressionClones=new HashSet<Mesh>();
+        Mesh ExpressionClone(SkinnedMeshRenderer renderer) {
+            if(expressionClones.Contains(renderer.sharedMesh))return renderer.sharedMesh;
+            var clone=Instantiate(renderer.sharedMesh);expressionClones.Add(clone);renderer.sharedMesh=clone;return clone;
+        }
         float browLeftInner,browLeftOuter,browRightInner,browRightOuter;
         float probeDelta;
         float FrameDelta => probeDelta>0?probeDelta:Time.unscaledDeltaTime;
@@ -206,6 +214,8 @@ namespace TanakaCap
             var eyeL=animator.GetBoneTransform(HumanBodyBones.LeftEye);
             var eyeR=animator.GetBoneTransform(HumanBodyBones.RightEye);
             leftEye=eyeL;rightEye=eyeR;
+            if(!leftEye && !string.IsNullOrEmpty(faceProfile?.leftEye))leftEye=transform.Find(faceProfile.leftEye);
+            if(!rightEye && !string.IsNullOrEmpty(faceProfile?.rightEye))rightEye=transform.Find(faceProfile.rightEye);
             // HAOLAN has eye bones, but does not map them in its Humanoid avatar.
             foreach(var bone in head.GetComponentsInChildren<Transform>(true))
             {
@@ -228,8 +238,13 @@ namespace TanakaCap
             left = MakeArm(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand);
             right = MakeArm(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand);
             meshes = GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            MakeMouthShapes();
-            MakeGazeShapes();
+            int expressionIndex=Array.IndexOf(renderArgs,"--expression-mode");
+            string expressionMode=expressionIndex<0?"existing":expressionIndex+1<renderArgs.Length?renderArgs[expressionIndex+1]:"";
+            if(expressionMode!="existing" && expressionMode!="auto-custom")throw new ArgumentException("--expression-mode must be existing or auto-custom");
+            autoExpressions=expressionMode=="auto-custom";
+            if(autoExpressions){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
+            expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
+            Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
             int emphasisArg=Array.IndexOf(args,"--mouth-corner-emphasis");
@@ -393,6 +408,7 @@ namespace TanakaCap
             float faceT=headActive ? 1-Mathf.Exp(-FrameDelta*45) : t;
             if (headActive) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
             ApplyFaceFraming(p,live);
+            expressions.Begin();
             DriveGaze(p,live,FrameDelta);
 
             left.handBeforeSolve=left.hand.rotation; right.handBeforeSolve=right.hand.rotation;
@@ -419,26 +435,12 @@ namespace TanakaCap
                 browLeftInner=Mathf.Clamp(p.browLeftInner,-1,1);browLeftOuter=Mathf.Clamp(p.browLeftOuter,-1,1);
                 browRightInner=Mathf.Clamp(p.browRightInner,-1,1);browRightOuter=Mathf.Clamp(p.browRightOuter,-1,1);
             }
-            browExpressions.Apply(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
+            expressions.ApplyBrows(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
             if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
-            foreach (var mesh in meshes)
-            {
-                SetShape(mesh,"vrc.v_aa",mouth*(1-mouthRound)*100);
-                SetShape(mesh,"vrc.v_oh",mouth*mouthRound*100);
-                SetShape(mesh,"vrc.v_ou",(1-mouth)*mouthRound*70);
-                float leftCorner=ExpressiveCorner(mouthLeftCorner,mouth),rightCorner=ExpressiveCorner(mouthRightCorner,mouth);
-                SetShape(mesh,"口角上げ",detailedMouth?0:ExpressiveCorner(mouthSmile,mouth)*100);
-                SetCornerShape(mesh,"TC_LeftCornerUp",Mathf.Max(0,leftCorner)*100);
-                SetCornerShape(mesh,"TC_RightCornerUp",Mathf.Max(0,rightCorner)*100);
-                SetCornerShape(mesh,"TC_LeftCornerDown",CornerDownWeight(leftCorner));
-                SetCornerShape(mesh,"TC_RightCornerDown",CornerDownWeight(rightCorner));
-                SetShape(mesh,"TC_MouthShiftLeft",Mathf.Max(0,mouthShift)*100);
-                SetShape(mesh,"TC_MouthShiftRight",Mathf.Max(0,-mouthShift)*100);
-                SetShape(mesh,"ω",mouthBow*65);
-                SetShape(mesh,"口横広げ",mouthWidth*(mouthWidth<0?50:100));
-                SetShape(mesh,leftBlinkShape,blinkLeft*100);
-                SetShape(mesh,rightBlinkShape,blinkRight*100);
-            }
+            expressions.ApplyMouth(mouth,mouthWidth,mouthRound,detailedMouth?mouthLeftCorner:mouthSmile,
+                detailedMouth?mouthRightCorner:mouthSmile,mouthShift,mouthBow,MouthCornerEmphasis);
+            expressions.Blink(blinkLeft,blinkRight);
+            expressions.Commit();
         }
 
         // HAOLAN's resting mouth needs a downward offset. Fade it at either
@@ -648,25 +650,21 @@ namespace TanakaCap
             var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain,-12,12)):(gazeEnabled?CameraGazeTarget():Vector2.zero);
             gazeAngles=Vector2.Lerp(gazeAngles,target,1-Mathf.Exp(-Mathf.Max(0,dt)*(valid?22f:2f)));
             if(gazeAngles.sqrMagnitude<.0001f)gazeAngles=Vector2.zero;
-            bool translate=gazeIrisMode && gazeMesh;
-            if(gazeMesh)
+            for(int eyeIndex=0;eyeIndex<2;eyeIndex++)
             {
-                SetShape(gazeMesh,"TC_GazeRight",translate?Mathf.Max(0,gazeAngles.x)/20*100:0);
-                SetShape(gazeMesh,"TC_GazeLeft",translate?Mathf.Max(0,-gazeAngles.x)/20*100:0);
-                SetShape(gazeMesh,"TC_GazeDown",translate?Mathf.Max(0,gazeAngles.y)/12*100:0);
-                SetShape(gazeMesh,"TC_GazeUp",translate?Mathf.Max(0,-gazeAngles.y)/12*100:0);
-            }
-            foreach(var eye in new[]{leftEye,rightEye})
-            {
+                var eye=eyeIndex==0?leftEye:rightEye;
+                string side=eyeIndex==0?"L":"R";
+                var angles=expressions.Eye(side,gazeAngles,allowShapes:gazeIrisMode);
                 if(!eye)continue;
                 var rest=eye==leftEye?leftEyeRest:rightEyeRest;
                 var frame=head.rotation*Quaternion.Inverse(headRootRest);
-                var turn=Quaternion.AngleAxis(gazeAngles.x,frame*Vector3.up)*Quaternion.AngleAxis(gazeAngles.y,frame*Vector3.right);
-                eye.rotation=(translate?Quaternion.identity:turn)*eye.parent.rotation*rest;
+                var turn=Quaternion.AngleAxis(angles.x,frame*Vector3.up)*Quaternion.AngleAxis(angles.y,frame*Vector3.right);
+                eye.rotation=turn*eye.parent.rotation*rest;
             }
+            expressions.Commit(); // Also permits isolated gaze checks outside LateUpdate.
         }
 
-        void MakeGazeShapes()
+        void GenerateAutoGazeShapes()
         {
             // HAOLAN's eye skin weights are ~3.5%. Use the author's iris region,
             // intersected with actual eye-bone influence; never edit original weights.
@@ -686,7 +684,7 @@ namespace TanakaCap
                     if(iris[i].sqrMagnitude>1e-12f){support[i]=value;maximum=Mathf.Max(maximum,value);}
                 }
                 if(maximum<=0)continue;
-                // MakeMouthShapes already made Body a runtime-only mesh clone.
+                mesh=ExpressionClone(renderer); // Iris-only avatars also require an isolated clone.
                 var directions=new[]{Vector3.right*.004f,Vector3.left*.004f,Vector3.down*.0025f,Vector3.up*.0025f};
                 var names=new[]{"TC_GazeRight","TC_GazeLeft","TC_GazeDown","TC_GazeUp"};
                 for(int d=0;d<4;d++)
@@ -996,14 +994,14 @@ namespace TanakaCap
         }
 
 
-        void MakeMouthShapes()
+        void GenerateAutoMouthShapes()
         {
             foreach(var renderer in meshes)
             {
                 var original=renderer.sharedMesh;
                 if(original.GetBlendShapeIndex("口角上げ")<0)continue;
                 // Runtime-only clone: never modify the imported avatar asset.
-                var mesh=Instantiate(original);renderer.sharedMesh=mesh;
+                var mesh=ExpressionClone(renderer);
                 var vertices=mesh.vertices;
                 {
                     var shift=new Vector3[vertices.Length];
@@ -1033,12 +1031,15 @@ namespace TanakaCap
                     }
                     var opposite=new Vector3[shift.Length];
                     for(int i=0;i<shift.Length;i++)opposite[i]=-shift[i];
+                    if(moved==0){Debug.LogWarning("Auto mouth shift unavailable: no isolated lip support on "+renderer.name);}
+                    else {
                     mesh.AddBlendShapeFrame("TC_MouthShiftLeft",100,shift,null,null);
                     mesh.AddBlendShapeFrame("TC_MouthShiftRight",100,opposite,null,null);
                     renderer.sharedMesh=null;renderer.sharedMesh=mesh;
                     Debug.Log("TANAKACAP_MOUTH_ISOLATED: "+renderer.name+" vertices="+moved+" centerY="+centerY+" band=14mm");
                     if(Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-check")>=0)
                         CheckMouthShiftIsolation(renderer,vertices,authored,centerY);
+                    }
                 }
                 foreach(bool up in new[]{true,false})foreach(bool isLeft in new[]{true,false})
                 {
@@ -1147,7 +1148,7 @@ namespace TanakaCap
         {
             obsMode=enabled;
         }
-        void OnDestroy() { receiver?.Close(); }
+        void OnDestroy() { receiver?.Close();foreach(var mesh in expressionClones)if(mesh)Destroy(mesh); }
 
         static float[] FingerAngles(Arm arm)
         {
@@ -1295,21 +1296,7 @@ namespace TanakaCap
             current=new TrackingPacket {tracked=true,faceTracked=true,body3d=true,mouth=.6f,mouthRound=.8f,mouthSmile=.7f,
                 torsoTracked=true,torsoPitch=45,torsoYaw=70};lastReceived=Time.unscaledTime;
             for(int i=0;i<90;i++)LateUpdate();
-            bool foundMouth=false;
-            foreach(var renderer in meshes)
-            {
-                var names=new[]{"vrc.v_aa","vrc.v_oh","vrc.v_ou","口角上げ"};
-                var weights=new[]{12f,48f,22.4f,5.643f};
-                if(renderer.sharedMesh.GetBlendShapeIndex(names[0])<0)continue;
-                for(int j=0;j<names.Length;j++)
-                {
-                    int index=renderer.sharedMesh.GetBlendShapeIndex(names[j]);
-                    if(index<0 || Mathf.Abs(renderer.GetBlendShapeWeight(index)-weights[j])>.1f)
-                        throw new Exception("Mouth shape transfer failed: "+names[j]);
-                }
-                foundMouth=true;
-            }
-            if(!foundMouth)throw new Exception("Mouth test found no face mesh");
+            expressions.CheckMouthMotion();
             if(Quaternion.Angle(chest.rotation,transform.rotation*Quaternion.Euler(new Vector3(45,70,0)-torsoNeutral)*chestRootRest)>.1f)
                 throw new Exception("Relaxed torso range did not reach target");
             CheckLossHold();
