@@ -1,8 +1,6 @@
 """Confirm small motion direction before following it; retain fast motion response."""
 import numpy as np
 
-REUSE_BUFFERS = False  # Trial L; chosen before constructing a tracking pipeline.
-
 
 class ObservationMean:
     """Configurable mean windows of inference observations, never render frames."""
@@ -10,7 +8,6 @@ class ObservationMean:
         if size not in (1, 3):
             raise ValueError('Observation block size must be 1 or 3')
         self.size, self.rotation = size, rotation
-        self.reuse=REUSE_BUFFERS
         self.stride=size if stride is None else stride
         if self.stride not in (1,size):
             raise ValueError('Observation stride must be 1 or block size')
@@ -18,32 +15,17 @@ class ObservationMean:
 
     def reset(self):
         self.samples=[]
-        self.buffer=None
-        self.count=0
         self.time=None
 
     def update(self, value, now):
         if self.time is not None and now-self.time>.2:
             self.samples.clear()
-            self.count=0
         self.time=now
-        if self.reuse:
-            value=np.asarray(value,dtype=float)
-            if self.buffer is None or self.buffer.shape[1:]!=value.shape:
-                if self.count:raise ValueError('Observation shape changed within mean window')
-                self.buffer=np.empty((self.size,)+value.shape,dtype=float)
-            self.buffer[self.count]=value
-            self.count+=1
-            if self.count<self.size:return None
-            value=np.mean(self.buffer,axis=0)
-            self.count-=self.stride
-            if self.count:self.buffer[:self.count]=self.buffer[self.stride:]
-        else:
-            self.samples.append(np.asarray(value,dtype=float).copy())
-            if len(self.samples)<self.size:
-                return None
-            value=np.mean(self.samples,axis=0)
-            del self.samples[:self.stride]
+        self.samples.append(np.asarray(value,dtype=float).copy())
+        if len(self.samples)<self.size:
+            return None
+        value=np.mean(self.samples,axis=0)
+        del self.samples[:self.stride]
         if self.rotation and self.size>1:
             # Project the mean matrix onto SO(3), avoiding Euler +/-180 wrap.
             u,_,vt=np.linalg.svd(value)
@@ -78,15 +60,9 @@ class DirectionGate:
             direction=np.sign(displacement)
             continuing=(direction==self.direction)&((step*direction>=-self.deadband))
             adopt=(np.abs(displacement)>=self.fast)|((np.abs(displacement)>self.deadband)&continuing)
-            if self.mean.reuse:
-                np.copyto(self.accepted,value,where=adopt)
-                self.direction.fill(0)
-                np.copyto(self.direction,direction,where=np.abs(displacement)>self.deadband)
-                np.copyto(self.raw,value)
-            else:
-                self.accepted=np.where(adopt,value,self.accepted)
-                self.direction=np.where(np.abs(displacement)>self.deadband,direction,0)
-                self.raw=value.copy()
+            self.accepted=np.where(adopt,value,self.accepted)
+            self.direction=np.where(np.abs(displacement)>self.deadband,direction,0)
+            self.raw=value.copy()
         self.time=now
         return self.accepted.copy()
 
