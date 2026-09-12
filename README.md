@@ -1,5 +1,7 @@
 # tanakacap
 
+眉は4フレーム処理後に可変速度で追従する。小さい差はゆっくり、大きい差は速く、左右内外4値を独立処理。既定ON、Playerの`--no-adaptive-brow-follow`で従来の直接反映へ戻せる。頭の可変追従の採否とは独立。
+
 検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定する。既存の独自キーを使い、眉だけは実行時コピーに左右分割キーを追加する。直接指定は`run-avatar-lab.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
 
 眉はデモ/auto-customで左右分割を生成し、片側の上下・困り眉・怒り眉を独立駆動する。眼ボーンと読取可能な既知の眉モーフが必要。existingでは左右別の既存キーを優先し、左右共通キーしかなければ共通表示を維持する。既存キーモードで独自キーは生成しない。

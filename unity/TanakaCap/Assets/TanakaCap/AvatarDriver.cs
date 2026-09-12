@@ -104,6 +104,16 @@ namespace TanakaCap
         FaceExpressions expressions;
         bool autoExpressions;
         bool adaptiveHeadFollow;
+        bool adaptiveBrowFollow=true;
+
+        public static float FollowBrow(float current,float target,float dt,bool adaptive=true)
+        {
+            target=Mathf.Clamp(target,-1,1);
+            if(!adaptive)return target;
+            float weight=Mathf.SmoothStep(0,1,Mathf.Clamp01(Mathf.Abs(target-current)/.3f));
+            float amount=1-Mathf.Exp(-Mathf.Max(0,dt)*Mathf.Lerp(6,45,weight));
+            return Mathf.Lerp(current,target,amount);
+        }
 
         public static float HeadFollowAmount(float errorDegrees,float dt,bool adaptive)
         {
@@ -261,6 +271,7 @@ namespace TanakaCap
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
             adaptiveHeadFollow=Array.IndexOf(args,"--adaptive-head-follow")>=0;
+            adaptiveBrowFollow=Array.IndexOf(args,"--no-adaptive-brow-follow")<0;
             MouthCornerGamma=ReadExpressionOption(args,"--mouth-corner-gamma",autoExpressions?2:1,.25f,4);
             MouthOpenSmileSuppression=ReadExpressionOption(args,"--mouth-open-smile-suppression",autoExpressions?.9f:0,0,1);
             Debug.Log("TANAKACAP_CORNER_OPTIONS gamma="+MouthCornerGamma+" suppression="+MouthOpenSmileSuppression);
@@ -449,8 +460,10 @@ namespace TanakaCap
             }
             if(p.faceTracked) blinkLeft = Mathf.Lerp(blinkLeft,Mathf.Clamp01(p.leftBlink),faceT);
             if(p.faceTracked && p.browTracked){
-                browLeftInner=Mathf.Clamp(p.browLeftInner,-1,1);browLeftOuter=Mathf.Clamp(p.browLeftOuter,-1,1);
-                browRightInner=Mathf.Clamp(p.browRightInner,-1,1);browRightOuter=Mathf.Clamp(p.browRightOuter,-1,1);
+                browLeftInner=FollowBrow(browLeftInner,p.browLeftInner,FrameDelta,adaptiveBrowFollow);
+                browLeftOuter=FollowBrow(browLeftOuter,p.browLeftOuter,FrameDelta,adaptiveBrowFollow);
+                browRightInner=FollowBrow(browRightInner,p.browRightInner,FrameDelta,adaptiveBrowFollow);
+                browRightOuter=FollowBrow(browRightOuter,p.browRightOuter,FrameDelta,adaptiveBrowFollow);
             }
             expressions.ApplyBrows(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
             if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);

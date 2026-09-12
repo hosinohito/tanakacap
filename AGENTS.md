@@ -1,5 +1,7 @@
 # 作業開始時の指示
 
+最新（2026-09-13）：眉にも可変追従を既定ONで追加。4フレーム後の目標と表示値の差0〜0.3でrate6〜45へsmoothstep、左右内外4値独立、欠測保持。--no-adaptive-brow-followで旧直接反映。頭の可変追従は別設定で未採用のまま。目閉じは変更しない。
+
 最新（2026-09-13）：眉左右独立を実装。デモ/auto-customは実行時コピーへTC_BrowLeft/Right Up/Down/Sad/Angryを生成（眼骨基準）、既存キーの左右別を優先。existingは生成せず既存左右キーを探索、共通のみなら共通表示。保存デモ原本は維持。旧「デモは一切生成しない」は眉について本指定で変更。目の閉じは引き続き案のみ。
 
 最新（2026-09-13）：今後の検証はデモ用シェイプキーアバターを指定。最新Player＋builds/demos/haolan-custom-brows/avatars/haolan.tcap＋--use-demo-shape-keys（既存TCキーを使用し生成しない）。保存済みデモPlayer/素材は上書きしない。通常testは-DemoAvatar。眉gain2を実装、1で旧感度。目の閉じ改善は今回案のみで、勝手に実装しない。
