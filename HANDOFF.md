@@ -1,5 +1,16 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-12 — 軽量AAとフェーズ4の継続・性能検証
+
+- ユーザー追加の軽量AAを、自作7サンプル/単一パスのGPU輪郭フィルターで実装。元4xMSAA、明示Render、premultiplied alphaを維持。F7/--no-edge-aa/-NoEdgeAAで追加分だけ復帰。追加ライブラリなし。既定720p、-OutputHeight 1080でフルHD。docs/ANTIALIASING.md。
+- 30分の既存録画GPU推論＋Player＋隔離OBS試験：720p、OBS30fps。Player59.990fps/受信20.168Hz、メモリ大幅な継続増加なし、OBS取りこぼし増分0。初回のソース倍率2/3残留を発見し、検証ツールの寸法補正/背景四隅検査を追加。初回は全面表示検証と分ける。小さいPythonランチャーだけのメモリ値を使わず、実子を補足1671秒計測。
+- 初回最大間隔435ms/209msの2件を記録。後者は管理メモリ回収と同時、因果断定しない。LoaderのMemoryStream＋ToArrayを正確な長さの単一バッファへ整理し、過剰な一時配列を削減。読み取り長/ハッシュ/形式検査を維持。最終変更後の30分再実行は未実施。
+- AA ON/OFF各90秒・720p自作モーション・OBS60fps：両方約60fps、GPU約3ms台。ON3.182/OFF3.382msと測定差は逆転しており、追加分の厳密なGPUコストは未分離。AAで高速化したとは書かない。RGBAと背景四隅一致を確認。
+- 最終1080p/全モデル録画入力/OBS60fpsの120秒：Player59.992fps/受信20.101Hz。最新画像read完了→描画投入の窓中央値の中央値56.284ms、窓p95の中央値65.438ms、送信→描画投入8.635ms。露光/時間フィルター位相/GPU完了/OBS/表示走査は含まず、100/150ms体感遅延目標の達成とは扱わない。
+- 検証76件、実Playerの骨/表情/掌/指/ロスト保持/alpha smoke、揺れ73区間960stepの収束/本体非干渉/OFF復元、不正パッケージ4種code2拒否成功。原本依存hash不変。非記録motion4秒でPlayer.log不変/新規resultsなし。
+- 検証batの-Diagnoseはresults/player-performanceへPlayer統計も記録。live/motion版は非記録・無期限を維持。デスクトップbat更新済み。README/SPEC/LAUNCH_MODES/THIRD_PARTYとIMPLEMENTATION_PHASESの最新表を更新。通常OBSは変更も終了もせず、試験Player/隔離OBSは終了。
+- フェーズ4全体は未達：実カメラ/最終構成30分、実動作→表示遅延、認識30Hz、腕/肩/左指と遮蔽復帰の実用品質、本家PhysBoneとの動作比較。既存録画の品質監査では終盤静止yaw約16度と顔付近左腕の跳びが残る。今回、採用済み補正やモデルは変更しない。結果と再現手順はdocs/PHASE4_VALIDATION.md、results/phase4。実写/資産/結果はGit除外、外部pushなし。
+
 ## 2026-09-12 — READMEをセットアップ・ビルドの入口として整備
 
 - ユーザー指定でREADMEを現在のセットアップ、Unityビルド、成果物、通常/非記録/モーション起動、Exporter、OBS、検証、トラブル対応まで整理。プロジェクトの趣旨・制約・素材クレジット・引き継ぎへの導線は維持。古い進捗の重複は整理し、過去の内容はGit履歴と既存PROGRESSに残る。

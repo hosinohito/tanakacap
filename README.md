@@ -184,9 +184,23 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 | F4 | 目線の反映ON/OFF |
 | F5 | `.tcap`ファイル指定・読み込み |
 | F6 | 髪・服の揺れON/OFF |
+| F7 | 追加の軽量アンチエイリアスON/OFF（従来MSAAは維持） |
 | C | 有効な胴体追跡中に胴体の基準姿勢を取り直す |
 
 `tracking-settings.json`を変更したら再起動する。既定の肩ヨーは`face_ratio`、腕奥行きは`front_projection`、観測平均は3フレーム・stride 1。変更前の値を残して比較する。
+
+## 描画品質と解像度
+
+軽量な輪郭AAは既定ON。プレビューと透過Spout出力に同じGPUフィルターを適用する。時間方向の蓄積を使わず、RGBとアルファを同じ比率で処理する。F7、または起動時の`-NoEdgeAA`で従来の表示に戻せる（元の4倍MSAAは残る）。追加ライブラリは不要。[方式と検証](docs/ANTIALIASING.md)。
+
+出力は従来どおり1280×720が既定。フルHDで使う場合は次のように指定する。構図は同じで、カメラ入力の解像度やモデルは変えない。OBS側のキャンバス/ソースサイズも合わせる。
+
+```powershell
+.\run-avatar-lab.ps1 -Camera 1 -NoLog -OutputHeight 1080
+.\run-motion-lab.ps1 -OutputHeight 1080
+# 追加AAだけを無効化して比較
+.\run-motion-lab.ps1 -NoEdgeAA
+```
 
 ## 自分のアバターを書き出す
 
@@ -231,6 +245,10 @@ OBS側にはUnity内のKlakSpoutとは別に、[Spout2プラグイン1.12.0](htt
 ```
 
 Playerを使う検証は普段使いのPlayerを終了してから行う。これらは実人物の精度、本家との揺れの一致、長時間の性能を保証するテストではない。変更した部分に関係するテストを追加で選ぶ。モデル比較は[比較撮影手順](docs/COMPARISON_CAPTURE.md)、[身体モデル比較](docs/BODY_MODEL_COMPARISON.md)、[HaMeR比較](docs/HAMER_COMPARISON.md)を参照する。
+
+検証bat（-Diagnose）は、推論の既存ログに加えresults/player-performanceへPlayerの描画・受信・ソフトウェア遅延を記録する。パッケージ拒否テストはresults/avatar-package-tests配下に毎回別の結果を作り、--outputで保存先を指定できる。
+
+長時間・描画/推論性能の再検証は[フェーズ4の検証手順](docs/PHASE4_VALIDATION.md)を参照。専用診断は明示した保存先に数値を残す。通常のlive/motion起動へログや時間制限を追加しない。
 
 ## よくある停止理由
 

@@ -21,3 +21,9 @@
 検証：tests/test_no_log.pyで保存処理が呼ばれないこと、無期限ループがPlayer終了で止まること、保存指定との競合拒否を確認。実GPUモデルのsynthetic 3フレームでも非記録で終了成功。30分連続の実カメラ安定性は未確認。
 
 追加検証：モーション版の4秒起動で既定Player.logとresultsフォルダーが増えないことを確認（results/secondary-motion/no-log-smoke.json）。モーションの実描画と終了code0はmotion-final.png/log。
+
+## 2026-09-12 描画の追加設定
+
+全起動で追加の軽量AAを既定ON。F7で切替、両PowerShell起動スクリプトの-NoEdgeAAで起動OFF（元のMSAAは維持）。-OutputHeight 1080で1920×1080のSpout出力、既定720。プレビューのウインドウサイズ/カメラ入力は独立。非記録・無期限・モーション専用の挙動はそのまま。
+
+Playerの--performance-logと--performance-secondsは明示的な検証専用。live/motion版は渡さない。検証版-Diagnoseはresults/player-performanceへPlayer統計を記録するが、新たな自動終了時間は指定しない。GPU計測はさらに--performance-gpuを指定する。検証の保存先と条件はPHASE4_VALIDATION.md。

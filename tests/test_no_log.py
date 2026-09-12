@@ -50,3 +50,33 @@ def test_conflicting_recording_request_rejected(monkeypatch):
         app.main()
     assert exc.value.code == 2
     assert not Model.outputs
+
+
+def test_video_loop_rewinds_without_creating_logs(monkeypatch):
+    setup(monkeypatch, ['--source','video','--video','existing.avi','--fixed-roi','--loop-video','--frames','5'])
+    class Video:
+        position=0
+        rewinds=0
+        released=False
+        def isOpened(self): return True
+        def read(self):
+            if self.position==3:return False,None
+            self.position+=1
+            return True,np.zeros((48,64,3),dtype=np.uint8)
+        def set(self,key,value):
+            assert key==app.cv2.CAP_PROP_POS_FRAMES and value==0
+            self.position=0
+            self.rewinds+=1
+        def release(self):self.released=True
+    video=Video()
+    monkeypatch.setattr(app.cv2,'VideoCapture',lambda path:video)
+    app.main()
+    assert Model.calls==8 and video.rewinds==1 and video.released
+    assert Model.outputs==[None]
+
+
+def test_loop_rejects_camera_source(monkeypatch):
+    import pytest
+    setup(monkeypatch,['--source','camera','--loop-video','--frames','3'])
+    with pytest.raises(SystemExit) as exc:app.main()
+    assert exc.value.code==2 and not Model.outputs

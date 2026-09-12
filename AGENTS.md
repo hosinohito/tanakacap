@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：追加の軽量AAを既定ON、F7/--no-edge-aaで復帰。720p既定/1080p選択。フェーズ4の長時間/OBS/遅延はdocs/PHASE4_VALIDATION.md、各フェーズ未達はIMPLEMENTATION_PHASES最新表。描画約60fps・認識約20Hz、体感遅延/実人物品質の合格ではない。検証batはPlayer統計も保存し、live/motionの非記録無期限は維持。
+
 - 最新（2026-09-12）：髪服は元PhysBone設定の互換変換を優先するユーザー指定。SDK本体は同梱せず独立近似。docs/SECONDARY_MOTION.md。本家一致は未確認。非記録/無期限のtanakacap-live.bat、自作モーションのtanakacap-motion.batを既存検証版とは別に維持。docs/LAUNCH_MODES.md。モーション専用0BSDで、アバター許諾とは別。
 
 - 最新（2026-09-12）：フェーズ3のHAOLAN限定.tcap書出し/外部読込/隔離OBS実受信を検証済み。通常Playerは外部avatars/haolan.tcapが必要。AlphaOutput明示描画を維持。docs/PHASE3_PACKAGE_OBS.md。通常OBSシーンのユーザー確認、揺れ物・汎用改変対応・配布環境は残る。

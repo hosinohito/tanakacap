@@ -64,3 +64,7 @@ Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。captur
 ## 自作の繰り返しモーション
 
 ProceduralMotion.csは外部クリップ/実写記録を使わない独自の数式モーション。ソースと生成データは0BSD、docs/PROCEDURAL_MOTION_LICENSE.txt。アバター本体の配布条件は別。PhysBoneのSDKコード/DLLは同梱せず、docs/SECONDARY_MOTION.mdの独立互換変換を使う。
+
+## 2026-09-12 — 軽量AA
+
+EdgeAntialiasing.cs / EdgeAntialiasing.shaderは本プロジェクトで記述した輪郭フィルター。FXAA等の外部コードやパッケージをコピー/同梱していない。Unity標準OnRenderImage/Graphics.Blitで動き、新しい第三者ライセンス依存は追加しない。ANTIALIASING.md参照。

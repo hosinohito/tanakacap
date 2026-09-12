@@ -5,6 +5,8 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet("legacy","width_only","face_ratio")][string]$ShoulderYawMode,
     [string]$Avatar,
     [switch]$NoLog,
+    [ValidateSet(720,1080)][int]$OutputHeight=720,
+    [switch]$NoEdgeAA,
     [switch]$IntegerBodyPeaks)
 $ErrorActionPreference = 'Stop'
 if (-not $PSBoundParameters.ContainsKey('ObservationBlock')) {
@@ -33,7 +35,16 @@ try {
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
+    if ($NoEdgeAA) { $taskPlayerArgs+='--no-edge-aa' }
     if ($NoLog) { $taskPlayerArgs += @('-nolog') }
+    if ($Diagnose -and -not $NoLog) {
+        $taskPerfFolder=Join-Path $PSScriptRoot 'results/player-performance'
+        $null=New-Item -ItemType Directory -Force -Path $taskPerfFolder
+        $taskPerfFile=Join-Path $taskPerfFolder ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'.jsonl')
+        $taskPlayerArgs+=@('--performance-log',('"'+$taskPerfFile+'"'))
+        Write-Host "Player performance: $taskPerfFile"
+    }
     if ($Avatar) { $taskPlayerArgs += @('--avatar',('"'+(Resolve-Path -LiteralPath $Avatar).Path+'"')) }
     if ($taskGazeSettings.gaze_render_mode -eq 'bones') { $taskPlayerArgs+='--gaze-bones' }
     if ($taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }

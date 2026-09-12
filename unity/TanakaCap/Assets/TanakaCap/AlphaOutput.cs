@@ -10,6 +10,10 @@ namespace TanakaCap
     public sealed class AlphaOutput : MonoBehaviour
     {
         public SpoutResources resources;
+        public Shader edgeShader;
+        public int OutputWidth { get; private set; }=1280;
+        public int OutputHeight { get; private set; }=720;
+        public double RenderSubmitMilliseconds { get; private set; }
         Camera outputCamera;
         RenderTexture texture;
         SpoutSender sender;
@@ -19,7 +23,18 @@ namespace TanakaCap
 
         void Start()
         {
-            texture=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);
+            EdgeAntialiasing.Active=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-edge-aa")<0;
+            var previewAA=gameObject.AddComponent<EdgeAntialiasing>();
+            previewAA.shader=edgeShader;
+            var startupArgs=Environment.GetCommandLineArgs();
+            int heightIndex=Array.IndexOf(startupArgs,"--output-height");
+            if(heightIndex>=0)
+            {
+                if(heightIndex+1>=startupArgs.Length || !int.TryParse(startupArgs[heightIndex+1],out int height) || (height!=720 && height!=1080))
+                    throw new ArgumentException("--output-height must be 720 or 1080");
+                OutputHeight=height;OutputWidth=height*16/9;
+            }
+            texture=new RenderTexture(OutputWidth,OutputHeight,24,RenderTextureFormat.ARGB32);
             texture.name="TanakaCap RGBA";
             texture.antiAliasing=4;
             texture.Create();
@@ -35,20 +50,32 @@ namespace TanakaCap
             outputCamera.allowMSAA=true;
             outputCamera.targetTexture=texture;
             outputCamera.enabled=false;
+            outputCamera.gameObject.AddComponent<EdgeAntialiasing>().shader=edgeShader;
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"--performance-log")>=0)gameObject.AddComponent<PerformanceProbe>();
             sender=outputCamera.gameObject.AddComponent<SpoutSender>();
             sender.SetResources(resources);
             sender.spoutName="TanakaCap";
             sender.captureMethod=CaptureMethod.Texture;
             sender.sourceTexture=texture;
             sender.keepAlpha=true;
-            Debug.Log("TANAKACAP_ALPHA_OUTPUT_READY 1280x720 RGBA Spout=TanakaCap");
+            Debug.Log("TANAKACAP_ALPHA_OUTPUT_READY "+OutputWidth+"x"+OutputHeight+" RGBA Spout=TanakaCap edgeAA="+EdgeAntialiasing.Active);
             Application.wantsToQuit+=WantsToQuit;
+            var args=Environment.GetCommandLineArgs();
+            int check=Array.IndexOf(args,"--aa-check");
+            if(check>=0 && check+1<args.Length)StartCoroutine(CheckAA(args[check+1]));
+
         }
 
         void LateUpdate()
         {
             // Explicit offscreen rendering also runs when the preview is hidden.
-            if(outputCamera && texture && !quitting)outputCamera.Render();
+            if(Input.GetKeyDown(KeyCode.F7))EdgeAntialiasing.Active=!EdgeAntialiasing.Active;
+            if(outputCamera && texture && !quitting)
+            {
+                var start=System.Diagnostics.Stopwatch.GetTimestamp();
+                outputCamera.Render();
+                RenderSubmitMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-start)*1000.0/System.Diagnostics.Stopwatch.Frequency;
+            }
         }
 
         // Readback is diagnostic-only; normal output stays on the GPU.
@@ -73,6 +100,20 @@ namespace TanakaCap
                 Debug.Log("TANAKACAP_ALPHA_OK transparent="+transparent+" opaque="+opaque+" partial="+partial+" senderChecked="+requireSender);
             }
             finally { RenderTexture.active=previous;Destroy(image); }
+        }
+
+        System.Collections.IEnumerator CheckAA(string path)
+        {
+            yield return new WaitForSeconds(3);
+            bool saved=EdgeAntialiasing.Active;
+            try
+            {
+                EdgeAntialiasing.Active=false;CheckOutput(path+".off",false);
+                EdgeAntialiasing.Active=true;CheckOutput(path+".on",false);
+                Debug.Log("TANAKACAP_AA_CHECK_OK");
+            }
+            finally {EdgeAntialiasing.Active=saved;}
+            Application.Quit();
         }
 
         bool WantsToQuit()
