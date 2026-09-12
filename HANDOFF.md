@@ -1,5 +1,12 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — FP16通常採用、FP32起動選択の撤去
+
+ユーザーがFP16採用と、FP32は起動オプションから消して将来UIに追加する可能性に備えた口だけ保持するよう指定。通常test/live/Python CLI/soakは精度指定なしでgraph-fp16。launcherの-InferenceMode、CLI/soakの--inference-mode、tracking-settings.jsonのinference_modeを削除。古い設定値でFP32に戻る経路はない。DEFAULT_INFERENCE_MODEとmain(argv, inference_mode=...)・既存モデルAPIを内部接続として保持。UIへの追加は未確定で、勝手に実装予定へ格上げしない。過去のオフライン比較ツールは内部APIでFP32回帰が可能、通常起動の選択肢ではない。
+
+既存録画60観測を精度引数なしで全機能実行し、FP16/CUDA実行成功（results/fp16-default-smoke.log）。234 tests成功。通常bat更新、test-fp16は通常testと同じ内容の互換ショートカット、比較動画は保持。頭専用モデル/口の補正/揺れ物/TensorRT不採用は変更なし。下記のFP32通常/評価待ちは以前の状態。
+
+
 ## 2026-09-13 — TensorRT不採用（ユーザー確定）
 
 契約条件の質問へユーザーが「使わない」と回答。TensorRTの接続モジュール、trt-fp32/trt-fp16選択肢、requirements-tensorrt.txtを削除し、開発venvのtensorrt-cu13/bindings/libsをアンインストールした。確認待ちではない。ユーザーが改めて指定しない限りTensorRTを再導入しない。既存ORT wheelに付属する未使用provider DLLはパッケージの一部として残るが、アプリから選択/実行しない。CUDA/FP16/Fと比較動画は維持、通常はF有効・graph/FP32。次はFP16動画のユーザー評価。下記のTensorRT確認待ちは不採用決定前の経緯。

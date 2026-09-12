@@ -47,3 +47,19 @@ def test_reject_removed_mode():
     from capture_lab.gpu_runner import GpuRunner
     with pytest.raises(ValueError, match='Unknown inference mode'):
         GpuRunner(None,'trt-fp16')
+
+
+def test_startup_fp16_default_and_internal_fp32_hook(monkeypatch):
+    from capture_lab import __main__ as app
+    modes=[]
+    monkeypatch.setattr(app,'benchmark',lambda args: modes.append(args.inference_mode))
+    app.main(['benchmark'])
+    app.main(['benchmark'],inference_mode='graph')
+    assert modes == ['graph-fp16','graph']
+
+
+def test_startup_precision_switch_removed():
+    from capture_lab import __main__ as app
+    with pytest.raises(SystemExit) as error:
+        app.main(['benchmark','--inference-mode','graph'])
+    assert error.value.code == 2

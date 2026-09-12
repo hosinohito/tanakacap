@@ -942,3 +942,9 @@ TensorRTは「CUDAと同条件なら」という条件付き指定。通常版10
 ユーザーが契約条件の質問に「使わない」と回答。TensorRT接続モジュール/専用選択肢/requirements-tensorrt.txtを削除。開発venvからtensorrt-cu13/bindings/libsの3パッケージをアンインストール。最初のuvはキャッシュ権限で失敗、承認された通常権限で削除成功。CUDAのprovider検証へ整理し、F/FP16/比較動画を維持。ORT wheel内の未使用provider DLLはパッケージを壊さず維持するが実行経路から選択不可。TensorRTモデルは一度も実行していない。
 
 232 tests、既存録画60観測の全機能CUDA FP16実行が成功。results/no-tensorrt-smoke.logとresults/20260912T203105-605551Z-rtmw3d-x-384。削除後の棚卸しresults/distribution-audit-no-tensorrt-20260913は22packages/48通知/19ONNX。README/SPEC0.67/AGENTS/HANDOFF/比較/ライセンス文書へ不採用を明記し、確認待ちを終了。通常はF有効・graph/FP32、FP16の通常採用は未決定。実カメラ不使用、揺れ物は変更なし。
+
+## 2026-09-13 — FP16通常採用、FP32の起動選択を撤去
+
+ユーザーがFP16を採用しFP32は起動オプションから消して将来UIの口だけ保持するよう指定。DEFAULT_INFERENCE_MODEをgraph-fp16へ、通常launcherの-InferenceMode・Python CLI/soakの--inference-mode・設定inference_modeを削除。mainの内部引数と既存モデルAPIは保持。旧B〜I性能回帰ツールは内部APIを使い、過去のFP32条件を黙ってFP16へ変えない。UI追加は未確定として記録。通常test/liveもFP16、test-fp16は同一内容の互換用。
+
+初回テストは既定runを仮定したmockの引数不一致で5件失敗、mockでFP16指定を検証する形へ更新。新しい既定/内部FP32口/公開精度引数拒否の検査を含む234 tests成功。既存録画60観測の全機能を精度指定なしで実行成功、results/fp16-default-smoke.log。実カメラ不使用。README/SPEC0.68/HANDOFF/AGENTS/比較/起動文書を更新。FP32原本・比較動画は保持、TensorRTは不採用継続。

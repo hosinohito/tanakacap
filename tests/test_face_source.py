@@ -8,7 +8,8 @@ from capture_lab import __main__ as app
 def test_shared_face_runs_and_finishes_body_model_once(monkeypatch, source, expected_models):
     instances = []
     class Model:
-        def __init__(self, name, output):
+        def __init__(self, name, output, execution_mode):
+            assert execution_mode == 'graph-fp16'
             self.identity = {'id': name}
             self.calls = self.finishes = 0
             instances.append(self)

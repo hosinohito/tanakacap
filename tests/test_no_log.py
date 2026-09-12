@@ -6,7 +6,8 @@ from capture_lab import __main__ as app
 class Model:
     outputs = []
     calls = 0
-    def __init__(self, name, output):
+    def __init__(self, name, output, execution_mode):
+        assert execution_mode == 'graph-fp16'
         self.identity = {'id': name}
         Model.outputs.append(output)
     def predict(self, image, roi):
