@@ -16,6 +16,9 @@ namespace TanakaCap {
   readonly Dictionary<(Mesh,int),bool> usable=new Dictionary<(Mesh,int),bool>();
   (SkinnedMeshRenderer,int)[] owned;
   static readonly Dictionary<string,string> AutoChannels=new Dictionary<string,string>{
+   {"browLI","TC_BrowLeftUp"},{"browLO","TC_BrowLeftUp"},{"browRI","TC_BrowRightUp"},{"browRO","TC_BrowRightUp"},
+   {"browLD","TC_BrowLeftDown"},{"browRD","TC_BrowRightDown"},
+   {"browSadL","TC_BrowLeftSad"},{"browSadR","TC_BrowRightSad"},{"browAngryL","TC_BrowLeftAngry"},{"browAngryR","TC_BrowRightAngry"},
    {"smileL","TC_LeftCornerUp"},{"smileR","TC_RightCornerUp"},{"frownL","TC_LeftCornerDown"},{"frownR","TC_RightCornerDown"},
    {"shiftL","TC_MouthShiftLeft"},{"shiftR","TC_MouthShiftRight"},
    {"eyeLPos","TC_GazeRight"},{"eyeRPos","TC_GazeRight"},{"eyeLNeg","TC_GazeLeft"},{"eyeRNeg","TC_GazeLeft"},
@@ -53,9 +56,21 @@ namespace TanakaCap {
     var renderer=meshes.FirstOrDefault(r=>r.sharedMesh && PathOf(r.transform,root)==binding.renderer && Valid(r.sharedMesh,r.sharedMesh.GetBlendShapeIndex(binding.shape)));
     if(renderer)Bind(binding.channel,renderer,renderer.sharedMesh.GetBlendShapeIndex(binding.shape),binding.source,binding.priority);
    }
+   // Prefer explicit existing unilateral keys to bilateral fallbacks.
+   ExistingBrowSide("browLI","Left",new[]{"browInnerUpLeft"},new[]{"眉上げ左","上左","左上","上_L","BrowUpLeft"});
+   ExistingBrowSide("browLO","Left",new[]{"browOuterUpLeft"},new[]{"眉上げ左","上左","左上","上_L","BrowUpLeft"});
+   ExistingBrowSide("browRI","Right",new[]{"browInnerUpRight"},new[]{"眉上げ右","上右","右上","上_R","BrowUpRight"});
+   ExistingBrowSide("browRO","Right",new[]{"browOuterUpRight"},new[]{"眉上げ右","上右","右上","上_R","BrowUpRight"});
+   ExistingBrowSide("browLD","Left",new[]{"browDownLeft"},new[]{"眉下げ左","下左","左下","下_L","BrowDownLeft"});
+   ExistingBrowSide("browRD","Right",new[]{"browDownRight"},new[]{"眉下げ右","下右","右下","下_R","BrowDownRight"});
+   foreach(string side in new[]{"L","R"}){
+    string jp=side=="L"?"左":"右";
+    ExistingBrowSide("browSad"+side,side,null,new[]{"困る"+jp,jp+"困る","困る_"+side});
+    ExistingBrowSide("browAngry"+side,side,null,new[]{"怒り"+jp,jp+"怒り","怒り_"+side});
+   }
    if(auto){
     foreach(var pair in AutoChannels){
-     if(slots.TryGetValue(pair.Key,out var existing)&&existing.info.priority==0)continue;
+     if(slots.TryGetValue(pair.Key,out var existing)&&((existing.info.priority==0&&Normalize(existing.info.shape)!="browinnerup")||existing.info.source=="existing-unilateral"))continue;
      var found=Find(new[]{pair.Value},false);if(found!=null)Bind(pair.Key,found.renderer,found.index,"auto-custom",1);
     }
    }
@@ -73,6 +88,13 @@ namespace TanakaCap {
     for(int i=0;i<r.sharedMesh.blendShapeCount;i++)if(Normalize(r.sharedMesh.GetBlendShapeName(i))==Normalize(alias)&&Valid(r.sharedMesh,i))return new Slot{renderer=r,index=i};
    }
    return null;
+  }
+  void ExistingBrowSide(string channel,string side,string[] standard,string[] aliases){
+   var found=Find(standard,false);
+   if(found!=null){Bind(channel,found.renderer,found.index,"existing-unilateral",0);return;}
+   // A standard unilateral binding still takes precedence over MMD aliases.
+   if(slots.TryGetValue(channel,out var prior)&&prior.info.priority==0&&Normalize(prior.info.shape)!="browinnerup")return;
+   found=Find(aliases,false);if(found!=null)Bind(channel,found.renderer,found.index,"existing-unilateral",1);
   }
   bool Valid(Mesh mesh,int index){
    if(index<0)return false;if(usable.TryGetValue((mesh,index),out bool known))return known;
@@ -120,7 +142,27 @@ namespace TanakaCap {
    Group(new[]{"browLI","browLO","browRI","browRO"},new[]{li,lo,ri,ro});
    Group(new[]{"browLD","browRD"},new[]{-(li+lo)*.5f,-(ri+ro)*.5f});
    bool arkit=slots.Values.Any(s=>s.info.channel.StartsWith("brow")&&s.info.priority==0);
-   if(!arkit){Put("browSad",Mathf.Max(0,(li-lo+ri-ro)*.25f));Put("browAngry",Mathf.Max(0,(lo-li+ro-ri)*.25f));}
+   if(!arkit){
+    if(Has("browSadL")||Has("browSadR")){Put("browSadL",(li-lo)*.5f);Put("browSadR",(ri-ro)*.5f);}
+    else if(!IndependentBrowUp())Put("browSad",Mathf.Max(0,(li-lo+ri-ro)*.25f));
+    if(Has("browAngryL")||Has("browAngryR")){Put("browAngryL",(lo-li)*.5f);Put("browAngryR",(ro-ri)*.5f);}
+    else if(!IndependentBrowUp())Put("browAngry",Mathf.Max(0,(lo-li+ro-ri)*.25f));
+   }
+  }
+  bool IndependentBrowUp(){return slots.TryGetValue("browLI",out var l)&&slots.TryGetValue("browRI",out var r)&&(l.renderer!=r.renderer||l.index!=r.index);}
+  public void CheckBrowSides(){
+   if(!IndependentBrowUp())throw new Exception("Independent brow keys missing");
+   var saved=owned.Select(k=>k.Item1.GetBlendShapeWeight(k.Item2)).ToArray();
+   try{
+    foreach(bool left in new[]{true,false})foreach(float value in new[]{.8f,-.8f}){
+     Begin();ApplyBrows(left?value:0,left?value:0,left?0:value,left?0:value);Commit();
+     string active=value>0?(left?"browLI":"browRI"):(left?"browLD":"browRD");
+     var slot=slots[active];if(slot.renderer.GetBlendShapeWeight(slot.index)<79)throw new Exception("Active brow did not move");
+     foreach(string key in left?new[]{"browRI","browRO","browRD","browSadR","browAngryR"}:new[]{"browLI","browLO","browLD","browSadL","browAngryL"})
+      if(slots.TryGetValue(key,out var other)&&other.renderer.GetBlendShapeWeight(other.index)>.001f)throw new Exception("Opposite eyebrow was driven");
+    }
+    Debug.Log("TANAKACAP_BROW_SIDES_OK");
+   }finally{for(int i=0;i<owned.Length;i++)owned[i].Item1.SetBlendShapeWeight(owned[i].Item2,saved[i]);}
   }
   public void Blink(float left,float right){Group(new[]{"blinkL","blinkR"},new[]{left,right});}
   float Corner(string key,float value,bool up,float emphasis,float gain){

@@ -254,7 +254,9 @@ namespace TanakaCap
             bool demoShapes=Array.IndexOf(renderArgs,"--use-demo-shape-keys")>=0;
             autoExpressions=expressionMode=="auto-custom" || demoShapes;
             if(autoExpressions && !demoShapes){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
+            if(autoExpressions)BrowShapeSplit.Generate(meshes,leftEye,rightEye,ExpressionClone);
             expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
+            if(Array.IndexOf(renderArgs,"--check-brow-sides")>=0)expressions.CheckBrowSides();
             Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
