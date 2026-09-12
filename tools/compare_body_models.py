@@ -26,13 +26,14 @@ def run(common,candidates,output,limit=None):
     parent=json.loads((common/'report.json').read_text(encoding='utf-8'))
     if parent['status']!='complete' or parent['partial_test']:raise ValueError('Complete common run required')
     settings=parent['controls']['settings'];frozen=fingerprint(settings)
+    adapters={p.name:sha256(p) for p in [Path(__file__),Path(__file__).with_name('sam_body_adapter.py')]}
     inputs={'current':None,**candidates};reports={}
     for name,folder in candidates.items():
         r=json.loads((folder/'report.json').read_text(encoding='utf-8'))
         if (r['status']!='complete' or (r.get('partial_test',False) and limit is None) or r['video_sha256']!=parent['source_video_sha256'] or r['controls_sha256']!=parent['controls']['sha256'] or r['stride']!=1 or r['start_frame']!=0):raise ValueError('Complete consecutive aligned candidate required: '+name)
         reports[name]=r
     output.mkdir(parents=True,exist_ok=False)
-    report={'status':'running','partial_test':limit is not None,'source_video_sha256':parent['source_video_sha256'],'source_timeline_sha256':parent['source_timeline_sha256'],'common_sha256':sha256(common/'common.jsonl'),'historical_controls_sha256':parent['controls']['sha256'],'controls':frozen,'candidates':reports,'scope':'Native metric XYZ and projected body/hand joints changed. Face/gaze/mouth/distance packets, RTMW3D visibility evidence and correction algorithms held common. SAM has no per-joint confidence; generated hidden joints are not counted as observations. Default FOV, no ground truth. Offline replay is not realtime performance.','variants':{}}
+    report={'status':'running','partial_test':limit is not None,'source_video_sha256':parent['source_video_sha256'],'source_timeline_sha256':parent['source_timeline_sha256'],'common_sha256':sha256(common/'common.jsonl'),'historical_controls_sha256':parent['controls']['sha256'],'controls':frozen,'adapter_sources_sha256':adapters,'candidates':reports,'scope':'Native metric XYZ and projected body/hand joints changed. Face/gaze/mouth/distance packets, RTMW3D visibility evidence and correction algorithms held common. SAM has no per-joint confidence; generated hidden joints are not counted as observations. Default FOV, no ground truth. Offline replay is not realtime performance.','variants':{}}
     dump(output/'report.json',report)
     try:
         for name,candidate in inputs.items():
@@ -76,6 +77,7 @@ def run(common,candidates,output,limit=None):
             finally:
                 if raw:raw.close()
         if fingerprint(settings)['sha256']!=frozen['sha256']:raise RuntimeError('Controls changed during comparison')
+        if any(sha256(Path(__file__).with_name(name))!=value for name,value in adapters.items()):raise RuntimeError('Adapter changed during comparison')
         report['status']='complete';dump(output/'report.json',report)
     except BaseException as exc:
         report.update(status='failed',error=str(exc));dump(output/'report.json',report);raise
