@@ -1,7 +1,4 @@
-"""Opt-in head-pose-only prototype. No face/iris/body/detector network.
-A manually selected crop must contain the head. Pose output has no presence
-confidence: this mode cannot reliably detect an empty crop or reacquire a head.
-"""
+"""Direct head pose with independent CUDA region acquisition and loss handling."""
 import json
 import time
 from contextlib import nullcontext
@@ -16,6 +13,7 @@ from .inference import provider_summary
 from .motion_gate import DirectionGate
 from .retarget import LocalSender
 from .capture import Camera
+from .head_region import HeadRegionDetector, HeadRegionTracker
 
 MODEL = ROOT / "models/head-mobilenetv3-small.onnx"
 HASH = "e8ae4d932b3d13221638fc72e171603e020c6da28b770753f76146867f40e190"
@@ -78,27 +76,29 @@ class HeadOnlyModel:
         if not self.profiling:
             return dict(profiling=False, providers=self.session.get_providers(), calls=self.calls)
         result = provider_summary(Path(self.session.end_profiling()))
-        if not result["cuda_executed"] or result["cpu_compute_ops"]:
+        if self.calls and (not result["cuda_executed"] or result["cpu_compute_ops"]):
             raise RuntimeError("Head-only GPU execution verification failed")
         return result
 
 
 def run(args):
     from .__main__ import output_folder, environment, parent_running, roi_for, stats, write_json
-    if args.roi is None and not args.preview:
-        raise ValueError("Head-only requires --roi X Y W H, or --preview to select the head crop")
-    if args.loop_video:
-        raise ValueError("Head-only prototype does not support --loop-video")
+    automatic = args.head_roi_mode == 'auto'
+    if not automatic and args.roi is None and not args.preview:
+        raise ValueError("Fixed head crop requires --roi X Y W H, or --preview")
     output = None if args.no_log else output_folder("head-only")
-    model = camera = video = sender = None
+    model = detector = camera = video = sender = None
     rows = []
     report = dict(status="running", environment=environment(), arguments=vars(args),
                   model="head-mobilenetv3-small", model_sha256=HASH,
-                  limitations="Manual fixed head crop, no presence detector/reacquisition; P pauses. No lip sync.",
+                  limitations="Single user; no identity recognition or audio lip sync. Fixed mode has no presence detection.",
+                  region_model='yunet-2023mar' if automatic else None,
                   other_models_loaded=[])
-    print(f"Head-only experimental | Results: {output}", flush=True)
+    print(f"Head-only ({args.head_roi_mode}) | Results: {output}", flush=True)
     try:
         model = HeadOnlyModel(output if not args.no_ort_profile else None)
+        if automatic:
+            detector = HeadRegionDetector(output if not args.no_ort_profile else None)
         if args.unity_port: sender = LocalSender(args.unity_port)
         if args.source == "camera":
             camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
@@ -110,6 +110,7 @@ def run(args):
             raise ValueError("Head-only requires camera or video input")
         gate = DirectionGate(.25, float("inf"), args.observation_block, args.observation_stride)
         roi = args.roi
+        tracker = HeadRegionTracker(roi)
         sequence = -1
         paused = False
         measured = 0
@@ -122,16 +123,26 @@ def run(args):
                     sequence, image, acquired = frame.sequence, frame.image, frame.acquired
                 else:
                     ok, image = video.read()
+                    if not ok and args.loop_video:
+                        video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        ok, image = video.read()
+                        tracker = HeadRegionTracker(args.roi)
+                        gate.reset()
                     if not ok: break
                     acquired = time.perf_counter()
-                if roi is None:
+                if not automatic and roi is None:
                     roi = list(cv2.selectROI("Select head including a small margin; Enter confirms", image, False))
                     cv2.destroyAllWindows()
                     if roi[2] == 0 or roi[3] == 0: break
                     print("Fixed head crop selected. Keep head inside; P pauses; R reselects.", flush=True)
-                roi = roi_for(image, roi)
+                if roi is not None: roi = roi_for(image, roi)
                 read_done = time.perf_counter()
-                values, timing = (None, {}) if paused else model.predict(image, roi)
+                region_ms = 0.
+                if automatic and not paused:
+                    detections, region_ms = detector.detect(image)
+                    track_time = acquired if camera else index / max(1., video.get(cv2.CAP_PROP_FPS))
+                    roi = tracker.update(detections, track_time, image.shape)
+                values, timing = (None, {}) if paused or roi is None else model.predict(image, roi)
                 # Matrix validity is NOT face presence confidence.
                 if values is not None and np.any(np.abs(values) > [75, 85, 75]): values = None
                 filtered = gate.update(values, read_done) if values is not None else None
@@ -144,19 +155,36 @@ def run(args):
                     packet.update(zip(("headPitch", "headYaw", "headRoll"), map(float, filtered)))
                 if sender: sender.send(packet)
                 timing.update(frame=index, input_wait_read_ms=(read_done-start)*1000,
+                              head_region_ms=region_ms, roi=roi,
+                              region_state='paused' if paused else tracker.state if automatic else 'fixed',
+                              region_score=tracker.score if automatic else None,
                               read_to_send_ms=(time.perf_counter()-read_done)*1000,
                               raw_angles=None if values is None else values.tolist(), sent_packet=packet)
                 if args.preview:
                     canvas = image.copy()
-                    x, y, w, h = roi
-                    cv2.rectangle(canvas, (x,y), (x+w,y+h), (0,220,255), 2)
-                    cv2.putText(canvas, "HEAD ONLY | P pause / R reselect / Q quit | audio mouth: not implemented",
+                    if roi is not None:
+                        x, y, w, h = roi
+                        cv2.rectangle(canvas, (x,y), (x+w,y+h), (0,220,255), 2)
+                    cv2.putText(canvas, "HEAD ONLY | P pause / R reset / S select / Q quit | " + timing['region_state'],
                                 (10,25), cv2.FONT_HERSHEY_SIMPLEX, .5, (255,255,255), 1)
                     cv2.imshow("tanakacap head-only experimental", canvas)
                     key = cv2.waitKey(1) & 255
                     if key in (27, ord("q")): break
-                    if key == ord("p"): paused = not paused; gate.reset()
-                    if key == ord("r"): roi = None; gate.reset()
+                    if key == ord("p"):
+                        paused = not paused
+                        gate.reset()
+                        if automatic: tracker = HeadRegionTracker(roi)
+                    if key == ord("r"):
+                        roi = None
+                        tracker = HeadRegionTracker()
+                        gate.reset()
+                    if key == ord('s') and automatic:
+                        chosen = list(cv2.selectROI('Select target head; Enter confirms', image, False))
+                        cv2.destroyWindow('Select target head; Enter confirms')
+                        if chosen[2] > 0 and chosen[3] > 0:
+                            roi = chosen
+                            tracker = HeadRegionTracker(roi)
+                            gate.reset()
                 timing["iteration_ms"] = (time.perf_counter()-start)*1000
                 if index >= args.warmup:
                     measured += 1
@@ -164,20 +192,29 @@ def run(args):
                         rows.append(timing)
                         log.write(json.dumps(timing, allow_nan=False)+"\n")
         report.update(status="completed", measured_frames=measured, roi=roi)
+        if camera: report['camera'] = camera.metadata
+        if rows:
+            report['tracked_frames'] = sum(r['sent_packet']['headTracked'] for r in rows)
         report["execution"] = model.finish()
         model = None
+        if detector:
+            report['region_execution'] = detector.finish()
+            detector = None
         if rows:
             report["timings"] = {k: stats([r[k] for r in rows if k in r]) for k in
-                                ("preprocess_ms","inference_call_ms","postprocess_ms","head_model_ms",
+                                ("preprocess_ms","inference_call_ms","postprocess_ms","head_model_ms","head_region_ms",
                                  "input_wait_read_ms","read_to_send_ms","iteration_ms")}
         print(json.dumps(report.get("timings", {"measured_frames": measured})), flush=True)
     except BaseException as exc:
         report.update(status="failed", error=str(exc))
         raise
     finally:
-        if model: report["execution"] = model.finish()
-        if sender: sender.close()
-        if camera: camera.__exit__()
-        if video: video.release()
-        if args.preview: cv2.destroyAllWindows()
-        if output: write_json(output/"report.json", report)
+        try:
+            if model: report["execution"] = model.finish()
+            if detector: report['region_execution'] = detector.finish()
+        finally:
+            if sender: sender.close()
+            if camera: camera.__exit__()
+            if video: video.release()
+            if args.preview: cv2.destroyAllWindows()
+            if output: write_json(output/"report.json", report)

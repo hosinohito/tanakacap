@@ -1,10 +1,11 @@
-# 起動モード（2026-09-12）
+# 起動モード（2026-09-13）
 
 デスクトップのbatは `tools/update-desktop-launcher.ps1` で生成・更新する。
 
 | bat | 用途 | 動作記録 | 終了 |
 |---|---|---|---|
-| tanakacap-test.bat | 既存のカメラ検証版 | 従来の数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test.bat | 今回は頭専用autoのカメラ検証版 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-head-only.bat | 頭専用auto | なし | 制限なし。アバターを閉じるかQ/Esc |
 | tanakacap-live.bat | 普段使いのカメラ版 | なし | 制限なし。アバターを閉じるかプレビューでQ/Esc |
 | tanakacap-motion.bat | カメラを使わないモーション版 | なし | 制限なし。アバターを閉じる |
 
@@ -30,4 +31,8 @@ Playerの--performance-logと--performance-secondsは明示的な検証専用。
 
 ## 2026-09-12 統合構成オプション
 
-共通run-avatar-lab.ps1の-TrackingMode full（既定）/face_head/head_onlyで切替。tracking-settings.jsonにもtracking_mode。-NoBody/-NoGaze/-NoPersonDetectorの個別OFFは推論生成を省略。-HeadOnlyはhead_onlyの別名。頭専用ショートカットtanakacap-head-only.batは-NoLogで無期限、手動範囲指定/自動再取得なし/音声口パク未実装。既存test/live/motionは保持。[頭専用](HEAD_ONLY.md)。run-avatar-lab.ps1とrun-motion-lab.ps1に-LegacySecondaryResponseを追加し、今回の減衰調整を戻せる。
+共通run-avatar-lab.ps1の-TrackingMode full（既定）/face_head/head_onlyで切替。tracking-settings.jsonにもtracking_mode。-NoBody/-NoGaze/-NoPersonDetectorの個別OFFは推論生成を省略。-HeadOnlyはhead_onlyの別名。頭専用ショートカットtanakacap-head-only.batは-NoLogで無期限、自動頭領域取得/ロスト復帰あり。音声口パクは後日。[頭専用](HEAD_ONLY.md)。run-avatar-lab.ps1とrun-motion-lab.ps1の-LegacySecondaryResponseで以前の減衰へ戻せる。
+
+## 2026-09-13 頭専用の自動化
+
+tanakacap-head-only.batは頭領域自動取得・非記録・無期限。今回のtanakacap-test.batは-HeadOnly -Diagnose -Frames 1800へ更新。通常liveはfullのまま。-HeadRoiMode fixedで従来の手動固定へ戻る。autoのP/R/Sと取得2モデルはHEAD_ONLY.md参照。以前の「固定範囲・自動再取得未対応」は旧状態。

@@ -446,7 +446,8 @@ def main():
         if command == 'benchmark':
             sub.add_argument('--no-log',action='store_true',help='No result files, snapshots or ORT profiling; bounded in-memory history')
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
-            sub.add_argument('--head-only',action='store_true',help='Experimental direct head pose only, manual head ROI; no expression/gaze/body/detector networks')
+            sub.add_argument('--head-only',action='store_true',help='Direct head pose with automatic CUDA head region detection; no expression/gaze/body networks')
+            sub.add_argument('--head-roi-mode', choices=('auto','fixed'), default='auto', help='Head-only: auto acquisition/loss/recovery, or legacy fixed crop')
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')

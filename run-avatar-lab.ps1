@@ -12,6 +12,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [switch]$HeadOnly,
     [ValidateSet('full','face_head','head_only')][string]$TrackingMode,
     [int[]]$HeadRoi,
+    [ValidateSet('auto','fixed')][string]$HeadRoiMode='auto',
     [switch]$NoGaze,
     [switch]$NoPersonDetector,
     [switch]$IntegerBodyPeaks)
@@ -68,7 +69,7 @@ try {
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @()
-    if ($HeadOnly) { $taskExtra+='--head-only'; if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
+    if ($HeadOnly) { $taskExtra+=@('--head-only','--head-roi-mode',$HeadRoiMode); if ($HeadRoi) { if ($HeadRoi.Count -ne 4) { throw 'HeadRoi must be x,y,w,h' }; $taskExtra+='--roi'; $taskExtra+=$HeadRoi } }
     if ($NoBody) { $taskExtra+='--no-body' } else { $taskExtra+='--body3d' }
     if ($NoPersonDetector) { $taskExtra+='--fixed-roi' }
     if ($NoLog) { $taskExtra += @('--no-log','--parent-pid',$taskPlayer.Id); $Frames=0 }
