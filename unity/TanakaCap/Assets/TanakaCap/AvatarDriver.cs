@@ -672,6 +672,7 @@ namespace TanakaCap
             {
                 var mesh=renderer.sharedMesh;int index=mesh.GetBlendShapeIndex("瞳小");
                 if(index<0 || !leftEye || !rightEye)continue;
+                if(!mesh.isReadable){Debug.LogWarning("Auto iris generation skipped: mesh Read/Write disabled on "+renderer.name);continue;}
                 int l=Array.IndexOf(renderer.bones,leftEye),r=Array.IndexOf(renderer.bones,rightEye);
                 if(l<0 || r<0)continue;
                 var iris=new Vector3[mesh.vertexCount];mesh.GetBlendShapeFrameVertices(index,0,iris,null,null);
@@ -1000,6 +1001,7 @@ namespace TanakaCap
             {
                 var original=renderer.sharedMesh;
                 if(original.GetBlendShapeIndex("口角上げ")<0)continue;
+                if(!original.isReadable){Debug.LogWarning("Auto mouth generation skipped: mesh Read/Write disabled on "+renderer.name);continue;}
                 // Runtime-only clone: never modify the imported avatar asset.
                 var mesh=ExpressionClone(renderer);
                 var vertices=mesh.vertices;

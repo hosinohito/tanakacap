@@ -31,6 +31,9 @@ namespace TanakaCap.Editor {
     renderer.sharedMesh=vrc;
     var fallback=new FaceExpressions(root.transform,new[]{renderer},custom);
     Require(fallback.Report["a"].shape=="renamed-vowel","Explicit VRC descriptor must beat guessed VRC name");
+    vrc.UploadMeshData(true);
+    var readOnly=new FaceExpressions(root.transform,new[]{renderer},custom);
+    Require(readOnly.Has("a"),"Existing keys must work without CPU mesh readability");
     UnityEngine.Object.DestroyImmediate(vrc);
     Debug.Log("TANAKACAP_EXPRESSION_CHECKS_OK priority/empty/descriptor/grouping/gaze/no-generated-keys");
    }finally{UnityEngine.Object.DestroyImmediate(root);UnityEngine.Object.DestroyImmediate(mesh);}

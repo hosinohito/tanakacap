@@ -73,6 +73,9 @@ namespace TanakaCap {
   }
   bool Valid(Mesh mesh,int index){
    if(index<0)return false;if(usable.TryGetValue((mesh,index),out bool known))return known;
+   // Existing blendshape playback needs no CPU vertex access. The exporter
+   // checks empty keys while data is readable; do not make runtime readability mandatory.
+   if(!mesh.isReadable){usable[(mesh,index)]=true;return true;}
    var delta=new Vector3[mesh.vertexCount];var normals=new Vector3[mesh.vertexCount];bool valid=false;
    for(int frame=0;frame<mesh.GetBlendShapeFrameCount(index)&&!valid;frame++){
     mesh.GetBlendShapeFrameVertices(index,frame,delta,normals,null);
