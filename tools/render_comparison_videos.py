@@ -1,4 +1,4 @@
-"""Render both existing controls through the real Unity avatar at the same clock."""
+"""Render synchronized candidate controls through the real Unity avatar at the same clock."""
 import argparse,json,hashlib,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -7,27 +7,41 @@ def sha(p):
  with p.open('rb') as f:
   for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
  return h.hexdigest()
-def run(output):
+def run(output,comparison=None):
  output=output.resolve();output.mkdir(parents=True,exist_ok=False)
  ff=ROOT/'tools/bin/ffmpeg.exe';player=ROOT/'builds/lab/TanakaCap.exe'
  inputs={'current':ROOT/'results/comparisons/first-take/baseline/replay.jsonl','hamer-fingers':ROOT/'results/comparisons/first-take-hamer/fingers/replay.jsonl'}
- report={'status':'running','scope':'Same original capture and camera; only finger geometry differs. Offline rendering, not live latency. Opaque MP4 preview; OBS RGBA output unchanged.','sources':{k:{'path':str(p),'sha256':sha(p)} for k,p in inputs.items()},'assembly_sha256':sha(ROOT/'builds/lab/TanakaCap_Data/Managed/Assembly-CSharp.dll'),'ffmpeg_sha256':sha(ff)}
+ scope='Same original capture and camera; only finger geometry differs. Offline rendering, not live latency. Opaque MP4 preview; OBS RGBA output unchanged.'
+ if comparison is not None:
+  comparison=comparison.resolve();result=json.loads((comparison/'report.json').read_text(encoding='utf-8'))
+  if result['status']!='complete':raise ValueError('Completed body comparison required')
+  inputs={name:comparison/name/'replay.jsonl' for name in result['variants']}
+  scope=result['scope']+' Opaque MP4 preview; OBS RGBA output unchanged.'
+  if result.get('partial_test'):scope='PARTIAL INTEGRATION TEST. '+scope
+ if len(inputs)<2:raise ValueError('At least two variants required')
+ clocks=[]
+ for source in inputs.values():
+  rows=[json.loads(line) for line in source.read_text(encoding='utf-8').splitlines()]
+  clocks.append([row['dt'] for row in rows])
+ if not clocks[0] or any(clock[1:]!=clocks[0][1:] or len(clock)!=len(clocks[0]) for clock in clocks[1:]):raise ValueError('Replay clocks differ')
+ expected=len(clocks[0])
+ report={'status':'running','scope':scope,'sources':{k:{'path':str(p),'sha256':sha(p)} for k,p in inputs.items()},'assembly_sha256':sha(ROOT/'builds/lab/TanakaCap_Data/Managed/Assembly-CSharp.dll'),'ffmpeg_sha256':sha(ff)}
  (output/'report.json').write_text(json.dumps(report,indent=2))
  videos=[]
  for name,source in inputs.items():
   video=output/(name+'.mp4');log=output/(name+'.log')
   subprocess.run([str(player),'-batchmode','--render-replay',str(source),'--video-output',str(video),'--ffmpeg',str(ff),'-logFile',str(log)],cwd=ROOT,check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
-  meta=json.loads(Path(str(video)+'.json').read_text());assert meta['status']=='complete' and meta['packets']==5187
+  meta=json.loads(Path(str(video)+'.json').read_text());assert meta['status']=='complete' and meta['packets']==expected
   videos.append(video);report[name]=meta;print(name,meta['frames'],meta['duration'],flush=True)
- if report['current']['frames']!=report['hamer-fingers']['frames']:raise ValueError('Video clocks differ')
+ if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
- labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate(['Current - RTMW3D','HaMeR fingers - same body and corrections'])]
- filt=';'.join(labels)+';[v0][v1]hstack=inputs=2[out]'
+ labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'current':'Current - RTMW3D-X','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
+ filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
  combined=output/'side-by-side.mp4'
- subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n','-i',str(videos[0]),'-i',str(videos[1]),'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
+ subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  for video in videos+[combined]:
   subprocess.run([str(ff),'-hide_banner','-loglevel','error','-xerror','-i',str(video),'-f','null','-'],check=True,timeout=300,creationflags=subprocess.CREATE_NO_WINDOW)
  report['status']='complete';report['videos']={p.name:{'sha256':sha(p),'bytes':p.stat().st_size} for p in videos+[combined]}
  (output/'report.json').write_text(json.dumps(report,indent=2));print(combined,flush=True)
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);run(p.parse_args().output)
+ p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p.add_argument('--comparison',type=Path);a=p.parse_args();run(a.output,a.comparison)

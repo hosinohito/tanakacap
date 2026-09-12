@@ -1,5 +1,14 @@
 # 引き継ぎ：現在の状態
 
+## 最新：2026-09-12 — 3方式身体比較の接続完了、全編推論中
+
+- ユーザー指定は現行RTMW3D-X / SAM DINOv3 / SAM ViT-Hを完了し動画化。通常追跡の採用モデルは変更しない。docs/BODY_MODEL_COMPARISON.md。
+- SAMネイティブXYZ用の省略可能な入力口、MHR70対応、共通RTMW可視性条件を実装。既存基準全5187パケット最大差0、176pytest成功。顔/口/目線/距離と補正は固定。
+- 先頭600フレームでSAM接続と実Unity動画検証成功、results/avatar-videos/body-smoke-600。全編完成とは扱わない。
+- DINO全編はresults/comparisons/first-take-sam-dinov3へ処理中、ログresults/sam-setup/dinov3-full.log。開始10:32頃、約0.53秒/フレーム見込み。実行セッション27698（次の会話ではPID/ログで実行継続を確認）。途中のGPU動画検証との負荷重複あり。
+- ViT-Hはassets-source/sam-3d-body-vithに設定のみ到着、重み待ち。PythonHFトークンなし。直接URLをユーザー案内済み。受領後チェックポイント監査→推論→共通補正→3方式全編動画へ進む。
+
+
 ## 最新：2026-09-12 — 2方式アバター動画完成、SAM資産受領・GPU初検証
 
 - 依頼された現行対HaMeR指の動画3本をresults/avatar-videos/rtmw-vs-hamerへ作成。current.mp4、hamer-fingers.mp4、side-by-side.mp4、全5551frame/30fps/185.033秒。実Unity/lilToon描画、dt基準で時刻一致。docs/AVATAR_COMPARISON_VIDEOS.md。

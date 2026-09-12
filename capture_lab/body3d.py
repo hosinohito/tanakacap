@@ -42,7 +42,7 @@ class BodyRetarget:
         self.shoulder_width_reference=ShoulderWidthReference()
 
     def update(self, packet, xy, scores, depth, depth_scores, now=None, image_size=None,
-               reference_xy=None, reference_scores=None):
+               reference_xy=None, reference_scores=None, camera_xyz=None):
         now = time.perf_counter() if now is None else now
         dt = .033 if self.last_time is None else max(.001,min(.1,now-self.last_time))
         if self.last_time is not None and now-self.last_time > .3:
@@ -132,6 +132,16 @@ class BodyRetarget:
             return packet
         # Only differences are used below; no dependence on a missing opposite shoulder.
         xyz = np.column_stack((-xy[:,0]*self.scale,-xy[:,1]*self.scale,-depth))
+        if camera_xyz is not None:
+            # Optional native metric geometry. Image landmarks still supply
+            # visibility/face scale/overlap evidence; do not flatten true 3D XY.
+            native=np.asarray(camera_xyz,dtype=float)
+            if native.shape!=(len(xy),3):raise ValueError('camera_xyz must match joint layout')
+            mask=np.isfinite(native).all(axis=1)
+            if not mask[[5,6]].all():raise ValueError('Native geometry requires finite shoulders')
+            anchor=xyz[[5,6]].mean(axis=0)
+            xyz[mask]=-(native[mask]-native[[5,6]].mean(axis=0))+anchor
+            self.diagnostics['native_metric_geometry']=True
         self.diagnostics['geometry']={'model_scale':float(self.scale),
                                       'shoulder_pixels':float(span),
                                       'shoulder_depth_difference':float(dz) if np.isfinite(dz) else None}

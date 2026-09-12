@@ -4,6 +4,8 @@ No automatic asset downloads, retargeting, confidence fabrication or global inst
 SAM/HaMeR need licensed assets and a validated independent environment first.
 """
 import argparse,json,sys,time,os
+from contextlib import nullcontext
+from unittest.mock import patch
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -31,12 +33,13 @@ def run(args):
     if sys.platform=='win32':os.environ.setdefault('PYOPENGL_PLATFORM','win32')
     sys.path.insert(0,str(args.repo.resolve()))
     import torch
+    if args.torch_threads is not None:torch.set_num_threads(args.torch_threads)
     if not torch.cuda.is_available():raise RuntimeError('CUDA required; no CPU fallback')
     meta,timeline=load_take(args.take)
     cache=args.common/'common.jsonl';parent=json.loads((args.common/'report.json').read_text(encoding='utf-8'))
     if parent['status']!='complete' or parent['source_video_sha256']!=meta['video_sha256'] or parent['source_timeline_sha256']!=meta['timeline_sha256']:raise ValueError('Common input provenance mismatch')
     args.output.mkdir(parents=True,exist_ok=False)
-    report={'status':'running','model':args.model,'checkpoint_sha256':sha256(args.checkpoint),'video_sha256':meta['video_sha256'],'controls_sha256':parent['controls']['sha256'],'upstream_python_sha256':{str(p.relative_to(args.repo)):sha256(p) for p in sorted(args.repo.rglob('*.py'))},'torch':torch.__version__,'gpu':torch.cuda.get_device_name(0),'scope':'Raw 3D candidate only. No common-retarget quality claim until units, joints and confidence policy are verified on actual assets.'}
+    report={'status':'running','model':args.model,'checkpoint_sha256':sha256(args.checkpoint),'video_sha256':meta['video_sha256'],'controls_sha256':parent['controls']['sha256'],'upstream_python_sha256':{str(p.relative_to(args.repo)):sha256(p) for p in sorted(args.repo.rglob('*.py'))},'torch_threads':torch.get_num_threads(),'torch':torch.__version__,'gpu':torch.cuda.get_device_name(0),'scope':'Raw 3D candidate only. No common-retarget quality claim until units, joints and confidence policy are verified on actual assets.'}
     dump(args.output/'report.json',report)
     try:
         if args.model=='sam3d':
@@ -67,6 +70,8 @@ def run(args):
                 torch.hub.load=hub_load
                 sam_builder.load_state_dict=state_loader
             report['cuda_backbone_calls']=0
+            report['keep_cuda_cache']=args.keep_cuda_cache
+            report['inference_type']='full'
             def check_cuda(module,inputs,output):
                 if not torch.is_tensor(output) or output.device.type!='cuda':raise RuntimeError('SAM backbone output must be CUDA')
                 report['cuda_backbone_calls']+=1
@@ -101,7 +106,9 @@ def run(args):
                     with torch.inference_mode():
                         if args.model=='sam3d':
                             x,y,w,h=roi
-                            predictions=estimator.process_one_image(image[:,:,::-1].copy(),bboxes=np.array([[x,y,x+w,y+h]],dtype=np.float32))
+                            # Keep PyTorch's normal allocator pool optionally; model math and resolution unchanged.
+                            with patch.object(torch.cuda,'empty_cache',lambda:None) if args.keep_cuda_cache else nullcontext():
+                                predictions=estimator.process_one_image(image[:,:,::-1].copy(),bboxes=np.array([[x,y,x+w,y+h]],dtype=np.float32))
                             for p in predictions:
                                 if not np.isfinite(p['pred_keypoints_3d']).all():raise RuntimeError('Nonfinite SAM joints')
                                 result['predictions'].append({k:p[k] for k in ('pred_keypoints_2d','pred_keypoints_3d','pred_cam_t','focal_length')})
@@ -140,6 +147,8 @@ def main():
     for name in ('repo','checkpoint','take','common','output'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--mhr',type=Path);p.add_argument('--dinov3-repo',type=Path);p.add_argument('--limit',type=int)
     p.add_argument('--mano-dir',type=Path);p.add_argument('--mean-params',type=Path)
+    p.add_argument('--torch-threads',type=int)
+    p.add_argument('--keep-cuda-cache',action='store_true')
     p.add_argument('--start-frame',type=int,default=0);p.add_argument('--stride',type=int,default=1)
     run(p.parse_args())
 if __name__=='__main__':main()
