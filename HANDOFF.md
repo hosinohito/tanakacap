@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 最新：2026-09-12 — 前方作業域の投影短縮復元を可逆に実装
+
+- ユーザー指定で既存録画の該当姿勢を使用。新方式はモデルを変更せず、画像上の短縮と常時校正長から奥行きを復元する。手首は肩よりカメラ側、肘/前腕を一律前方へ反転しない。詳細はdocs/ARM_FRONT_PROJECTION_TRIAL.md。
+- tracking-settings.jsonのarm_depth_mode=front_projectionが最新試行、legacyで旧方式へ戻せる。顔/口/目/胴体出力は同一。掌/指アルゴリズムは維持するが腕の有効性によるゲート状態は変わる。
+- results/comparisons/front-projection-trial-4が最終比較。5187観測で旧パケット差0、188テスト成功。results/front-projection-unity-v4の実Unity4場面成功。frame4246の肩相対手首Zは旧-24mm→新+297mm。正解精度の証明ではない。
+- 新方式の顔尺度不足による保持243観測/側、肘変位p95は減るが最大跳びは少し増えた。逆肘/誤深度/震えの完全解消とは扱わない。SAM ViT-Hは既存オフライン品質参考であり正解ではない。
+- 動画の最終出力先results/avatar-videos/front-projection-final。全編4本（185.033秒/5551frame）と25秒/30秒抜粋が完成、全編復号成功。85秒/142.95秒/151.71秒の描画を確認。report.json/excerpts.jsonはcomplete。旧front-projection-trial動画は中止/差し替え済み、配布しない。デスクトップtanakacap-compare-arm-depth.batは最終フォルダーを開く。通常tanakacap-test.batも更新する。
+
 ## 最新：2026-09-12 — 投影短縮が横曲げへ伸ばされる経路を確認
 
 - ユーザーは腕前後運動が「真横で肘を曲げて顔付近へ手を持つ姿勢」になり、骨長適用で肘が前に折れると報告。後方検出を捨てる案を質問。今回は調査のみ、動作変更なし。

@@ -10,6 +10,7 @@ from .hand_orientation import add_hands, PalmFilter
 from .fingers import FingerTracker
 from .arm_constraints import ArmCalibration, constrain_arm, smooth_fixed_bones
 from .arm_filter import filter_arm
+from .front_projection import FrontProjection
 from .motion_gate import DirectionGate
 from .visibility import screen_visibility
 from .face_scale import FaceScale
@@ -18,7 +19,10 @@ from .body_geometry import DepthAssist, visible_in_front_of_torso, constrain_fro
 
 
 class BodyRetarget:
-    def __init__(self, block_size=1, stride=None):
+    def __init__(self, block_size=1, stride=None, arm_depth_mode="legacy"):
+        if arm_depth_mode not in ("legacy", "front_projection"): raise ValueError("Unknown arm depth mode")
+        self.arm_depth_mode = arm_depth_mode
+        self.projector = {side:FrontProjection() for side in ("left", "right")}
         self.block_size=block_size
         self.stride=stride
         self.previous = {}
@@ -47,6 +51,7 @@ class BodyRetarget:
         dt = .033 if self.last_time is None else max(.001,min(.1,now-self.last_time))
         if self.last_time is not None and now-self.last_time > .3:
             self.previous.clear()
+            for projector in self.projector.values(): projector.reset()
         self.last_time = now
         self.diagnostics = {'torso':'no_person','left':'no_person','right':'no_person'}
         packet.update(body3d=True,torsoTracked=False,torsoPitch=0.,torsoYaw=0.,torsoRoll=0.,
@@ -65,6 +70,7 @@ class BodyRetarget:
             self.calibration.observe(None,None,now)
             self.previous.clear()
             self.held.clear()
+            for projector in self.projector.values(): projector.reset()
             for gate in self.motion.values(): gate.reset()
             for gate in self.cross_motion.values():gate.reset()
             self.torso_motion.reset()
@@ -252,6 +258,35 @@ class BodyRetarget:
                     self.diagnostics[side+'_constrained_lengths']=[float(np.linalg.norm(a)),float(np.linalg.norm(b))]
                 else:
                     self.diagnostics[side+'_fallback']='calibration_inconsistent'
+            if mode=='model' and self.arm_depth_mode=='front_projection' and camera_xyz is None:
+                assist=self.depth_assist[side]
+                if learn_lengths:
+                    assist.lengths.update(np.linalg.norm(np.stack([a,b])[:,:2],axis=1),now)
+                self.diagnostics[side+'_automatic_lengths']=assist.lengths.value.tolist()
+                if not learn_lengths:
+                    self.diagnostics[side]='projection_scale_unavailable'
+                    self.projector[side].reset()
+                    continue
+                values=self.motion[side].update(np.stack([a,a+b])/.36,now)
+                if values is None:
+                    self.diagnostics[side]='observation_warmup'
+                    continue
+                observed_depth=values[:,2].copy()
+                if side in self.previous:
+                    values=filter_arm(self.previous[side],values,dt)
+                # XY is smoothed for rendering. Depth evidence comes only from
+                # confirmed model observations, not our previous reconstructed Z.
+                values[:,2]=observed_depth
+                filtered=np.stack([values[0],values[1]-values[0]])*.36
+                fitted=self.projector[side].solve(filtered,assist.lengths.value,now)
+                self.diagnostics[side+'_projection']=self.projector[side].details.copy()
+                if fitted is None:
+                    self.diagnostics[side]='projection_unavailable'
+                    continue
+                a,b=fitted
+                mode='front_projection'
+                packet[side+'WristInFront']=True
+                self.diagnostics[side+'_depth_mode']=mode
             self.arm_modes[side]=mode
             self.diagnostics[side+'_mode']=mode
             if mode=='model':

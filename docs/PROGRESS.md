@@ -695,3 +695,11 @@
 - docs/ARM_FORESHORTENING_AUDIT.md。Unityは骨ベクトルを正規化してアバター長へ戻すため、入力でZを復元しないと平面内に伸び得る。外側手でモデルZ35mm未満の時など、既存DepthAssistが短縮を復元しない経路がある。
 - 読取監査tools/audit_arm_foreshortening.py成功。arm_depth案内区間2218骨観測中186が投影75%未満＋Z35mm未満。frame4246は右前腕の校正31.3cm/投影13.0cm/Z6mm、送信後も長さ12.9cm/Z7mm相当。人体実寸ではない。画像確認は行ったが、申告の横曲げ姿勢そのものの正解ラベルではない。
 - 提案：投影短縮と骨長が整合するZを方向正規化前に復元し、曖昧な前後を前方へ制限。横曲げ姿勢自体の一律禁止や両骨Zの一律正値化はしない。校正/袖誤認/透視投影/後段IKも検証。後方動作を前へ反転するか境界停止かは未決定、前方専用モード未実装。
+
+## 2026-09-12 — 前方作業域の投影短縮復元を可逆に実装
+
+- ユーザー指定で既存録画の該当姿勢を使用。新方式はモデルを変更せず、画像上の短縮と常時校正長から奥行きを復元する。手首は肩よりカメラ側、肘/前腕を一律前方へ反転しない。詳細はdocs/ARM_FRONT_PROJECTION_TRIAL.md。
+- tracking-settings.jsonのarm_depth_mode=front_projectionが最新試行、legacyで旧方式へ戻せる。顔/口/目/胴体出力は同一。掌/指アルゴリズムは維持するが腕の有効性によるゲート状態は変わる。
+- results/comparisons/front-projection-trial-4が最終比較。5187観測で旧パケット差0、188テスト成功。results/front-projection-unity-v4の実Unity4場面成功。frame4246の肩相対手首Zは旧-24mm→新+297mm。正解精度の証明ではない。
+- 新方式の顔尺度不足による保持243観測/側、肘変位p95は減るが最大跳びは少し増えた。逆肘/誤深度/震えの完全解消とは扱わない。SAM ViT-Hは既存オフライン品質参考であり正解ではない。
+- 動画の最終出力先results/avatar-videos/front-projection-final。全編4本（185.033秒/5551frame）と25秒/30秒抜粋が完成、全編復号成功。85秒/142.95秒/151.71秒の描画を確認。report.json/excerpts.jsonはcomplete。旧front-projection-trial動画は中止/差し替え済み、配布しない。デスクトップtanakacap-compare-arm-depth.batは最終フォルダーを開く。通常tanakacap-test.batも更新する。
