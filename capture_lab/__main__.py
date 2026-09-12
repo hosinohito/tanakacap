@@ -106,8 +106,6 @@ def parent_running(pid):
 
 
 def benchmark(args):
-    from . import motion_gate
-    motion_gate.REUSE_BUFFERS=args.reuse_cpu_buffers
     if args.observation_block==1: args.observation_stride=1
     if getattr(args, 'head_only', False):
         from .head_only import run
@@ -487,7 +485,6 @@ def main():
             sub.add_argument('--batch-eyes',action='store_true')
             sub.add_argument('--preprocess-mode',choices=('legacy','crop'),default='legacy')
             sub.add_argument('--gpu-decode',action='store_true')
-            sub.add_argument('--reuse-cpu-buffers',action='store_true')
             sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
             sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)

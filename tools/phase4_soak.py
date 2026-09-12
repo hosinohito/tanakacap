@@ -89,7 +89,6 @@ def main():
     parser.add_argument("--demo",action="store_true",help="Render-only A/B test instead of inference")
     parser.add_argument('--preprocess-mode',choices=('legacy','crop'))
     parser.add_argument('--gpu-decode',action='store_true')
-    parser.add_argument('--reuse-cpu-buffers',action='store_true')
     parser.add_argument('--batch-eyes',action='store_true')
     parser.add_argument('--no-batch-eyes',action='store_true')
     parser.add_argument('--detector-graph',action='store_true')
@@ -153,7 +152,6 @@ def main():
             if (args.batch_eyes or settings.get('batch_eyes')) and not args.no_batch_eyes:cmd+=['--batch-eyes']
             if args.detector_graph:cmd+=['--detector-graph']
             if args.gpu_decode:cmd+=['--gpu-decode']
-            if args.reuse_cpu_buffers:cmd+=['--reuse-cpu-buffers']
             for key in ("observation_block","observation_stride","head_pose_mode","head_pitch_gain","mouth_lip_depth_scale",
                         "face_distance_filter","arm_depth_mode","shoulder_yaw_mode","gaze_reference"):
                 cmd+=["--"+key.replace("_","-"),str(settings[key])]
