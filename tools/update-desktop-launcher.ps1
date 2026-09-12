@@ -28,3 +28,9 @@ $taskBodyScript = Join-Path $taskRoot 'run-body-comparison.ps1'
 $taskBodyContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskBodyScript`"`r`npause`r`n"
 [IO.File]::WriteAllText($taskBodyTarget,$taskBodyContents,[Text.Encoding]::Default)
 Write-Output $taskBodyTarget
+
+$taskArmTarget = Join-Path $taskDesktop 'tanakacap-compare-arm-depth.bat'
+$taskArmFolder = Join-Path $taskRoot 'results/avatar-videos/front-projection-final'
+$taskArmContents = "@echo off`r`nexplorer.exe `"$taskArmFolder`"`r`n"
+[IO.File]::WriteAllText($taskArmTarget,$taskArmContents,[Text.Encoding]::Default)
+Write-Output $taskArmTarget

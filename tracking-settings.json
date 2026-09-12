@@ -10,5 +10,6 @@
   "head_pose_mode": "pnp",
   "head_pitch_gain": 1.8,
   "mouth_lip_depth_scale": 1.5,
-  "face_distance_filter": "stable"
+  "face_distance_filter": "stable",
+  "arm_depth_mode": "front_projection"
 }
