@@ -11,6 +11,7 @@ from .fingers import FingerTracker
 from .arm_constraints import ArmCalibration, constrain_arm, smooth_fixed_bones
 from .arm_filter import filter_arm
 from .front_projection import FrontProjection
+from .shoulder_projection import ShoulderProjection
 from .motion_gate import DirectionGate
 from .visibility import screen_visibility
 from .face_scale import FaceScale
@@ -19,8 +20,11 @@ from .body_geometry import DepthAssist, visible_in_front_of_torso, constrain_fro
 
 
 class BodyRetarget:
-    def __init__(self, block_size=1, stride=None, arm_depth_mode="legacy"):
+    def __init__(self, block_size=1, stride=None, arm_depth_mode="legacy", shoulder_yaw_mode="legacy"):
         if arm_depth_mode not in ("legacy", "front_projection"): raise ValueError("Unknown arm depth mode")
+        if shoulder_yaw_mode not in ("legacy", "width_only", "face_ratio"): raise ValueError("Unknown shoulder yaw mode")
+        self.shoulder_yaw_mode = shoulder_yaw_mode
+        self.shoulder_projection = ShoulderProjection()
         self.arm_depth_mode = arm_depth_mode
         self.projector = {side:FrontProjection() for side in ("left", "right")}
         self.block_size=block_size
@@ -192,21 +196,36 @@ class BodyRetarget:
                     self.yaw_direction=float(np.sign(elbow_direction))
                 else:
                     yaw_source='held_ambiguous_elbow_sign'
-                magnitude,magnitude_source=shoulder_yaw_magnitude(xy,face_scale,dz)
-                if face_scale is not None or self.shoulder_width_reference.width is not None:
-                    self.diagnostics['shoulder_frontal_reference_updated']=self.shoulder_width_reference.observe_frontal(span,face_scale,dz,agreement,now)
-                    magnitude=self.shoulder_width_reference.update(span,face_scale,now)
-                    magnitude_source='observed_shoulder_reference' if face_scale is not None else 'held_shoulder_scale'
-                self.diagnostics['shoulder_reference_width']=self.shoulder_width_reference.width
-                reference_width=self.shoulder_width_reference.width
-                self.diagnostics['shoulder_face_relative_ratio']=(span*face_scale/reference_width) if face_scale is not None and reference_width else None
-                self.diagnostics['shoulder_reference_pixels']=(reference_width/face_scale) if face_scale is not None and reference_width else None
-                packet['torsoYaw']=self.yaw_direction*magnitude
-                # Width shrink alone also occurs when the shoulder detector
-                # moves on clothing. Require compatible shoulder-depth evidence;
-                # elbows still choose the sign and width still supplies amount.
-                yaw_consistent=abs(dz)>=.025
-                if not yaw_consistent:packet['torsoYaw']=0.
+                if self.shoulder_yaw_mode == 'legacy':
+                    magnitude,magnitude_source=shoulder_yaw_magnitude(xy,face_scale,dz)
+                    if face_scale is not None or self.shoulder_width_reference.width is not None:
+                        self.diagnostics['shoulder_frontal_reference_updated']=self.shoulder_width_reference.observe_frontal(span,face_scale,dz,agreement,now)
+                        magnitude=self.shoulder_width_reference.update(span,face_scale,now)
+                        magnitude_source='observed_shoulder_reference' if face_scale is not None else 'held_shoulder_scale'
+                    self.diagnostics['shoulder_reference_width']=self.shoulder_width_reference.width
+                    reference_width=self.shoulder_width_reference.width
+                    self.diagnostics['shoulder_face_relative_ratio']=(span*face_scale/reference_width) if face_scale is not None and reference_width else None
+                    self.diagnostics['shoulder_reference_pixels']=(reference_width/face_scale) if face_scale is not None and reference_width else None
+                    packet['torsoYaw']=self.yaw_direction*magnitude
+                    # Width shrink alone also occurs when the shoulder detector
+                    # moves on clothing. Require compatible shoulder-depth evidence;
+                    # elbows still choose the sign and width still supplies amount.
+                    yaw_consistent=abs(dz)>=.025
+                    if not yaw_consistent:packet['torsoYaw']=0.
+                else:
+                    magnitude=self.shoulder_projection.update(xy,scores,self.face_scale.details,
+                        face_scale is not None,packet,now,guard=self.shoulder_yaw_mode=='face_ratio')
+                    projection=self.shoulder_projection.details.copy()
+                    self.diagnostics['shoulder_projection']=projection
+                    magnitude_source='image_shoulder_face_ratio'
+                    yaw_source=self.shoulder_yaw_mode
+                    if projection['status']!='width_observed':
+                        # Hold the signed accepted yaw, not only its magnitude;
+                        # a noisy model elbow must not flip a missing observation.
+                        packet['torsoYaw']=float(self.torso_motion.accepted[1]) if self.torso_motion.accepted is not None else 0.
+                    else:
+                        packet['torsoYaw']=self.yaw_direction*magnitude
+                    yaw_consistent=None  # Legacy shoulder-Z veto is not used.
                 self.diagnostics['torso_yaw_evidence_consistent']=yaw_consistent
                 self.diagnostics['torso_yaw_source']=yaw_source
                 self.diagnostics['torso_yaw_magnitude']=magnitude

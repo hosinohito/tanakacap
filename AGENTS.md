@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：肩の前傾対策へモデル首/肩/胴体Zを使わないユーザー指定。顔肩距離比と支持最大幅を試行、肩基準短縮禁止。shoulder_yaw_mode=face_ratioで試行、legacyが通常既定。終盤静止ヨーが残り採用保留。専用tanakacap-test-shoulder.bat、docs/SHOULDER_FACE_RATIO_TRIAL.md参照。
+
 - 2026-09-12ユーザー指定：実写録画はGitへコミットしない。実体はローカルに残して今後も検証に使う。results/の除外を維持し、動画をforce-addしない。履歴に混入していた場合は実体を保存したまま履歴からも除去する。
 
 - 最新（2026-09-12）：前方専用の腕投影短縮復元を試行実装。arm_depth_mode=front_projection、legacyで復帰。手首のみ肩よりカメラ側、後方肘/負の前腕Zは禁止しない。校正長は下限、顔尺度不足は腕保持。docs/ARM_FRONT_PROJECTION_TRIAL.mdとHANDOFF先頭参照。実人物改善は未確認。

@@ -35,7 +35,7 @@ def run(output,comparison=None):
   videos.append(video);report[name]=meta;print(name,meta['frames'],meta['duration'],flush=True)
  if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
- labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'current':'Current - RTMW3D-X','front-projection':'RTMW3D - front projection trial','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
+ labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'current':'Current - RTMW3D-X','shoulder-width':'Shoulder width - monotonic reference','shoulder-face':'Shoulder width + face ratio guard','front-projection':'RTMW3D - front projection trial','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
  filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
