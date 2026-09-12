@@ -1,5 +1,12 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 高速化Bの途中／pytest一時領域修正
+
+- 最新ユーザー指定は全部ONを対象にB→C→D、A/E保留。下記の「優先順位待ち」は旧状態。揺れ物は変更しない。RTMW3Dは胴体と腕・手・指を同時推論するため、手を維持してモデルの胴体部分だけ止める高速化は今回は行わない。
+- Bは未コミットの試作あり。`--inference-mode run|binding|graph`、GpuRunner、2本のaudit/benchmarkツールを追加。既定run・ランチャー未接続。4モデル出力は比較入力で最大絶対差0。`results/gpu-runner-audit-1789229936190407600/report.json`。同じ録画30warmup+900測定、全部ON、Player/OBS/previewなし：loop中央値run40.899/binding41.888/graph37.392ms。`results/full-optimization-B-1789229983578447300/summary.json`。実表示品質・実カメラ性能は未確認。
+- C/Dは未実装。次は人物ROI追跡で検出間隔を減らすC、次に公式YOLOX-tiny HumanArt416との比較D。`tools/benchmark_full_optimization.py`のC/D用CLI引数は先行記述のみでまだ使用不可。Bの最終レビュー・通常設定への反映、C/D品質比較・OBS併用測定・文書更新・コミットも残る。
+- pytest承認の質問を受け一時領域を修正。Windows mode700は同じsandboxでアクセス拒否、既定mkdirは読書成功。`tests/conftest.py`でWindows tmp_pathのみworkspaceのACLを継承、固有ディレクトリを終了時削除。pytest.iniでtests限定・cache無効。通常sandboxの`.venv/Scripts/python.exe -m pytest -q`で210件成功。OS/サンドボックスの設定変更なし。Desktopのtest.batはまだ頭専用のため、BCD採用時に全部ONへ更新する。
+
 最新指定（2026-09-13）：スポーン時を含む揺れ物は今後調整しない。頭専用モードを先に仕上げ、次は高速化案だけを提示し、ユーザーが優先順位を指示するまで高速化の実装に着手しない。音声口パクは引き続き後日。
 
 ## 2026-09-13 — 頭専用autoの実装完了（実人物品質は未確認）

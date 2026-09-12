@@ -233,7 +233,12 @@ OBS側にはUnity内のKlakSpoutとは別に、[Spout2プラグイン1.12.0](htt
 
 ## 開発時の確認
 
+pytestは`tests/`だけを収集し、キャッシュを無効にする。Windowsの`tmp_path`は`results/pytest-scratch/`に毎回固有のフォルダーを作り、プロジェクトのアクセス権を継承する。テスト後にそのフォルダーだけ削除する。専用ACL付き一時フォルダーへのアクセス拒否を避けるための対応で、管理者実行や`--basetemp`指定は不要。
+
 ```powershell
+# Pythonテスト一式（モデル・カメラを起動しない）
+.\.venv\Scripts\python.exe -m pytest -q
+
 # Python側の非記録モード：カメラを開かない
 .\.venv\Scripts\python.exe -m pytest tests/test_no_log.py -q -p no:cacheprovider
 

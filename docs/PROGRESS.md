@@ -810,3 +810,9 @@
 YuNet固定640/ORT CUDAを頭領域に追加し、MobileNet姿勢へ自動crop。表情/体/虹彩の省略は維持。未検出即保持、復帰2検出、空領域の姿勢推論を停止。P/R/S、HeadRoi、fixed旧方式、録画ループに対応。3平均/重複ゲート維持。本人認識ではなく複数人や写真の制限を明記。
 
 210 tests、実入力ベース人工移動/遮蔽/回転、CUDA（頭2223/領域2650、CPU0）、930入力900測定（900有効、ループp50 8.601ms）、実Playerへの反映/ロスト保持、カメラ1の65観測起動成功。最初の全ディレクトリpytest収集とサンドボックスtemp ACL失敗はtests限定/通常権限の新tempへ訂正。HEAD_ONLY.mdに詳細参照。実人物品質の合格とはしない。bat/README/仕様/引き継ぎ/ライセンス更新、通常アバター/揺れ物は変更なし。高速化は案だけで実装しない。
+
+## 2026-09-13 — pytestの一時領域アクセス拒否を修正
+
+Windowsのmode700で作った一時ディレクトリでは同じsandboxから書込拒否、通常mkdirでは読書成功を再現。Python公式os.mkdir仕様（https://docs.python.org/3.11/library/os.html#os.mkdir）と整合。tests/conftest.pyのWindows tmp_pathだけ既存workspaceのACLを継承し、UUID別領域を終了時に削除。pytest.iniで収集をtestsに限定、cache無効。OSの権限変更・sandbox解除はせず、通常実行で210 tests成功。README手順を更新。
+
+高速化はユーザー指定で全部ONのB→C→D、A/E保留へ変更済み。B試作の単独録画900測定中央値40.899→37.392ms、比較した4モデルの出力差0。詳細と未完了作業はHANDOFF先頭。C/D未実装、既定設定・デスクトップはまだ変更していない。
