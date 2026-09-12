@@ -9,6 +9,7 @@
     [ValidateRange(64,4096)][int]$OutputWidth,
     [switch]$NoPreview,
     [switch]$LegacyPreview,
+    [ValidateRange(0,1)][double]$MouthCornerEmphasis=0,
     [switch]$LegacySecondaryResponse,
     [ValidateSet(30,60)][int]$RenderFps=60,
     [switch]$NoEdgeAA,
@@ -82,6 +83,9 @@ try {
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
     $taskPlayerArgs+=@('--render-fps',$RenderFps.ToString())
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
+    if (-not $PSBoundParameters.ContainsKey('MouthCornerEmphasis') -and $taskGazeSettings.PSObject.Properties.Name -contains 'mouth_corner_emphasis') { $MouthCornerEmphasis=[double]$taskGazeSettings.mouth_corner_emphasis }
+    if ([double]::IsNaN($MouthCornerEmphasis) -or $MouthCornerEmphasis -lt 0 -or $MouthCornerEmphasis -gt 1) { throw 'mouth_corner_emphasis must be 0..1' }
+    $taskPlayerArgs+=@('--mouth-corner-emphasis',$MouthCornerEmphasis.ToString([Globalization.CultureInfo]::InvariantCulture))
     if ($OutputWidth) { $taskPlayerArgs+=@('--output-width',$OutputWidth.ToString()) }
     if ($NoPreview) { $taskPlayerArgs+='--no-preview' }
     if ($LegacyPreview) { $taskPlayerArgs+='--legacy-preview' }
