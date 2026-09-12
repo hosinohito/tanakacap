@@ -1,6 +1,13 @@
 # 引き継ぎ：現在の状態
 
-## 2026-09-13 — F通常採用、CUDA FP16比較、TensorRT条件確認待ち
+## 2026-09-13 — TensorRT不採用（ユーザー確定）
+
+契約条件の質問へユーザーが「使わない」と回答。TensorRTの接続モジュール、trt-fp32/trt-fp16選択肢、requirements-tensorrt.txtを削除し、開発venvのtensorrt-cu13/bindings/libsをアンインストールした。確認待ちではない。ユーザーが改めて指定しない限りTensorRTを再導入しない。既存ORT wheelに付属する未使用provider DLLはパッケージの一部として残るが、アプリから選択/実行しない。CUDA/FP16/Fと比較動画は維持、通常はF有効・graph/FP32。次はFP16動画のユーザー評価。下記のTensorRT確認待ちは不採用決定前の経緯。
+
+
+削除後の検証：232 tests成功、既存録画60観測の全機能CUDA FP16試験も完了・GPU実行確認（results/no-tensorrt-smoke.log、results/20260912T203105-605551Z-rtmw3d-x-384）。新しい棚卸しはresults/distribution-audit-no-tensorrt-20260913。実カメラは使用していない。
+
+## 前回の記録：2026-09-13 — F通常採用、CUDA FP16比較、TensorRT条件確認待ち
 
 ユーザーがF採用を指定し`detector_graph=true`へ変更。コミットdf63f74。`-NoDetectorGraph`で戻せる。G/I・全部ON・body3d/pnp・3/1・口角0・揺れ物は維持。通常精度はgraph/FP32のまま。
 

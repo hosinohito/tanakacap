@@ -3,7 +3,7 @@ import pytest
 from onnx import helper, TensorProto
 from capture_lab.onnx_variants import fp16_model
 from capture_lab.gpu_runner import provider_options
-from capture_lab.tensorrt_backend import require_provider
+from capture_lab.gpu_runner import require_provider
 
 
 def test_fp16_preserves_original_io_and_sensitive_ops(tmp_path):
@@ -39,13 +39,11 @@ def test_reject_silent_provider_fallback():
         def get_providers(self): return ['CPUExecutionProvider']
     session = Session()
     with pytest.raises(RuntimeError, match='refusing silent fallback'):
-        require_provider(session,'graph-fp16')
+        require_provider(session)
     assert session.disabled
 
 
-def test_trt_request_rejects_cuda_only_session():
-    class Session:
-        def disable_fallback(self): pass
-        def get_providers(self): return ['CUDAExecutionProvider','CPUExecutionProvider']
-    with pytest.raises(RuntimeError, match='TensorrtExecutionProvider'):
-        require_provider(Session(),'trt-fp16')
+def test_reject_removed_mode():
+    from capture_lab.gpu_runner import GpuRunner
+    with pytest.raises(ValueError, match='Unknown inference mode'):
+        GpuRunner(None,'trt-fp16')

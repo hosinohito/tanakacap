@@ -18,7 +18,7 @@
     [ValidateSet('full','face_head','head_only')][string]$TrackingMode,
     [int[]]$HeadRoi,
     [ValidateSet('auto','fixed')][string]$HeadRoiMode='auto',
-    [ValidateSet('run','binding','graph','graph-fp16','trt-fp32','trt-fp16')][string]$InferenceMode,
+    [ValidateSet('run','binding','graph','graph-fp16')][string]$InferenceMode,
     [ValidateSet(1,2,3)][int]$DetectorInterval,
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
     [ValidateSet('separate','body3d')][string]$FaceSource,
@@ -64,7 +64,7 @@ try {
     if ($taskGazeSettings.person_detector_enabled -eq $false) { $NoPersonDetector=$true }
     if (-not $InferenceMode) { $InferenceMode=$taskGazeSettings.inference_mode }
     if (-not $InferenceMode) { $InferenceMode='run' }
-    if ($InferenceMode -notin @('run','binding','graph','graph-fp16','trt-fp32','trt-fp16')) { throw 'Invalid inference_mode' }
+    if ($InferenceMode -notin @('run','binding','graph','graph-fp16')) { throw 'Invalid inference_mode' }
     if (-not $DetectorInterval) { $DetectorInterval=$taskGazeSettings.detector_interval }
     if (-not $DetectorInterval) { $DetectorInterval=1 }
     if ($DetectorInterval -notin @(1,2,3)) { throw 'Invalid detector_interval' }
