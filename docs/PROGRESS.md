@@ -703,3 +703,9 @@
 - results/comparisons/front-projection-trial-4が最終比較。5187観測で旧パケット差0、188テスト成功。results/front-projection-unity-v4の実Unity4場面成功。frame4246の肩相対手首Zは旧-24mm→新+297mm。正解精度の証明ではない。
 - 新方式の顔尺度不足による保持243観測/側、肘変位p95は減るが最大跳びは少し増えた。逆肘/誤深度/震えの完全解消とは扱わない。SAM ViT-Hは既存オフライン品質参考であり正解ではない。
 - 動画の最終出力先results/avatar-videos/front-projection-final。全編4本（185.033秒/5551frame）と25秒/30秒抜粋が完成、全編復号成功。85秒/142.95秒/151.71秒の描画を確認。report.json/excerpts.jsonはcomplete。旧front-projection-trial動画は中止/差し替え済み、配布しない。デスクトップtanakacap-compare-arm-depth.batは最終フォルダーを開く。通常tanakacap-test.batも更新する。
+
+## 2026-09-12 — 実写録画のGit混入監査
+
+- ユーザーは実写動画がコミットされていた場合の履歴除去と、ローカル実体の継続利用を指定。
+- 変更前20コミット/489オブジェクト/370blobを、到達不能分も含め検査。動画/画像/resultsパス、動画コンテナ署名、LFSポインターはいずれも0。非UTF8の2blobはKlakSpout.dllとパッケージ署名で、録画ではない。remote登録なし。履歴削除対象はなく、書換えは実施していない。
+- results/git-media-audit.jsonに監査要約。camera.avi（5,791,849,388bytes）はresults/除外が適用され、実体は不変。一般的な動画拡張子も.gitignoreへ追加し、今後の管理対象外方針をAGENTS.mdへ記録。
