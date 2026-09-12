@@ -1,5 +1,7 @@
 # 全部ON高速化 B → C → D
 
+最新（2026-09-13）：通常はRTMW3D顔/体共有＋PnPピッチ/Z口角、Gのcrop後RGB化、Iの左右眼batch2を採用。Fの人物Graph分割は任意OFF、H並行は遅くrevert。[新しい測定条件・結果](FURTHER_OPTIMIZATION.md)。
+
 2026-09-13。ユーザー指定順で実装・比較。通常ランチャーはB+C（graph/interval3/YOLOX-M）、D（YOLOX-tiny）は任意選択。AのTensorRT/FP16、Eの部位更新頻度は保留。頭専用・揺れ物・既存の顔/腕/肩/指補正は変更しない。
 
 ## 実装

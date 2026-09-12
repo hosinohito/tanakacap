@@ -27,8 +27,8 @@ def run(take, output, limit=None, pose_comparison=False):
     dump(output/'report.json', report)
     if pose_comparison:
         report['scope']='Same RTMW3D XY/Z, ROI, body and timestamps. Only head pitch and mouth contour solve differs: PnP/template lips versus learned Z. Other corrections unchanged. Not live latency or ground-truth accuracy.'
-    face_model = None if pose_comparison else SimCCModel('rtmw-l-384', None, 'graph')
-    body_model = SimCCModel('rtmw3d-x-384', None, 'graph')
+    face_model = None if pose_comparison else SimCCModel('rtmw-l-384', None, 'graph',preprocess_mode=settings.get('preprocess_mode','legacy'))
+    body_model = SimCCModel('rtmw3d-x-384', None, 'graph',preprocess_mode=settings.get('preprocess_mode','legacy'))
     detector = PersonDetector(None, 'graph')
     tracker = PersonRegionTracker(detector, settings.get('detector_interval', 3))
     names = ('body3d','depth3d') if pose_comparison else ('separate', 'body3d')

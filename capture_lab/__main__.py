@@ -143,7 +143,9 @@ def benchmark(args):
         report['face_source'] = args.face_source
         if args.gaze:
             from .gaze import IrisGaze
-            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **execution)
+            gaze_execution={**execution}
+            if args.batch_eyes:gaze_execution['batch_eyes']=True
+            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **gaze_execution)
         if args.body3d:
             body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **pose_execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
@@ -479,6 +481,7 @@ def main():
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')
+            sub.add_argument('--batch-eyes',action='store_true')
             sub.add_argument('--preprocess-mode',choices=('legacy','crop'),default='legacy')
             sub.add_argument('--detector-graph',action='store_true')
             sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')

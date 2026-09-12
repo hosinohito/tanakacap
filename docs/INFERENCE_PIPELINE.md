@@ -1,5 +1,7 @@
 # 現在の推論経路
 
+最新（2026-09-13）：通常はRTMW3D顔/体共有＋PnPピッチ/Z口角、Gのcrop後RGB化、Iの左右眼batch2を採用。Fの人物Graph分割は任意OFF、H並行は遅くrevert。[新しい測定条件・結果](FURTHER_OPTIMIZATION.md)。
+
 最新採用（2026-09-13）：ピッチはPnP・口角はZ。通常body3d/pnp_depthmouth、`-HeadPoseMode pnp`で両方旧補正へ。test/liveは採用構成。以下のdepth3d試行・通常separate/pnpは過去の状態。[最新引き継ぎ](../HANDOFF.md)。
 
 追加試行：body3d顔＋head_pose_mode=depth3dでは、PnP/仮定唇深度を使わず、既存推論の顔Zから回転を求めて口輪郭を正面へ戻す。[可逆操作・計測](FACE_DEPTH_TRIAL.md)。通常pnpを維持。

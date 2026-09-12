@@ -1,5 +1,7 @@
 # 推論時間内訳と統合構成オプション
 
+最新（2026-09-13）：通常はRTMW3D顔/体共有＋PnPピッチ/Z口角、Gのcrop後RGB化、Iの左右眼batch2を採用。Fの人物Graph分割は任意OFF、H並行は遅くrevert。[新しい測定条件・結果](FURTHER_OPTIMIZATION.md)。
+
 2026-09-12。RTX4090、既存HuffYUV録画1280x720の先頭930フレーム（30 warmup＋900観測）、各構成を順番に計測。専用Player/隔離OBS/プレビューをこの試験では起動しない。録画読み込みは実時間の速度制限なし。ORT詳細トレースをOFFにして結果JSONを記録した。
 
 再現：tools/profile_inference_stages.py。入力は既存のresults/comparison-takes/20260911T235327-031115Z/camera.avi。統合結果はresults/inference-stages-1789224490331791700/summary.json、各reportへの参照を含む。頭専用の固定ROIはこの録画に合わせた618,246,170,165で、他の映像へはそのまま使えない。

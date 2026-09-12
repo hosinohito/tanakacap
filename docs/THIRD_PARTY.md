@@ -81,3 +81,7 @@ OpenCV Zoo face_detection_yunet_2023mar.onnx、SHA256 8f2383e4dd3cfbb4553ea87181
 ## YOLOX-tiny HumanArt（2026-09-13 任意比較）
 
 詳細推定モデルを維持した人物ROI専用の小型候補。公式RTMlib設定で示されたOpenMMLabの416×416 ONNXを取得。models/catalog.jsonとローカルreceiptへURL・SHA記録、SHA256 ceb11c07298f95c50d7c5abeb906d03340c85f23aa79e3e66966e7fb6c307250。MMPoseコードのApache-2.0を確認、重み/学習データの一般配布監査は未完了。通常同梱/既定採用せず、選択時の別取得。一次資料・比較根拠は[FULL_MODE_OPTIMIZATION.md](FULL_MODE_OPTIMIZATION.md)。
+
+## 2026-09-13 — ローカルONNX派生
+
+Fは既存YOLOXの固定部分/NMSの分割、Iは既存虹彩のbatch2派生をローカル生成。重みの再学習・別重み取得なし、既存ONNX1.22.0を使用。原本/派生モデルともGit除外、元のモデル許諾と一般配布監査の残件を引き継ぐ。FURTHER_OPTIMIZATION.md参照。

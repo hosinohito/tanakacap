@@ -71,9 +71,10 @@ def contour_offset(iris, contour, flip):
 
 
 class IrisGaze:
-    def __init__(self, output, block=3, stride=1, reference='contour', execution_mode='run'):
+    def __init__(self, output, block=3, stride=1, reference='contour', execution_mode='run', batch_eyes=False):
         if reference not in ('contour','legacy'):raise ValueError('Unknown gaze reference')
         self.reference=reference
+        self.batch_eyes=bool(batch_eyes)
         if not MODEL.exists() or sha256(MODEL)!=MODEL_HASH: raise RuntimeError('Iris model missing or hash mismatch')
         ort.preload_dlls(directory='')
         self.profiling=output is not None
@@ -81,7 +82,11 @@ class IrisGaze:
         if self.profiling: options.profile_file_prefix=str(output/'iris')
         options.log_severity_level=3
         options.intra_op_num_threads=2
-        self.session=ort.InferenceSession(str(MODEL),sess_options=options,providers=provider_options(execution_mode))
+        model_path=MODEL
+        if self.batch_eyes:
+            from .onnx_variants import iris_batch_model
+            model_path=iris_batch_model(MODEL)
+        self.session=ort.InferenceSession(str(model_path),sess_options=options,providers=provider_options(execution_mode))
         self.runner=GpuRunner(self.session,execution_mode)
         self.session.disable_fallback()
         if self.session.get_providers()[0]!='CUDAExecutionProvider': raise RuntimeError('Iris requires CUDA')
@@ -94,14 +99,25 @@ class IrisGaze:
         packet.update(gazeTracked=False,gazeYaw=0.,gazePitch=0.)
         if packet.get('faceTracked') and abs(packet['headYaw'])<35 and abs(packet['headPitch'])<25:
             legacy=getattr(self,'reference','contour')=='legacy'
+            prepared=[]
             for side,idx,flip in [('right',59,legacy),('left',65,not legacy)]:
                 eye=np.asarray(points[idx:idx+6])
                 tensor=eye_crop(frame,eye,flip) if np.all(np.asarray(scores[idx:idx+6])>.4) and packet.get(side+'Blink',1)<.55 else None
                 if tensor is None: reasons.append(side+':unobserved'); continue
-                runner=getattr(self,'runner',None)
-                names=['output_iris','output_eyes_contours_and_brows']
-                iris,contour=runner.run(tensor,'input_1',names) if runner else self.session.run(names,{'input_1':tensor})
+                prepared.append((side,eye,flip,tensor))
+            predictions=[]
+            names=['output_iris','output_eyes_contours_and_brows']
+            runner=getattr(self,'runner',None)
+            if prepared and getattr(self,'batch_eyes',False):
+                tensor=np.concatenate([item[3] for item in prepared]+[np.zeros_like(prepared[0][3])]*(2-len(prepared)),axis=0)
+                outputs=runner.run(tensor,'input_1',names) if runner else self.session.run(names,{'input_1':tensor})
                 self.calls+=1
+                predictions=[(outputs[0][i:i+1],outputs[1][i:i+1]) for i in range(len(prepared))]
+            else:
+                for _,_,_,tensor in prepared:
+                    predictions.append(runner.run(tensor,'input_1',names) if runner else self.session.run(names,{'input_1':tensor}))
+                    self.calls+=1
+            for (side,eye,flip,_),(iris,contour) in zip(prepared,predictions):
                 roi_value=iris_offset(iris,flip)
                 refined=contour_offset(iris,contour,flip)
                 value=roi_value if legacy else refined
@@ -131,9 +147,9 @@ class IrisGaze:
         return self.diagnostics
 
     def finish(self):
-        if not self.profiling: return dict(profiling=False,providers=self.session.get_providers(),calls=self.calls)
+        if not self.profiling: return dict(profiling=False,providers=self.session.get_providers(),calls=self.calls,batch_size=2 if self.batch_eyes else 1)
         profile=Path(self.session.end_profiling()); result=provider_summary(profile)
-        result.update(profile=str(profile),calls=self.calls,sha256=MODEL_HASH)
+        result.update(profile=str(profile),calls=self.calls,sha256=MODEL_HASH,batch_size=2 if self.batch_eyes else 1)
         if self.calls and (not result['cuda_executed'] or result['cpu_compute_ops']):
             raise RuntimeError('Iris core compute did not execute exclusively on CUDA')
         return result
