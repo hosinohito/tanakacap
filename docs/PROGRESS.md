@@ -864,3 +864,7 @@ Windowsのmode700で作った一時ディレクトリでは同じsandboxから�
 既存5187観測の生データで従来PnPとのピッチ差0、顔Z方式との口角/横寄せ/弓形差0・口輪郭有効フラグ一致を確認。results/face-pnp-depthmouth-audit.json。CPU単独の再計算平均はPnP全処理0.476ms/混合0.346ms、前回GPU併用計測とは別条件。225 tests成功。実カメラ・動画目視・追加動画作成は行っていない。口角Zの欠測は既存通り保持し、PnPピッチを止めない。
 
 デスクトップtest/liveは採用構成、test-face-pnpは同じRTMW3Dでピッチ/口ともPnPへ復帰、test-face-originalはRTMW-L/pnp。depth3dは過去比較の再現用に残すが通常へ戻さない。頭専用は維持。既存のface-depth-trial動画は混合採用前の比較である。次は採用構成で必要があれば録画検証、顔Z口輪郭欠測など既知残件を扱う。
+
+## 2026-09-13 — F人物検出Graph分割
+
+F〜I実行とH独立コミット/遅ければrevertをユーザー指定。Fは元NMSを残して390/25ノード分割、GPUバッファ直接受け渡し。録画/空80入力でROI・信頼度一致、GPU主要演算確認。全部ON900観測平均22.248→22.028msと小幅、任意選択に留める。225 tests。G/H/I続行。詳細FURTHER_OPTIMIZATION.md。
