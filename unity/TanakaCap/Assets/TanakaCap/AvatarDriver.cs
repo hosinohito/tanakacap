@@ -71,6 +71,7 @@ namespace TanakaCap
         Arm left, right;
         SkinnedMeshRenderer[] meshes;
         bool demo;
+        bool motionDemo;
         bool obsMode;
         bool gazeEnabled=true;
         bool gazeIrisMode=true;
@@ -226,7 +227,9 @@ namespace TanakaCap
             if(TryStartVideo(args))return;
             int portArg=Array.IndexOf(args,"--port");
             if(portArg>=0 && portArg+1<args.Length && int.TryParse(args[portArg+1],out var testPort) && testPort>0 && testPort<=65535) port=testPort;
-            try { receiver = new UdpClient(new IPEndPoint(IPAddress.Loopback, port)); }
+            motionDemo=Array.IndexOf(args,"--motion-demo")>=0;
+            if(motionDemo)demo=true;
+            try { if(!motionDemo)receiver = new UdpClient(new IPEndPoint(IPAddress.Loopback, port)); }
             catch (Exception ex) { error = ex.Message; }
             if (Array.IndexOf(args,"--demo") >= 0) demo = true;
             int snapshot = Array.IndexOf(args,"--snapshot");
@@ -324,10 +327,11 @@ namespace TanakaCap
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
             if(!live && !demo){DriveGaze(null,false,FrameDelta);return;} // Only gaze returns to center on loss.
             var p = live ? current : new TrackingPacket();
-            if (demo) p = new TrackingPacket { tracked=true, faceTracked=true,
+            if (demo) p = motionDemo ? ProceduralMotion.Sample(Time.time) : new TrackingPacket { tracked=true, faceTracked=true,
                 headYaw=25*Mathf.Sin(Time.time), headRoll=10*Mathf.Sin(Time.time*.6f),
                 mouth=.5f+.5f*Mathf.Sin(Time.time*3), leftBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16),
                 rightBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16) };
+            if(demo && motionDemo)live=true;
             if(framedDistance && faceDistanceEnabled && distanceEstablished && p.faceTracked && p.faceDistanceTracked)transform.position=rootRestPosition;
             var leftParentBefore=left.lower.parent.rotation;
             var rightParentBefore=right.lower.parent.rotation;
@@ -1082,7 +1086,7 @@ namespace TanakaCap
                 state+=" / Hand outside frame: "+(current.leftOutOfView?"L ":"")+(current.rightOutOfView?"R":"");
             GUI.Box(new Rect(12,12,450,130),"tanakacap development lab");
             GUI.Label(new Rect(24,38,430,22),error ?? state);
-            GUI.Label(new Rect(24,62,430,22),"F1: status  F2: demo  F3: OBS  C: neutral torso  " + (current != null && current.body3d ? "3D body" : "2D body"));
+            GUI.Label(new Rect(24,62,430,22),"F1: status  F2: demo  F3: OBS  F6: hair/cloth  C: neutral torso  " + (current != null && current.body3d ? "3D body" : "2D body"));
             GUI.Label(new Rect(24,86,430,22),"F4: gaze "+(!gazeEnabled?"OFF":current!=null && current.gazeTracked && Time.unscaledTime-lastReceived<.3f?"tracking":"returning")+" / "+(gazeIrisMode && gazeMesh?"iris":"bones")+" / "+gazeAngles.ToString("F1"));
             bool distanceLive=current!=null && current.tracked && current.faceTracked && current.faceDistanceTracked && Time.unscaledTime-lastReceived<.3f;
             string distanceState=!faceDistanceEnabled?"OFF":!distanceLive?(distanceEstablished?"HOLD (lost)":"waiting for face"):seatedDistance && seatedLeanLimited?"ANGLE LIMIT":"tracking";
@@ -1472,6 +1476,12 @@ namespace TanakaCap
             image.ReadPixels(new Rect(0,0,1280,720),0,0);
             image.Apply();
             File.WriteAllBytes(path,image.EncodeToPNG());
+            if(demo){
+                // A procedural demo intentionally moves without observations; loss-hold assertions do not apply.
+                camera.targetTexture=null;RenderTexture.active=previous;Destroy(image);target.Release();Destroy(target);
+                camera.GetComponent<AlphaOutput>().CheckOutput(path,obsMode && !Application.isBatchMode);
+                Debug.Log("TANAKACAP_DEMO_SNAPSHOT_OK "+path);Application.Quit();yield break;
+            }
             File.WriteAllText(path+".tracking.json",JsonUtility.ToJson(current ?? new TrackingPacket(),true));
             var leftFrame = left.hand.rotation*Quaternion.Inverse(left.handFrameCorrection);
             var rightFrame = right.hand.rotation*Quaternion.Inverse(right.handFrameCorrection);

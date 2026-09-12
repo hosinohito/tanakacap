@@ -50,3 +50,14 @@ $taskPackageFolder = Join-Path $taskRoot 'builds/lab'
 $taskPackageContents = "@echo off`r`nexplorer.exe `"$taskPackageFolder`"`r`n"
 [IO.File]::WriteAllText($taskPackageTarget,$taskPackageContents,[Text.Encoding]::Default)
 Write-Output $taskPackageTarget
+
+# Separate non-recording, unlimited launchers. The diagnostic launcher stays available.
+$taskLiveTarget = Join-Path $taskDesktop 'tanakacap-live.bat'
+$taskLiveContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -NoLog`r`nif errorlevel 1 pause`r`n"
+[IO.File]::WriteAllText($taskLiveTarget,$taskLiveContents,[Text.Encoding]::Default)
+Write-Output $taskLiveTarget
+$taskDemoTarget = Join-Path $taskDesktop 'tanakacap-motion.bat'
+$taskDemoScript = Join-Path $taskRoot 'run-motion-lab.ps1'
+$taskDemoContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskDemoScript`"`r`nif errorlevel 1 pause`r`n"
+[IO.File]::WriteAllText($taskDemoTarget,$taskDemoContents,[Text.Encoding]::Default)
+Write-Output $taskDemoTarget

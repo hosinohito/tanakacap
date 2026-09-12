@@ -35,6 +35,8 @@ namespace TanakaCap {
       if(!mat||!mat.shader||!mat.shader.isSupported||mat.shader.name=="Hidden/InternalErrorShader")throw new Exception("Unsupported avatar material: "+r.name);
      animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
      var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;
+     if(m.secondaryPhysics!=null && m.secondaryPhysics.bones.Length>0)avatar.AddComponent<SecondaryMotion>().Initialize(m.secondaryPhysics,animator);
+     if(Array.IndexOf(Environment.GetCommandLineArgs(),"--secondary-check")>=0)avatar.AddComponent<SecondaryMotionProbe>();
      Debug.Log("TANAKACAP_PACKAGE_LOADED "+Path.GetFullPath(path)+" sha256="+hash);
      foreach(var warning in m.warnings??new string[0])Debug.LogWarning("Avatar package: "+warning);
     }

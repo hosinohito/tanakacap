@@ -4,7 +4,9 @@ import json
 import platform
 import subprocess
 import time
-from collections import Counter
+from collections import Counter, deque
+from contextlib import nullcontext
+from itertools import count
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -84,15 +86,33 @@ def part_coverage(scores, threshold):
         'left_hand': slice(91, 112), 'right_hand': slice(112, 133)}.items()}
 
 
+def parent_running(pid):
+    # Only query our launcher's Player process; do not terminate unrelated processes.
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.GetExitCodeProcess.argtypes = (wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD))
+    kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+    handle = kernel.OpenProcess(0x1000, False, pid)
+    if not handle: return False
+    try:
+        code = wintypes.DWORD()
+        return bool(kernel.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259
+    finally:
+        kernel.CloseHandle(handle)
+
+
 def benchmark(args):
     if args.observation_block==1: args.observation_stride=1
-    output = output_folder(args.model)
+    output = None if args.no_log else output_folder(args.model)
     print(f'Results: {output}', flush=True)
     report = {'status': 'running', 'environment': environment(), 'arguments': vars(args),
               'scope': '2D face diagnostic with optional learned 3D body (--body3d). Single person; no identity tracking. Approximate retargeting.',
               'latency_note': 'Inference call includes tensor upload/output readback. Camera age starts AFTER capture read, not exposure. No end-to-end/display latency claim.',
               'quality_note': 'Confidence coverage is not measured accuracy. Synthetic input is performance-only.'}
-    write_json(output / 'report.json', report)
+    if output is not None: write_json(output / 'report.json', report)
     model = body_model = detector = camera = video = sender = gaze = None
     body_retarget = BodyRetarget(args.observation_block,args.observation_stride,args.arm_depth_mode,args.shoulder_yaw_mode)
     face_filter = FaceFilter(args.observation_block,args.observation_stride)
@@ -100,7 +120,7 @@ def benchmark(args):
     face_distance=FaceDistance(args.observation_block,args.observation_stride,args.face_distance_filter)
     from .head_pose import HeadPose
     head_pose=HeadPose(args.head_pitch_gain,args.mouth_lip_depth_scale) if args.head_pose_mode=="pnp" else None
-    rows = []
+    rows = deque(maxlen=1) if args.no_log else []
     try:
         if args.unity_port:
             sender = LocalSender(args.unity_port)
@@ -139,8 +159,9 @@ def benchmark(args):
         previous_points = previous_scores = None
         previous_time = None
         last_acquired = None
-        with (output / 'frames.jsonl').open('w', encoding='utf-8') as log:
-            for index in range(args.warmup + args.frames):
+        with (nullcontext(None) if args.no_log else (output / 'frames.jsonl').open('w', encoding='utf-8')) as log:
+            for index in (count() if args.frames == 0 else range(args.warmup + args.frames)):
+                if args.parent_pid and not parent_running(args.parent_pid): break
                 if camera:
                     frame = camera.mailbox.next(after=last_sequence)
                     skipped = max(0, frame.sequence-last_sequence-1) if last_sequence >= 0 else 0
@@ -247,7 +268,7 @@ def benchmark(args):
                         row['body_depth_scores'] = [float(v) for v in body_model.depth_scores]
                 if index >= args.warmup:
                     rows.append(row)
-                    log.write(json.dumps(row, allow_nan=False)+'\n')
+                    if log is not None: log.write(json.dumps(row, allow_nan=False)+'\n')
                 previous_points, previous_scores, previous_time = points, scores, done
                 if camera:
                     last_acquired = last_sequence, acquired
@@ -271,7 +292,7 @@ def benchmark(args):
                                       roi if roi is not None else [0, 0, image.shape[1], image.shape[0]])
                     if not cv2.imwrite(str(output / 'diagnostic.png'), canvas):
                         raise RuntimeError('Could not save requested diagnostic snapshot')
-                if index and index % 100 == 0:
+                if not args.no_log and index and index % 100 == 0:
                     print(f'{index} frames processed', flush=True)
         report['execution'] = model.finish()
         if gaze:
@@ -284,6 +305,7 @@ def benchmark(args):
         if detector:
             report['detector_execution'] = detector.finish()
             detector = None
+        if args.no_log: return
         if not rows:
             raise RuntimeError('No measured frames after warmup')
         report['status'] = 'completed'
@@ -325,7 +347,7 @@ def benchmark(args):
                                            for part in ('torso','left','right')}
         report['body_held_frames'] = {key:sum(row.get('body_diagnostics',{}).get(key+'_state')=='held' for row in rows)
                                       for key in ('leftArm','rightArm','leftHand','rightHand')}
-        if args.body3d and sender:
+        if output is not None and args.body3d and sender:
             write_json(output/'arm-calibration.json',dict(mode='continuous_supported_maximum',
                         lengths=body_retarget.automatic_lengths(),window_seconds=5,min_frames=10))
             write_json(output/'arm-calibration-status.json',dict(status=body_retarget.calibration.status,
@@ -343,7 +365,7 @@ def benchmark(args):
             video.release()
         if args.preview:
             cv2.destroyAllWindows()
-        write_json(output / 'report.json', report)
+        if output is not None: write_json(output / 'report.json', report)
 
 
 def probe(args):
@@ -381,6 +403,8 @@ def main():
         sub.add_argument('--backend', choices=['dshow', 'msmf'], default='msmf')
         sub.add_argument('--frames', type=int, default=180)
         if command == 'benchmark':
+            sub.add_argument('--no-log',action='store_true',help='No result files, snapshots or ORT profiling; bounded in-memory history')
+            sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')
             sub.add_argument('--source', choices=['synthetic', 'camera', 'video'], default='synthetic')
             sub.add_argument('--video')
@@ -405,8 +429,10 @@ def main():
             sub.add_argument('--gaze-reference',choices=['contour','legacy'],default='contour',help='Legacy restores the previous ROI reference and eye flips')
             sub.add_argument('--integer-body-peaks',action='store_true',help='Restore integer body coordinate decoding for comparison')
     args = parser.parse_args()
-    if hasattr(args, 'frames') and args.frames < 2:
-        parser.error('--frames must be at least 2')
+    if hasattr(args, 'frames') and args.frames < 2 and not (args.command=='benchmark' and args.frames==0 and args.no_log):
+        parser.error('--frames must be at least 2; 0 is unlimited with benchmark --no-log')
+    if getattr(args,'no_log',False) and (args.landmarks or args.snapshot):
+        parser.error('--no-log cannot be combined with --landmarks or --snapshot')
     if hasattr(args, 'warmup') and args.warmup < 0:
         parser.error('--warmup must be non-negative')
     if args.command == 'fetch':

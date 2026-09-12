@@ -4,6 +4,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet(1,3)][int]$ObservationStride = 1,
     [ValidateSet("legacy","width_only","face_ratio")][string]$ShoulderYawMode,
     [string]$Avatar,
+    [switch]$NoLog,
     [switch]$IntegerBodyPeaks)
 $ErrorActionPreference = 'Stop'
 if (-not $PSBoundParameters.ContainsKey('ObservationBlock')) {
@@ -32,6 +33,7 @@ try {
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    if ($NoLog) { $taskPlayerArgs += @('-nolog') }
     if ($Avatar) { $taskPlayerArgs += @('--avatar',('"'+(Resolve-Path -LiteralPath $Avatar).Path+'"')) }
     if ($taskGazeSettings.gaze_render_mode -eq 'bones') { $taskPlayerArgs+='--gaze-bones' }
     if ($taskGazeSettings.face_distance_enabled -eq $false) { $taskPlayerArgs+='--no-face-distance' }
@@ -39,7 +41,8 @@ try {
     if ($taskGazeSettings.face_distance_mode -eq 'translate') { $taskPlayerArgs+='--face-distance-translate' }
     $taskPlayer = Start-Process -FilePath $taskExe -ArgumentList $taskPlayerArgs -PassThru
     $taskExtra = @()
-    if ($Diagnose) { $taskExtra += '--landmarks' }
+    if ($NoLog) { $taskExtra += @('--no-log','--parent-pid',$taskPlayer.Id); $Frames=0 }
+    if ($Diagnose -and -not $NoLog) { $taskExtra += '--landmarks' }
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
     if ($taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
     if ($taskGazeSettings.head_pose_mode) { $taskExtra += @('--head-pose-mode',$taskGazeSettings.head_pose_mode) }

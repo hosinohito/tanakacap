@@ -75,8 +75,10 @@ class IrisGaze:
         self.reference=reference
         if not MODEL.exists() or sha256(MODEL)!=MODEL_HASH: raise RuntimeError('Iris model missing or hash mismatch')
         ort.preload_dlls(directory='')
-        options=ort.SessionOptions(); options.enable_profiling=True
-        options.profile_file_prefix=str(output/'iris'); options.log_severity_level=3
+        self.profiling=output is not None
+        options=ort.SessionOptions(); options.enable_profiling=self.profiling
+        if self.profiling: options.profile_file_prefix=str(output/'iris')
+        options.log_severity_level=3
         options.intra_op_num_threads=2
         self.session=ort.InferenceSession(str(MODEL),sess_options=options,providers=['CUDAExecutionProvider'])
         self.session.disable_fallback()
@@ -125,6 +127,7 @@ class IrisGaze:
         return self.diagnostics
 
     def finish(self):
+        if not self.profiling: return dict(profiling=False,providers=self.session.get_providers(),calls=self.calls)
         profile=Path(self.session.end_profiling()); result=provider_summary(profile)
         result.update(profile=str(profile),calls=self.calls,sha256=MODEL_HASH)
         if self.calls and (not result['cuda_executed'] or result['cpu_compute_ops']):

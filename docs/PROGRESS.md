@@ -750,3 +750,15 @@
 - AlphaOutputの通常自動描画ではOBS画像が透明一色になる問題を実受信で発見。LateUpdate明示Renderへ変更し、GPU送信を維持。最終OBS32.2.2/Spout1.12.0の透明677443/不透明240913/中間3244画素、2秒変化69033画素、背景合成を確認（results/phase3/obs-report.json、obs-composite-final.png）。デモでの検査、実人物/30分/遅延合格ではない。
 - 通常OBSへC:/ProgramData/obs-studio/plugins/win-spoutを配置済み。次回起動後Spout2 Capture→TanakaCap→Premultiplied Alpha。通常ユーザーのシーン/配信設定は変更せず、実受信は隔離コピーで検証。通常シーンでのユーザー確認は残る。Program Files配置はOS権限で失敗し、公式推奨ProgramDataに成功した。
 - 検証用Player/隔離OBSは終了済み。ユーザーの別OBSは停止していない。配信/録画は開始していない。次は通常OBSでの利用確認、フェーズ4の自然な髪服揺れとOBS併用品質/性能。汎用MA/PhysBone変換・一般向け導入は未完了。肩face_ratio/腕front_projection維持。
+
+## 2026-09-12 — PhysBone設定の互換変換と非記録起動を実装
+
+- ユーザー要求：髪/服の揺れ、既存検証batの更新とは別の非記録/無期限カメラ版、カメラなしで再配布制限のないモーション版。さらに元PhysBoneのパラメーターを保ち本家に似せる方針へ指定。最初の固定ばねプロファイルは撤回済み。
+- SecondaryMotionExporterはSDK存在時SerializedObject、現在のSDK欠損HAOLANでは原本テキストPrefabの作者設定を読む。35系統/73区間/15明示コライダー、力/制限/カーブ/半径/内包Capsule等をmanifest.secondaryPhysics v1へ。左zipperの重複1件は先頭採用/警告。原本依存hash前後不変。SDK本体/DLL/ソルバーを同梱せず、公式公開仕様から独立した近似実装。docs/SECONDARY_MOTION.md。
+- SecondaryMotionは追跡後・透過描画前に更新し、F6でOFF復元、--no-secondary-motionで起動OFF。Humanoid骨/同一骨Constraintは駆動しない。骨長を変えない。内包Colliderで固定支点まで投影して裾が81.9度へ折れる不良を検証で発見、動かせる末端の衝突へ修正。静止時形状差は最大12.63度残り、本家一致とは扱わない。
+- 検証：results/secondary-motion/source-audit.jsonで530数値/カーブ値/個数/参照一致。check.jsonの実Player960ステップで本体回転/ローカル位置変化0、OFF復元、静止速度約0.0000142m/s。単独CPUステップ最大約0.80ms。transport.*既存顔/腕/指/掌/ロスト/アルファsmoke成功。motion-final.pngは自作モーションの実描画、デモ専用snapshotが不適切にロストテストへ入る不良も修正し終了code0。頭や腕の採用追跡設定は変更していない。
+- デスクトップ：tanakacap-test.bat=従来診断1800frame、tanakacap-live.bat=カメラ非記録無期限、tanakacap-motion.bat=カメラなし自作モーション非記録無期限。tools/update-desktop-launcher.ps1更新済み。F6で揺れON/OFF。run-avatar-lab.ps1 -NoLog、run-motion-lab.ps1、各-Avatar可。docs/LAUNCH_MODES.md。
+- 非記録は結果JSON/JSONL/校正/スナップショット/ORT profilingをOFF、履歴は1件。Unity -nolog。無期限は--frames 0かつ--no-log限定、Player終了でカメラ推論も終了。tests/test_no_log.py 3合格、実synthetic GPU構成3frame終了成功、カメラなしPlayer4秒で既定Player.logと結果フォルダー不変(no-log-smoke.json)。長時間メモリ実測は未実施。
+- モーションは外部素材/実人物録画を使わないProceduralMotion.csの24秒周期。モーション専用0BSD許諾をdocs/PROCEDURAL_MOTION_LICENSE.txtとbuilds/lab同名ファイルに配置。HAOLAN等を再配布できる意味ではない。
+- 未確認：本家VRChatとの同一軌跡比較/減衰時間校正、実人物での自然さ、SDKありの実改変プロジェクト、Simplified/Polar/Plane/版1.1の実素材、非一様scale、標準/他人Collider、Stretch/Squish/Grab/Animator挙動、30分とOBS併用性能。初期段階の独立互換変換であり完全一致とは書かない。次は通常batでの見た目評価と合法的なVRChat実行結果との比較、フェーズ4の品質/性能評価。
+- 検証用Playerは終了済み。実写動画/アバター/結果はGit除外のまま。外部pushなし。

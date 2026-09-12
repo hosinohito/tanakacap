@@ -20,7 +20,7 @@ namespace TanakaCap.Editor {
    string scratch="Assets/TanakaCapExport-"+Guid.NewGuid().ToString("N");
    string build=Path.Combine("Temp",Guid.NewGuid().ToString("N"));
    GameObject copy=null;
-   var warnings=new List<string>{"HAOLAN 1.6 expression profile only.","PhysBone, VRChat behaviours and animator controllers are not reproduced. Hair/clothing physics are not included.","Modular Avatar and other build-time modifications must not be silently omitted; unsupported scripts stop this exporter."};
+   var warnings=new List<string>{"HAOLAN 1.6 expression profile only.","VRChat behaviours and animator controllers are not reproduced.","Modular Avatar and other build-time modifications must not be silently omitted; unsupported scripts stop this exporter."};
    try {
     Directory.CreateDirectory(scratch);Directory.CreateDirectory(build);AssetDatabase.Refresh();
     copy=UnityEngine.Object.Instantiate(source);copy.name="avatar";
@@ -31,6 +31,7 @@ namespace TanakaCap.Editor {
      if(!animator.GetBoneTransform(bone))throw new Exception("Missing required bone: "+bone);
     var body=copy.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(x=>x.name=="Body"&&x.sharedMesh&&x.sharedMesh.GetBlendShapeIndex("vrc.v_aa")>=0);
     if(!body)throw new Exception("This first exporter requires the HAOLAN Body/viseme profile.");
+    var secondary=SecondaryMotionExporter.Collect(source,copy,warnings);
     foreach(var t in copy.GetComponentsInChildren<Transform>(true)) {
      int count=GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(t.gameObject);
      if(count>0)warnings.Add("Missing components omitted: "+AnimationUtility.CalculateTransformPath(t,copy.transform)+" : "+count);
@@ -53,7 +54,7 @@ namespace TanakaCap.Editor {
     if(!result)throw new Exception("AssetBundle build failed");
     string bundle=Path.Combine(build,"avatar.bundle");
     string hash;using(var sha=SHA256.Create())using(var f=File.OpenRead(bundle))hash=BitConverter.ToString(sha.ComputeHash(f)).Replace("-","").ToLowerInvariant();
-    var manifest=new AvatarPackageManifest{unityVersion=Application.unityVersion,displayName=source.name,bundleSha256=hash,warnings=warnings.ToArray()};
+    var manifest=new AvatarPackageManifest{unityVersion=Application.unityVersion,displayName=source.name,bundleSha256=hash,warnings=warnings.ToArray(),secondaryPhysics=secondary};
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destination)));
     string temp=destination+".partial";
     try {
