@@ -201,12 +201,20 @@ class PersonDetector(SimCCModel):
         padded = np.full((640, 640, 3), 114, dtype=np.uint8)
         padded[:resized.shape[0], :resized.shape[1]] = resized
         tensor = np.ascontiguousarray(padded.transpose(2, 0, 1)[None], dtype=np.float32)
+        prepared = time.perf_counter()
         result = self.session.run(None, {self.input_name: tensor})[0][0]
+        inferred = time.perf_counter()
+        def finish(roi, confidence):
+            done = time.perf_counter()
+            self.timing = dict(detector_preprocess_ms=(prepared-start)*1000,
+                              detector_inference_call_ms=(inferred-prepared)*1000,
+                              detector_postprocess_ms=(done-inferred)*1000)
+            return roi, confidence, (done-start)*1000
         self.calls += 1
         if result.ndim == 2 and result.shape[1] == 5:
             # This official export already includes decoding and NMS.
             if len(result) == 0:
-                return None, 0., (time.perf_counter()-start)*1000
+                return finish(None, 0.)
             best = int(np.argmax(result[:, 4]))
             confidence = float(result[best, 4])
             box = result[best, :4] / ratio
@@ -215,7 +223,7 @@ class PersonDetector(SimCCModel):
             roi = None
             if confidence >= threshold and (box[2:]-box[:2] > 1).all():
                 roi = [float(box[0]), float(box[1]), float(box[2]-box[0]), float(box[3]-box[1])]
-            return roi, confidence, (time.perf_counter()-start)*1000
+            return finish(roi, confidence)
         if result.shape[0] != len(self.grid) or result.shape[1] < 6:
             raise RuntimeError(f'Unsupported detector export: {result.shape}')
         scores = result[:, 4] * result[:, 5]
@@ -229,7 +237,7 @@ class PersonDetector(SimCCModel):
             xy1 = np.minimum((center+size/2)/ratio, [w, h])
             if (xy1-xy0 > 1).all():
                 roi = [float(xy0[0]), float(xy0[1]), float(xy1[0]-xy0[0]), float(xy1[1]-xy0[1])]
-        return roi, confidence, (time.perf_counter()-start)*1000
+        return finish(roi, confidence)
 
 
 class DetectionGate:

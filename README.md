@@ -286,3 +286,11 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 セットアップ、依存版、必要素材、ビルド引数、成果物、起動方法、設定キー、OBS連携を変更したときは、**同じ変更でREADMEの該当手順も更新する**。READMEには現在使う手順を載せ、古い日付付き説明を先頭へ積み重ねない。履歴はPROGRESS、次の作業と未確認点はHANDOFFに残す。
 
 手順中のパス・引数・相対リンクを実ファイルと照合し、動作検証した範囲と未実施の導入試験を分けて記す。新しい会話で過去の会話がなくても、この文書群から再開できる状態を維持する。自動で会話履歴が復元されるわけではない。
+
+## 推論の部位切替・頭専用の試験モード
+
+通常は全モデルON。run-avatar-lab.ps1の-NoBodyで体/腕/掌/指/顔距離による胴体移動、-NoGazeで目線推論をOFFにできます。体OFFでも顔の表情・頭の向きは従来通りです。tracking-settings.jsonのbody_enabled/person_detector_enabled/gaze_enabledでも次回起動から切替できます。人物検出OFF（-NoPersonDetector）は画像全体を固定範囲にする診断用で、無人時の誤推定や精度低下があります。
+
+-HeadOnly（デスクトップtanakacap-head-only.bat）は、別の小型モデルで頭の向きだけを推定する可逆な試験モードです。起動時に頭を矩形で囲んでEnter、Pで停止/再開、Rで範囲再選択。顔ランドマーク・虹彩・体・人物検出の各モデルを読み込みません。固定範囲から外れた頭の自動再検出は未実装。音声口パクも今後の課題です。通常モードの品質を置き換えるものではありません。追加重みの取得・条件・制限は[頭専用モード](docs/HEAD_ONLY.md)、処理時間は[推論内訳](docs/INFERENCE_BREAKDOWN.md)を参照してください。
+
+同じアプリの起動オプション-TrackingMode full / face_head / head_only、またはtracking-settings.jsonのtracking_modeで構成を選べます。fullが既定。face_headは従来の顔表情・頭のみ、head_onlyは直接頭姿勢モデルのみです。-HeadOnlyはhead_onlyの別名であり、別製品・別Playerではありません。部位の反映だけでなく不要な推論モデルの生成を止めます。

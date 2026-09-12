@@ -50,3 +50,7 @@ F6で表示中の揺れをON/OFF。`--no-secondary-motion`で起動時OFF。追�
 - `tools/smoke_unity.py --motion-check`：顔/腕/掌/指/欠測保持/透過を含む既存実Playerチェック成功。results/secondary-motion/transport.*。
 - 自作モーションの実アバター画像：results/secondary-motion/motion-final.png。画像だけで実人物追跡精度を評価しない。
 - Unityビルドで原本依存hash前後一致 `25babac2d68f0ee4c5323cd154f54b98`。
+
+## 2026-09-12 本家Editor比較
+
+本家SDKでの同一骨比較を実施し、独自減衰を1.5倍へ調整。復元周波数は比較で悪化したため維持。-LegacySecondaryResponseで旧減衰へ復帰。比較条件・数値・未達は[本家比較](PHYSBONE_REFERENCE.md)を参照。本文の本家比較未実施は今回以前の状態。

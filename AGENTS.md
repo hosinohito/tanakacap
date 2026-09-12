@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：最軽量目標は頭姿勢専用モデル＋音声口パクで、顔ランドマークも省略。音声口パクは将来課題として今回実装しない。通常は全モデルON、部位別OFFと時間内訳を評価。本家PhysBoneは開発Editor限定比較、SDKは配布物へ入れない。
+
 - 最新（2026-09-12）：追加の軽量AAを既定ON、F7/--no-edge-aaで復帰。720p既定/1080p選択。フェーズ4の長時間/OBS/遅延はdocs/PHASE4_VALIDATION.md、各フェーズ未達はIMPLEMENTATION_PHASES最新表。描画約60fps・認識約20Hz、体感遅延/実人物品質の合格ではない。検証batはPlayer統計も保存し、live/motionの非記録無期限は維持。
 
 - 最新（2026-09-12）：髪服は元PhysBone設定の互換変換を優先するユーザー指定。SDK本体は同梱せず独立近似。docs/SECONDARY_MOTION.md。本家一致は未確認。非記録/無期限のtanakacap-live.bat、自作モーションのtanakacap-motion.batを既存検証版とは別に維持。docs/LAUNCH_MODES.md。モーション専用0BSDで、アバター許諾とは別。

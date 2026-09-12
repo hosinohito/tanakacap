@@ -106,6 +106,10 @@ def parent_running(pid):
 
 def benchmark(args):
     if args.observation_block==1: args.observation_stride=1
+    if getattr(args, 'head_only', False):
+        from .head_only import run
+        return run(args)
+    if getattr(args, 'no_body', False): args.body3d=False
     output = None if args.no_log else output_folder(args.model)
     print(f'Results: {output}', flush=True)
     report = {'status': 'running', 'environment': environment(), 'arguments': vars(args),
@@ -124,12 +128,13 @@ def benchmark(args):
     try:
         if args.unity_port:
             sender = LocalSender(args.unity_port)
-        model = SimCCModel(args.model, output)
+        profile_output = None if getattr(args, 'no_ort_profile', False) else output
+        model = SimCCModel(args.model, profile_output)
         if args.gaze:
             from .gaze import IrisGaze
-            gaze=IrisGaze(output,args.observation_block,args.observation_stride,args.gaze_reference)
+            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference)
         if args.body3d:
-            body_model = SimCCModel('rtmw3d-x-384', output)
+            body_model = SimCCModel('rtmw3d-x-384', profile_output)
             body_model.refine_body_peaks=not args.integer_body_peaks
             report['body_model'] = body_model.identity
             report['body_note'] = 'Learned relative depth; XY scale uses nominal 0.36m shoulder span. Not metric ground truth.'
@@ -143,7 +148,7 @@ def benchmark(args):
         report['initialization_pose_warmup_calls'] = 3
         gate = DetectionGate()
         if args.source != 'synthetic' and args.roi is None and not args.fixed_roi:
-            detector = PersonDetector(output)
+            detector = PersonDetector(profile_output)
             report['detector'] = detector.identity
         if args.source == 'camera':
             camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
@@ -161,6 +166,7 @@ def benchmark(args):
         last_acquired = None
         with (nullcontext(None) if args.no_log else (output / 'frames.jsonl').open('w', encoding='utf-8')) as log:
             for index in (count() if args.frames == 0 else range(args.warmup + args.frames)):
+                iteration_start = time.perf_counter()
                 if args.parent_pid and not parent_running(args.parent_pid): break
                 if camera:
                     frame = camera.mailbox.next(after=last_sequence)
@@ -180,6 +186,7 @@ def benchmark(args):
                     image = np.zeros((args.height, args.width, 3), dtype=np.uint8)
                     acquired = time.perf_counter()
                     skipped = 0
+                read_done = time.perf_counter()
                 roi = roi_for(image, args.roi)
                 detect_ms, person_score = 0., None
                 if detector:
@@ -193,7 +200,10 @@ def benchmark(args):
                     scores = np.zeros(133)
                     timing = {'preprocess_ms': 0., 'inference_call_ms': 0., 'postprocess_ms': 0., 'pipeline_ms': 0.}
                     pose_executed = False
+                timing['face_model_ms'] = timing['pipeline_ms']
+                timing['input_wait_read_ms'] = (read_done-iteration_start)*1000
                 timing['detector_ms'] = detect_ms
+                if detector: timing.update(detector.timing)
                 timing['pipeline_ms'] += detect_ms
                 body_xy = body_scores = None
                 timing['body3d_ms'] = 0.
@@ -206,7 +216,9 @@ def benchmark(args):
                     timing['pipeline_ms'] += timing['body3d_ms']
                 if sender:
                     timing['gaze_ms']=0.
+                    controls_start=time.perf_counter()
                     packet = packet_from_landmarks(points, scores, index, args.threshold)
+                    timing['landmark_controls_ms']=(time.perf_counter()-controls_start)*1000
                     timing["head_pose_ms"]=0.
                     if head_pose:
                         pose_start=time.perf_counter()
@@ -217,7 +229,9 @@ def benchmark(args):
                         gaze.update(image,points,scores,packet,time.perf_counter())
                         timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
                         timing['pipeline_ms']+=timing['gaze_ms']
+                    filter_start=time.perf_counter()
                     face_filter.update(packet,time.perf_counter())
+                    timing['face_filter_ms']=(time.perf_counter()-filter_start)*1000
                     distance_start=time.perf_counter()
                     face_distance.update(points,scores,packet,distance_start)
                     timing['face_distance_ms']=(time.perf_counter()-distance_start)*1000
@@ -232,10 +246,18 @@ def benchmark(args):
                     timing['pipeline_ms']+=timing['retarget_ms']
                     # Windows 3.11 perf_counter is system-wide QPC, shared with
                     # the Player's diagnostic-only QueryPerformanceCounter.
+                    if getattr(args, 'no_body', False):
+                        from .tracking_modes import suppress_body
+                        suppress_body(packet)
                     packet['inputReadTime']=acquired
                     packet['inputSentTime']=time.perf_counter()
+                    send_start=time.perf_counter()
                     sender.send(packet)
+                    timing['send_ms']=(time.perf_counter()-send_start)*1000
                 done = time.perf_counter()
+                timing['read_to_send_ms']=(done-read_done)*1000
+                accounted=sum(timing.get(k,0.) for k in ('face_model_ms','detector_ms','body3d_ms','gaze_ms','head_pose_ms','landmark_controls_ms','face_filter_ms','face_distance_ms','retarget_ms','send_ms'))
+                timing['other_before_send_ms']=max(0.,timing['read_to_send_ms']-accounted)
                 row = {'frame': index, 'sequence': last_sequence if camera else index,
                        'image_size':[image.shape[1],image.shape[0]],
                        'pose_executed': pose_executed, 'person_score': person_score,
@@ -278,7 +300,7 @@ def benchmark(args):
                         row['body_depth_scores'] = [float(v) for v in body_model.depth_scores]
                 if index >= args.warmup:
                     rows.append(row)
-                    if log is not None: log.write(json.dumps(row, allow_nan=False)+'\n')
+
                 previous_points, previous_scores, previous_time = points, scores, done
                 if camera:
                     last_acquired = last_sequence, acquired
@@ -302,6 +324,11 @@ def benchmark(args):
                                       roi if roi is not None else [0, 0, image.shape[1], image.shape[0]])
                     if not cv2.imwrite(str(output / 'diagnostic.png'), canvas):
                         raise RuntimeError('Could not save requested diagnostic snapshot')
+                row['diagnostics_preview_ms']=(time.perf_counter()-done)*1000
+                row['iteration_ms']=(time.perf_counter()-iteration_start)*1000
+                if index >= args.warmup and log is not None:
+                    log.write(json.dumps(row, allow_nan=False)+'\n')
+                # The following iteration's result_interval includes JSON serialization/write.
                 if not args.no_log and index and index % 100 == 0:
                     print(f'{index} frames processed', flush=True)
         report['execution'] = model.finish()
@@ -328,7 +355,11 @@ def benchmark(args):
         report['timings'] = {key: stats([row[key] for row in rows if row.get(key) is not None])
                              for key in ('preprocess_ms', 'inference_call_ms', 'postprocess_ms', 'detector_ms',
                                          'body3d_ms','gaze_ms','pipeline_ms', 'capture_read_to_result_ms', 'result_interval_ms',
-                                         'capture_interval_per_sequence_ms')}
+                                         'capture_interval_per_sequence_ms','face_model_ms','input_wait_read_ms',
+                                         'head_pose_ms','landmark_controls_ms','face_filter_ms','face_distance_ms',
+                                         'retarget_ms','send_ms','read_to_send_ms','other_before_send_ms',
+                                         'diagnostics_preview_ms','iteration_ms',
+                                         'detector_preprocess_ms','detector_inference_call_ms','detector_postprocess_ms')}
         report['coverage'] = {key: stats([row['coverage'][key] for row in rows]) for key in rows[0]['coverage']}
         report['skipped_camera_frames'] = sum(row['skipped_camera_frames'] for row in rows)
         print(json.dumps({'status': report['status'], 'model': args.model, 'pipeline_ms': report['timings']['pipeline_ms'],
@@ -414,6 +445,9 @@ def main():
         sub.add_argument('--frames', type=int, default=180)
         if command == 'benchmark':
             sub.add_argument('--no-log',action='store_true',help='No result files, snapshots or ORT profiling; bounded in-memory history')
+            sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
+            sub.add_argument('--head-only',action='store_true',help='Experimental direct head pose only, manual head ROI; no expression/gaze/body/detector networks')
+            sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')
             sub.add_argument('--source', choices=['synthetic', 'camera', 'video'], default='synthetic')

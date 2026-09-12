@@ -12,5 +12,8 @@
   "mouth_lip_depth_scale": 1.5,
   "face_distance_filter": "stable",
   "arm_depth_mode": "front_projection",
-  "shoulder_yaw_mode": "face_ratio"
+  "shoulder_yaw_mode": "face_ratio",
+  "body_enabled": true,
+  "person_detector_enabled": true,
+  "tracking_mode": "full"
 }
