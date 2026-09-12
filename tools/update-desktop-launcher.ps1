@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
@@ -16,3 +16,9 @@ foreach ($taskMode in @('capture','analyze')) {
     [IO.File]::WriteAllText($taskComparisonTarget,$taskComparisonContents,[Text.Encoding]::Default)
     Write-Output $taskComparisonTarget
 }
+
+$taskHamerTarget = Join-Path $taskDesktop 'tanakacap-compare-hamer.bat'
+$taskHamerScript = Join-Path $taskRoot 'run-hamer-comparison.ps1'
+$taskHamerContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskHamerScript`"`r`npause`r`n"
+[IO.File]::WriteAllText($taskHamerTarget,$taskHamerContents,[Text.Encoding]::Default)
+Write-Output $taskHamerTarget

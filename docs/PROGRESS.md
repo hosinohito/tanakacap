@@ -617,3 +617,12 @@
 - 撮影済みresults/comparison-takes/20260911T235327-031115Zに対するresults/comparisons/first-take/report.jsonはcompleteを確認。現行と2D対照の処理完了であり、3D交換や人物品質合格ではない。詳細監査・結果報告は未完了。実行中にORTプロファイル記録上限の警告があったため、GPU証拠の対象範囲にも注意して監査する。
 - 端末ではMarkdownリンクを開けないため、ユーザー向け案内には生URLを添える。不要とされたopen-model-downloads.batは削除済み。
 
+
+## 2026-09-12 — SAM待機中にHaMeR実推論・指だけの比較を完了
+
+- docs/HAMER_COMPARISON.md参照。独立assets-source/hamer/venv（torch 2.11.0+cu128）で公式HaMeR重み/取得済みMANOを実行。原本は保持、ChumpyをNumPyへ同値コピー。Windows EGL importはワーカー内win32指定で解消。上流ソース/本体環境/補正は維持。
+- results/comparisons/first-take-hamer：全5187 frame / 10370手出力、両手中央値38.02ms・p95 44.34ms、最大torch allocated約2.80GB。他モデル/Unity/OBS込み速度ではない。SAMは承認待ち。
+- tools/compare_hamer_fingers.pyで3D指形状だけ交換。信頼度/境界/指補正は既存共通。基準の指再計算は全frame不一致0、指以外のpacket一致。right_fingers_faceの有効判定は左1947→2085、右2025→2085（各417×5）。有効率は正解率ではない。ライブ切替は未実装、既定モデルを変更していない。
+- 実Unityで600packet処理、600監査行を確認。指骨の品質合格とはしない。171pytest成功。デスクトップにtanakacap-compare-hamer.bat追加、既存bat更新。追加撮影不要。次は開閉/欠測のアバター比較と可逆なライブ接続、身体はSAM取得後。
+- first-takeの2D対照は最終packet全5187frame一致。距離stableは静止案内2区間の隣接変化p95約77%/74%減、緩やかな揺れは残る。左肘生深度の大きな飛びを確認。tools/audit_comparison_input.pyで再現、補正追加はしていない。
+
