@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 最新：2026-09-12 — 2方式アバター動画完成、SAM資産受領・GPU初検証
+
+- 依頼された現行対HaMeR指の動画3本をresults/avatar-videos/rtmw-vs-hamerへ作成。current.mp4、hamer-fingers.mp4、side-by-side.mp4、全5551frame/30fps/185.033秒。実Unity/lilToon描画、dt基準で時刻一致。docs/AVATAR_COMPARISON_VIDEOS.md。
+- 初回の一括描画はスキニングが更新されず不適切だった。目視で発見・ユーザーへ訂正し、各描画前にUnityのフレーム更新を挟んで全編再生成。旧版はinvalid-stale-skinningへ隔離。最終版の腕・指を実画像確認し、全編復号成功。通常Unity受信の回帰成功、171pytest成功。通常追跡/補正は不変。
+- SAMは承認・3ファイル受領済み、assets-source/sam-3d-body-dinov3へ配置。独立CUDA環境で生3D推論成功。全撮影35標本と単独20連続frameを実行。単独中央値約716msで重い。既定FOV・公式full設定。docs/SAM_INITIAL_VALIDATION.md。
+- SAMを既存補正へ接続する身体アダプターと負荷分析は未完了。現行対HaMeRの動画にSAMは含まない。次はSAMの関節/左右/単位・速度内訳を監査し、身体比較へ進む。モデル・結果・環境はGit管理外。デスクトップbat更新。
+
+
 ## 最新：2026-09-12 — SAM待機中にHaMeR実推論・指だけの比較を完了
 
 - docs/HAMER_COMPARISON.md参照。独立assets-source/hamer/venv（torch 2.11.0+cu128）で公式HaMeR重み/取得済みMANOを実行。原本は保持、ChumpyをNumPyへ同値コピー。Windows EGL importはワーカー内win32指定で解消。上流ソース/本体環境/補正は維持。

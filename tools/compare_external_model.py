@@ -41,7 +41,36 @@ def run(args):
     try:
         if args.model=='sam3d':
             from sam_3d_body import load_sam_3d_body,SAM3DBodyEstimator
-            model,cfg=load_sam_3d_body(str(args.checkpoint),device='cuda',mhr_path=str(args.mhr))
+            if args.dinov3_repo is None or not (args.dinov3_repo/'hubconf.py').is_file():raise ValueError('SAM requires --dinov3-repo with official local source')
+            report['dinov3_python_sha256']={str(p.relative_to(args.dinov3_repo)):sha256(p) for p in sorted(args.dinov3_repo.rglob('*.py'))}
+            report['config_sha256']=sha256(args.checkpoint.parent/'model_config.yaml')
+            import sam_3d_body.build_models as sam_builder
+            state_loader=sam_builder.load_state_dict
+            def audited_state_loader(module,state_dict,*a,**kw):
+                expected=set(module.state_dict());actual=set(state_dict)
+                missing=sorted(expected-actual);unexpected=sorted(actual-expected)
+                report['checkpoint_missing_keys']=missing;report['checkpoint_unexpected_keys']=unexpected
+                allowed={'backbone.encoder.mask_token','head_pose.hand_pose_comps_ori','head_pose_hand.hand_pose_comps_ori'}
+                unsupported=[k for k in missing if not k.startswith(('head_pose.mhr.','head_pose_hand.mhr.')) and k not in allowed]
+                if unsupported or unexpected:raise RuntimeError('Unexplained SAM checkpoint mismatch: '+str(unsupported+unexpected))
+                return state_loader(module,state_dict,*a,**kw)
+            hub_load=torch.hub.load
+            def local_backbone(repo,name,*a,**kw):
+                if repo!='facebookresearch/dinov3' or kw.get('pretrained') is not False:raise ValueError('Unexpected backbone download request')
+                kw['source']='local'
+                return hub_load(str(args.dinov3_repo.resolve()),name,*a,**kw)
+            try:
+                torch.hub.load=local_backbone
+                sam_builder.load_state_dict=audited_state_loader
+                model,cfg=load_sam_3d_body(str(args.checkpoint),device='cuda',mhr_path=str(args.mhr))
+            finally:
+                torch.hub.load=hub_load
+                sam_builder.load_state_dict=state_loader
+            report['cuda_backbone_calls']=0
+            def check_cuda(module,inputs,output):
+                if not torch.is_tensor(output) or output.device.type!='cuda':raise RuntimeError('SAM backbone output must be CUDA')
+                report['cuda_backbone_calls']+=1
+            model.backbone.register_forward_hook(check_cuda)
             estimator=SAM3DBodyEstimator(model,cfg)
             report['mhr_sha256']=sha256(args.mhr)
         else:
@@ -59,7 +88,7 @@ def run(args):
             # The official checkpoint includes Lightning metadata; this is an explicit
             # trusted local checkpoint load, not a global torch.load override.
             model=HAMER.load_from_checkpoint(str(args.checkpoint),strict=False,cfg=cfg,init_renderer=False,weights_only=False,map_location='cpu').to('cuda').eval()
-        torch.cuda.reset_peak_memory_stats();durations=[];processed=0;predicted_hands=0
+        torch.cuda.reset_peak_memory_stats();durations=[];processed=0;predicted_hands=0;prediction_count=0
         with cache.open(encoding='utf-8') as source,(args.output/'raw.jsonl').open('w',encoding='utf-8') as out:
             for clock,image in images(args.take,timeline,args.limit):
                 common=json.loads(next(source))
@@ -74,6 +103,7 @@ def run(args):
                             x,y,w,h=roi
                             predictions=estimator.process_one_image(image[:,:,::-1].copy(),bboxes=np.array([[x,y,x+w,y+h]],dtype=np.float32))
                             for p in predictions:
+                                if not np.isfinite(p['pred_keypoints_3d']).all():raise RuntimeError('Nonfinite SAM joints')
                                 result['predictions'].append({k:p[k] for k in ('pred_keypoints_2d','pred_keypoints_3d','pred_cam_t','focal_length')})
                         else:
                             boxes,sides=hand_boxes(common['points_xy'],common['scores'])
@@ -95,10 +125,11 @@ def run(args):
                                         result['predictions'].append({'side':side,'hand_xyz_camera_axes':xyz,'projected_xy':uv,'box':boxes[int(person)],'right_model_reflection_applied':side=='left'})
                     torch.cuda.synchronize();durations.append((time.perf_counter()-start)*1000)
                     result['inference_ms']=durations[-1]
+                prediction_count+=len(result['predictions'])
                 line(out,result)
                 if clock['frame']%100==0:print(args.model,clock['frame'],flush=True)
-        if processed==0 or (args.model=='hamer' and predicted_hands==0):raise RuntimeError('No candidate predictions; not a successful inference test')
-        report.update(status='complete',predicted_hands=predicted_hands,frames=processed,start_frame=args.start_frame,stride=args.stride,cuda_device=str(next(model.parameters()).device),inference_ms_p50_p95=np.percentile(durations,[50,95]).tolist() if durations else [],peak_allocated_bytes=torch.cuda.max_memory_allocated())
+        if processed==0 or prediction_count==0:raise RuntimeError('No candidate predictions; not a successful inference test')
+        report.update(status='complete',prediction_count=prediction_count,predicted_hands=predicted_hands,frames=processed,start_frame=args.start_frame,stride=args.stride,cuda_device=str(next(model.parameters()).device),inference_ms_p50_p95=np.percentile(durations,[50,95]).tolist() if durations else [],peak_allocated_bytes=torch.cuda.max_memory_allocated())
         dump(args.output/'report.json',report)
     except BaseException as exc:
         report.update(status='failed',error=str(exc));dump(args.output/'report.json',report);raise
@@ -107,7 +138,7 @@ def run(args):
 def main():
     p=argparse.ArgumentParser();p.add_argument('model',choices=['sam3d','hamer'])
     for name in ('repo','checkpoint','take','common','output'):p.add_argument('--'+name,type=Path,required=True)
-    p.add_argument('--mhr',type=Path);p.add_argument('--limit',type=int)
+    p.add_argument('--mhr',type=Path);p.add_argument('--dinov3-repo',type=Path);p.add_argument('--limit',type=int)
     p.add_argument('--mano-dir',type=Path);p.add_argument('--mean-params',type=Path)
     p.add_argument('--start-frame',type=int,default=0);p.add_argument('--stride',type=int,default=1)
     run(p.parse_args())

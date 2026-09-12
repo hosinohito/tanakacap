@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：現行対HaMeR指の実アバター動画3本完成。SAM承認・資産受領済み、生CUDA推論まで成功（単独中央値約716ms）。身体共通補正接続は未完了。docs/AVATAR_COMPARISON_VIDEOS.md、docs/SAM_INITIAL_VALIDATION.mdとHANDOFF先頭参照。
+
 - 最新（2026-09-12）：SAM承認待ち。HaMeR全撮影CUDA推論と指だけの既存補正比較完了、ライブ接続は未実装。docs/HAMER_COMPARISON.md/HANDOFF先頭参照。既定モデル/顔/腕/掌は維持。有効率を正解率と扱わない。
 
 - 最新（2026-09-12）：MANO_RIGHT.pkl受領、assets-source/manoへ配置。SAMは申請済み承認待ち。実撮影のfirst-take比較reportはcomplete、詳細監査未完了。HaMeR環境/3D接続は未完了。HANDOFF先頭参照。端末向け案内には生URLを添える。
