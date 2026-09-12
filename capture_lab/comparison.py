@@ -68,14 +68,22 @@ class SharedFace:
     def __init__(self,settings,output,execution_mode='run'):
         self.s=settings;b=settings['observation_block'];stride=settings['observation_stride']
         self.filter=FaceFilter(b,stride);self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
+        if settings['head_pose_mode']=='depth3d':
+            from .head_pose3d import HeadPose3D
+            self.pose=HeadPose3D(settings['head_pitch_gain'])
+        self.pose_ms=0.
         self.distance=FaceDistance(b,stride,settings.get('face_distance_filter','stable'))
         self.gaze=None
         if settings.get('gaze_enabled'):
             from .gaze import IrisGaze
             self.gaze=IrisGaze(output,b,stride,settings['gaze_reference'],execution_mode=execution_mode)
-    def update(self,image,xy,scores,index,now):
+    def update(self,image,xy,scores,index,now,depth=None,depth_scores=None):
         p=packet_from_landmarks(xy,scores,index)
-        if self.pose:self.pose.update(xy,scores,p,image.shape[1::-1])
+        start=time.perf_counter()
+        if self.pose:
+            extra=dict(depth=depth,depth_scores=depth_scores) if self.s['head_pose_mode']=='depth3d' else {}
+            self.pose.update(xy,scores,p,image.shape[1::-1],**extra)
+        self.pose_ms=(time.perf_counter()-start)*1000
         if self.gaze:self.gaze.update(image,xy,scores,p,now)
         self.filter.update(p,now);self.distance.update(xy,scores,p,now)
         return p

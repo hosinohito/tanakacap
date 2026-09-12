@@ -1,4 +1,4 @@
-param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
+﻿param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet('rtmw-l-384','dwpose-l-384')][string]$Model = 'rtmw-l-384',
     [ValidateSet(1,3)][int]$ObservationBlock = 3,
     [ValidateSet(1,3)][int]$ObservationStride = 1,
@@ -17,6 +17,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet(1,2,3)][int]$DetectorInterval,
     [ValidateSet('yolox-m-human','yolox-tiny-human')][string]$DetectorModel,
     [ValidateSet('separate','body3d')][string]$FaceSource,
+    [ValidateSet('pnp','legacy','depth3d')][string]$HeadPoseMode,
     [switch]$NoGaze,
     [switch]$NoPersonDetector,
     [switch]$IntegerBodyPeaks)
@@ -62,6 +63,9 @@ try {
     if ($DetectorModel -notin @('yolox-m-human','yolox-tiny-human')) { throw 'Invalid detector_model' }
     if (-not $FaceSource) { $FaceSource=$taskGazeSettings.face_source }
     if (-not $FaceSource) { $FaceSource='separate' }
+    if (-not $HeadPoseMode) { $HeadPoseMode=$taskGazeSettings.head_pose_mode }
+    if (-not $HeadPoseMode) { $HeadPoseMode='pnp' }
+    if ($HeadPoseMode -eq 'depth3d' -and $FaceSource -ne 'body3d') { throw 'depth3d requires -FaceSource body3d' }
     if ($FaceSource -notin @('separate','body3d')) { throw 'Invalid face_source' }
     $taskGazeGain=4.0
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
@@ -92,7 +96,7 @@ try {
     if ($Diagnose -and -not $NoLog) { $taskExtra += '--landmarks' }
     if ($IntegerBodyPeaks) { $taskExtra += '--integer-body-peaks' }
     if (-not $NoGaze -and $taskGazeSettings.gaze_enabled -eq $true) { $taskExtra += '--gaze' }
-    if ($taskGazeSettings.head_pose_mode) { $taskExtra += @('--head-pose-mode',$taskGazeSettings.head_pose_mode) }
+    if ($HeadPoseMode) { $taskExtra += @('--head-pose-mode',$HeadPoseMode) }
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'head_pitch_gain') {
         $taskPitchGain=[double]$taskGazeSettings.head_pitch_gain
         if ([double]::IsNaN($taskPitchGain) -or $taskPitchGain -lt .5 -or $taskPitchGain -gt 3) { throw 'head_pitch_gain must be 0.5..3' }

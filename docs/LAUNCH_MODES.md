@@ -4,7 +4,8 @@
 
 | bat | 用途 | 動作記録 | 終了 |
 |---|---|---|---|
-| tanakacap-test.bat | 全部ON・RTMW3D-X顔共有試行 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test.bat | 全部ON・RTMW3D-X顔Zピッチ/口角試行 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
+| tanakacap-test-face-pnp.bat | 全部ON・同じRTMW3D-X顔でPnP対照 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
 | tanakacap-test-face-original.bat | 全部ON・従来RTMW-L顔方式 | 数値/診断ログあり | 1800フレーム、またはQ/Esc |
 | tanakacap-compare-face.bat | 顔比較動画の保存先を開く | なし・カメラ不使用 | Explorerで確認 |
 | tanakacap-head-only.bat | 頭専用auto | なし | 制限なし。アバターを閉じるかQ/Esc |
