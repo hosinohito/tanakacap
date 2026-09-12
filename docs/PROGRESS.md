@@ -1036,3 +1036,7 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 通常testを-DemoAvatarへ更新。最新Playerで保存済みhaolan-custom-browsのtcapを読み、--use-demo-shape-keysで既存TCキーを使用。生成処理を通さず、保存デモ原本のexe/assembly/tcapハッシュ一致を確認。通常UIの既存キー優先設定は変更なし。
 
 新30秒録画の保存XYをPnPで再処理、853観測/眉有効789、デモアバター再生をresults/brow-demo/demo.mp4へ保存。264 tests/Unityビルド成功。実写表示/カメラ起動/エージェント目視なし。閉眼コードは変更せず、raw/filtered左右とも最大1、0.9超raw24/20・filtered24/22。正解ラベルがないため捕捉率とは扱わない。提案は個人別EAR閾値、閉じ/開き別の時間処理、シェイプキー1入力の表示確認。README/SPEC/HANDOFF/AGENTS更新、眉品質はユーザー確認待ち。
+
+## 2026-09-13 — 眉強調の顔アップ動画を提供
+
+ユーザーの動画化指定。作成済みデモ用アバターの眉gain2再生（results/brow-demo/demo.mp4）からface-closeup.mp4を出力。640×480の顔領域を960×720へ拡大、約30秒。全デコード成功。目の閉じ処理は変更せず、実写表示/実カメラ/目視評価なし。動画はGit除外、既知の口寄せ制限はHANDOFF参照。
