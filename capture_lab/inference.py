@@ -63,8 +63,6 @@ def provider_summary(path):
                 cpu_ops[args.get('op_name', 'unknown')] += 1
     return {'node_events_by_provider': dict(counts), 'cpu_ops': dict(cpu_ops),
             'cuda_executed': counts['CUDAExecutionProvider'] > 0,
-            'tensorrt_executed': counts['TensorrtExecutionProvider'] > 0,
-            'gpu_executed': counts['CUDAExecutionProvider']+counts['TensorrtExecutionProvider'] > 0,
             'cpu_compute_ops': {op: count for op, count in cpu_ops.items()
                                 if op in {'Conv', 'FusedConv', 'Gemm', 'MatMul', 'Attention'}}}
 
@@ -94,12 +92,12 @@ class SimCCModel:
             from .onnx_variants import split_detector
             path,tail_path=split_detector(path)
             dynamic=False
-            if execution_mode not in ('graph-fp16','trt-fp32','trt-fp16'): execution_mode='graph'
+            if execution_mode != 'graph-fp16': execution_mode='graph'
         if execution_mode=='graph-fp16':
             from .onnx_variants import fp16_model
             path=fp16_model(path)
         self.session = ort.InferenceSession(str(path), sess_options=options,
-                                           providers=provider_options(execution_mode,dynamic,path))
+                                           providers=provider_options(execution_mode,dynamic))
         self.runner = GpuRunner(self.session,execution_mode,dynamic)
         self.tail_session=None
         if tail_path is not None:
@@ -111,9 +109,8 @@ class SimCCModel:
             self.tail_session.disable_fallback()
             self.runner=SplitDetectorRunner(self.session,self.tail_session,execution_mode)
         self.session.disable_fallback()
-        from .tensorrt_backend import require_provider
-        require_provider(self.session,execution_mode)
-        self.tensorrt_required=execution_mode in ('trt-fp32','trt-fp16')
+        from .gpu_runner import require_provider
+        require_provider(self.session)
         shape = self.session.get_inputs()[0].shape
         iw, ih = self.info['input_wh']
         if len(shape) != 4 or shape[1:] != [3, ih, iw] or (isinstance(shape[0], int) and shape[0] != 1):
@@ -170,10 +167,8 @@ class SimCCModel:
             report['tail_profile']=str(tail_path)
             if report['tail_execution']['cpu_compute_ops']: raise RuntimeError('NMS tail core compute on CPU')
         # CPU shape/control nodes are reported, not hidden. Compute must execute on CUDA.
-        if self.calls and not report['gpu_executed']:
+        if self.calls and not report['cuda_executed']:
             raise RuntimeError(f'No measured CUDA execution in {path}')
-        if self.calls and self.tensorrt_required and not report['tensorrt_executed']:
-            raise RuntimeError('TensorRT requested but no TensorRT execution measured')
         if report['cpu_compute_ops']:
             raise RuntimeError(f'Core compute fell back to CPU: {report["cpu_compute_ops"]}')
         return report

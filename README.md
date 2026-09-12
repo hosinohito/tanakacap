@@ -342,7 +342,7 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 追加高速化F：通常ON（`detector_graph=true`）。`-DetectorGraph`で明示有効、`-NoDetectorGraph`で解除。同じ人物検出の固定部分をGraph化する。全編比較後にユーザーが採用を指定。[F〜Iの進捗・測定条件](docs/FURTHER_OPTIMIZATION.md)。
 
-FP16比較：`run-avatar-lab.ps1 -InferenceMode graph-fp16`でCUDAの混合精度へ切替、`-InferenceMode graph`で通常FP32へ戻す。設定キーは`inference_mode`。既存ONNX Runtime同梱の変換器を使い、モデル原本を残して`models`内へ派生ONNXを生成する。初回生成は通常起動より時間がかかる。入出力とSoftmax/一部集約はFP32、主な畳み込み等はFP16。頭専用モードは対象外。追加Python依存は不要。比較動画の保存先は`tanakacap-compare-fp16.bat`から開ける。[比較条件・結果](docs/PRECISION_COMPARISON.md)。TensorRTの試験接続は契約条件の確認待ちで、通常セットアップには含めない。
+FP16比較：`run-avatar-lab.ps1 -InferenceMode graph-fp16`でCUDAの混合精度へ切替、`-InferenceMode graph`で通常FP32へ戻す。設定キーは`inference_mode`。既存ONNX Runtime同梱の変換器を使い、モデル原本を残して`models`内へ派生ONNXを生成する。初回生成は通常起動より時間がかかる。入出力とSoftmax/一部集約はFP32、主な畳み込み等はFP16。頭専用モードは対象外。追加Python依存は不要。比較動画の保存先は`tanakacap-compare-fp16.bat`から開ける。[比較条件・結果](docs/PRECISION_COMPARISON.md)。TensorRTはユーザー指定で不採用。試験接続・追加依存は削除済み。CUDA FP16はTensorRTを必要としない。
 
 前処理は`preprocess_mode=crop`（切り出し後のRGB化）を通常採用。`-PreprocessMode legacy`で以前へ戻せる。入力テンソルは同一。[計測](docs/FURTHER_OPTIMIZATION.md)。
 

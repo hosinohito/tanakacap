@@ -477,7 +477,7 @@ def main():
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
             sub.add_argument('--head-only',action='store_true',help='Direct head pose with automatic CUDA head region detection; no expression/gaze/body networks')
             sub.add_argument('--head-roi-mode', choices=('auto','fixed'), default='auto', help='Head-only: auto acquisition/loss/recovery, or legacy fixed crop')
-            sub.add_argument('--inference-mode',choices=('run','binding','graph','graph-fp16','trt-fp32','trt-fp16'),default='run',help='CUDA run/binding/graph, mixed graph-fp16, or optional standard TensorRT FP32/FP16')
+            sub.add_argument('--inference-mode',choices=('run','binding','graph','graph-fp16'),default='run',help='CUDA run/binding/graph, mixed graph-fp16, or optional standard TensorRT FP32/FP16')
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
             sub.add_argument('--face-source', choices=('separate','body3d'), default='separate', help='Use the existing 2D face network or reuse RTMW3D XY for face/head/gaze')

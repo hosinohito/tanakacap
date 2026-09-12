@@ -1,6 +1,6 @@
 # 作業開始時の指示
 
-最新指定（2026-09-13）：Fを通常ONへ採用。CUDA FP16は可逆実装・速度/動画比較、通常精度はgraph/FP32を維持。TensorRTはCUDAと同条件ならという条件付き。10.16.1実wheel契約がWeb版と異なり実行確認待ち、docs/PRECISION_COMPARISON.mdとHANDOFF先頭を参照。A一括保留の旧記述より優先。E/揺れ物は触らない。
+最新指定（2026-09-13）：Fを通常ONへ採用。CUDA FP16は可逆実装・速度/動画比較、通常精度はgraph/FP32を維持。TensorRTは契約条件の説明後、ユーザーが「使わない」と明示し不採用。接続/追加依存を削除。再開を提案せず、docs/PRECISION_COMPARISON.mdとHANDOFF先頭を参照。A一括保留の旧記述より優先。E/揺れ物は触らない。
 
 最新（2026-09-13）：Fの通常OFFはユーザー指定ではなく初回b3d583fでのエージェント判断だったと履歴確認。FをOFFにするユーザー発言があったと扱わない。ユーザー指定でF-OFF/ON全編動画比較を追加、docs/FURTHER_OPTIMIZATION.mdとHANDOFF先頭参照。
 

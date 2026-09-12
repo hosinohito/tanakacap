@@ -9,7 +9,7 @@ import onnxruntime as ort
 
 class GpuRunner:
     def __init__(self, session, mode='run', dynamic_output=False):
-        if mode not in ('run','binding','graph','graph-fp16','trt-fp32','trt-fp16'): raise ValueError('Unknown inference mode')
+        if mode not in ('run','binding','graph','graph-fp16'): raise ValueError('Unknown inference mode')
         self.session = session
         self.mode = 'binding' if dynamic_output and mode == 'graph' else mode
         self.dynamic = dynamic_output
@@ -72,9 +72,12 @@ class SplitDetectorRunner:
         return self.binding.copy_outputs_to_cpu()
 
 
-def provider_options(mode, dynamic_output=False, model_path=None):
-    if mode in ('trt-fp32','trt-fp16'):
-        from .tensorrt_backend import providers
-        return providers(mode,model_path)
+def provider_options(mode, dynamic_output=False):
     return [('CUDAExecutionProvider', {'device_id':0,
         'enable_cuda_graph': '1' if mode in ('graph','graph-fp16') and not dynamic_output else '0'})]
+
+
+def require_provider(session):
+    session.disable_fallback()
+    if session.get_providers()[0] != 'CUDAExecutionProvider':
+        raise RuntimeError('CUDA initialization failed; refusing silent fallback')

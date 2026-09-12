@@ -1,3 +1,0 @@
-# Optional standard TensorRT, matching ORT's nvinfer_10 ABI and existing CUDA 13.
-# This is not TensorRT for RTX. See docs/DISTRIBUTION_LICENSES.md.
-tensorrt-cu13==10.16.1.11

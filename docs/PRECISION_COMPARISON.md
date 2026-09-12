@@ -49,10 +49,14 @@ FP16は[公式精度ガイド](https://docs.nvidia.com/deeplearning/tensorrt/lat
 
 FP16は出力先を別名にして`--inference-mode graph-fp16`へ置換する。再実行時は既存出力先を使わない。
 
-## TensorRTの条件確認
+## TensorRTは不採用
+
+条件説明後、ユーザーが「使わない」と明示。専用コード・選択肢・requirementsファイル・開発venvの追加3パッケージを削除した。CUDA FP16は独立して継続する。以下は不採用に至った契約確認の記録であり、実行確認待ちではない。
+
+### 契約確認の経緯
 
 通常TensorRT 10.16.1.11/cu13を候補にした。実ORT1.30のprovider DLLは`nvinfer_10.dll`/`nvonnxparser_10.dll`/CUDA13を要求する。RTX版ではない。開発venvへ3パッケージを導入して版と実契約を確認したが、モデル実行/engine構築は行っていない。
 
-実物は`.venv/Lib/site-packages/tensorrt_cu13_libs-10.16.1.11.dist-info/LICENSE.txt`。Web最新のSDK契約と異なり、§12.2に1年自動更新/更新終了、§2.1(ix)に競合技術開発制限、§12.1に`libnvinfer`/`libnvinfer_plugin`の再配布対象記述がある。全DLL配布を許す現在Web本文だけでこのwheelを配布可能としない。既存CUDAと同条件とは未確定でユーザーへ確認中。SDK本体の配布や実行を承認済みと扱わない。
+実物は`.venv/Lib/site-packages/tensorrt_cu13_libs-10.16.1.11.dist-info/LICENSE.txt`。Web最新のSDK契約と異なり、§12.2に1年自動更新/更新終了、§2.1(ix)に競合技術開発制限、§12.1に`libnvinfer`/`libnvinfer_plugin`の再配布対象記述がある。全DLL配布を許す現在Web本文だけでこのwheelを配布可能としない。既存CUDAと同条件とは未確定だったためユーザーへ確認し、不採用の回答を得た。
 
-`trt-fp32`/`trt-fp16`接続は準備段階、未検証。CUDAを後段に維持し、要求TRT providerが有効でない場合は停止、profileではTRTイベントを要求する。engine cacheはモデルSHA/精度/SDK/ORT/GPU UUID/ドライバー別。通常セットアップ依存には入れない。`requirements-tensorrt.txt`は候補版の記録。初回構築時間・対応演算・メモリ・速度・品質はまだ不明。
+準備していた接続/キャッシュ実装は未実行のまま削除。過去のコードはGit履歴にのみ残る。TensorRTの速度・品質は測定していない。実契約の棚卸し記録は削除せず保持する。

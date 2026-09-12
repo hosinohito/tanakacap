@@ -936,3 +936,9 @@ Fの通常OFFはユーザーの指示ではなく、初回b3d583fでエージェ
 同一Playerで単独2本/左右比較/顔拡大の計4動画をresults/avatar-videos/cuda-precisionへ生成。各185.03秒/30fps/5551frame、全編decode成功。左FP32/右FP16、目視はユーザー。desktop compare-fp16/test-fp16を追加し既存起動bat更新。232 tests、PowerShell構文検査成功。Unity変更/再ビルドなし。
 
 TensorRTは「CUDAと同条件なら」という条件付き指定。通常版10.16.1.11/cu13をORT実DLLのABIに合わせ開発venvへ導入したが、実wheel契約とWeb版の相違（1年自動更新/更新終了、競合制限、狭い再配布対象）を確認。ユーザーへasyncで確認し実行は保留、エンジン構築/推論/速度比較は未実施。trt-fp32/trt-fp16接続は未検証の準備段階で通常依存に含めない。CUDA FP16はTRT不使用。追加棚卸しresults/distribution-audit-precision-20260913は25packages/51通知/19ONNX。README/SPEC0.66/HANDOFF/ライセンス/精度形式比較を更新。次はFP16動画評価とTensorRT条件の回答。実写/動画/重みをGitへ入れず、外部pushなし。
+
+## 2026-09-13 — TensorRT不採用確定・接続と依存の撤去
+
+ユーザーが契約条件の質問に「使わない」と回答。TensorRT接続モジュール/専用選択肢/requirements-tensorrt.txtを削除。開発venvからtensorrt-cu13/bindings/libsの3パッケージをアンインストール。最初のuvはキャッシュ権限で失敗、承認された通常権限で削除成功。CUDAのprovider検証へ整理し、F/FP16/比較動画を維持。ORT wheel内の未使用provider DLLはパッケージを壊さず維持するが実行経路から選択不可。TensorRTモデルは一度も実行していない。
+
+232 tests、既存録画60観測の全機能CUDA FP16実行が成功。results/no-tensorrt-smoke.logとresults/20260912T203105-605551Z-rtmw3d-x-384。削除後の棚卸しresults/distribution-audit-no-tensorrt-20260913は22packages/48通知/19ONNX。README/SPEC0.67/AGENTS/HANDOFF/比較/ライセンス文書へ不採用を明記し、確認待ちを終了。通常はF有効・graph/FP32、FP16の通常採用は未決定。実カメラ不使用、揺れ物は変更なし。

@@ -87,6 +87,6 @@ if __name__ == '__main__':
     parser.add_argument('--take', type=Path, default=ROOT/'results/comparison-takes/20260911T235327-031115Z')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--name', required=True)
-    parser.add_argument('--mode', choices=('graph','graph-fp16','trt-fp32','trt-fp16'), required=True)
+    parser.add_argument('--mode', choices=('graph','graph-fp16'), required=True)
     parser.add_argument('--limit', type=int)
     run(parser.parse_args())
