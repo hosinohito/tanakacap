@@ -1046,3 +1046,9 @@ results/avatar-videos/head-followへfixed/adaptive/side-by-side/face-closeupの4
 比較動画指定により同じ新録画・デモtcap・最新Playerでbrow-1x/brow-2xを作成。tools/prepare_brow_gain_comparison.pyで853packetの眉4値以外と時刻の一致を検査。gain2は既存の眉動画の値とも一致。初回は欠測packetの眉キー欠落を検査側で扱えず中断し修正、失敗出力はbrow-gain-incompleteへ保存。比較動画はresults/avatar-videos/brow-gain、顔アップは左従来/右2倍。実カメラ/実写表示/エージェント目視なし。
 
 途中で眉の左右独立について質問。検出は左右内外4値で独立だが、デモ表示は共通MMD眉キーへ集約されて独立ではないと説明。左右別キーがある場合の汎用マッピングは対応済み、デモ眉の左右分割キーは未実装。今回追加していない。
+
+## 2026-09-13 — デモ/独自モードの眉を左右分割、既存キーの左右探索を改善
+
+ユーザー指定でBrowShapeSplitを追加。眼骨の左右軸/中点を基準に元の眉モーフ差分を左右へ分配し、頂点/法線/接線と元のフレーム重みを利用。デモ/auto-customの実行時コピーにUp/Down/Sad/Angry左右キーを生成。既存の片側キーを優先し、共通browInnerUpは独自モードで分割可能。既存キーモードは独自生成せず、標準左右名と上左/左上/上_L等を探索して共通fallbackを置換。左右共通しかなければ共通表示が残る。左右独立がある場合の共通困る/怒りの重畳を抑止。目閉じや眉gain2は変更なし。
+
+Editor検査で片眉の上下、反対側weightゼロ、合成メッシュ反対側変位ゼロ、生成原本不変、existingのキー数不変を確認。最終ビルドと264 Python tests成功。実デモで--check-brow-sides成功、同じ853packetの30秒再生をresults/brow-independent/demo.mp4へ保存し全デコード成功。保存済みデモexe/assembly/tcapハッシュ一致。実写画面表示/実カメラ/動画目視なし。材料不明/眼骨なし/読取不可では生成できない。既知のデモ口寄せ未マップは別残件。README/SPEC/HANDOFF/AGENTS更新。

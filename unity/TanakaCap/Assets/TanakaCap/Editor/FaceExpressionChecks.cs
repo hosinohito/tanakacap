@@ -58,6 +58,26 @@ namespace TanakaCap.Editor {
      for(int i=0;i<keys.Length;i++)Require(Mathf.Abs(renderer.GetBlendShapeWeight(perfect.GetBlendShapeIndex(keys[i]))-reversed[i])<.001f,"ARKit mirrored transfer / no stale weights: "+keys[i]);
      Debug.Log("TANAKACAP_ARKIT_ASYMMETRY_OK left/right shift and opposite smile/frown");
     }finally{UnityEngine.Object.DestroyImmediate(perfect);}
+    var browMesh=new Mesh();browMesh.vertices=new[]{Vector3.left*.1f,Vector3.right*.1f,Vector3.zero};browMesh.triangles=new[]{0,1,2};
+    var eyeL=new GameObject("left-eye");var eyeR=new GameObject("right-eye");Mesh split=null;
+    try{
+     eyeL.transform.position=Vector3.left*.05f;eyeR.transform.position=Vector3.right*.05f;
+     foreach(string key in new[]{"上","下","困る","怒り"})browMesh.AddBlendShapeFrame(key,100,new[]{Vector3.up*.01f,Vector3.up*.01f,Vector3.zero},null,null);
+     renderer.sharedMesh=browMesh;
+     BrowShapeSplit.Generate(new[]{renderer},eyeL.transform,eyeR.transform,r=>{if(split==null)split=UnityEngine.Object.Instantiate(browMesh);r.sharedMesh=split;return split;});
+     var leftDelta=new Vector3[3];var rightDelta=new Vector3[3];
+     split.GetBlendShapeFrameVertices(split.GetBlendShapeIndex("TC_BrowLeftUp"),0,leftDelta,null,null);
+     split.GetBlendShapeFrameVertices(split.GetBlendShapeIndex("TC_BrowRightUp"),0,rightDelta,null,null);
+     Require(leftDelta[0].y>.009f&&leftDelta[1]==Vector3.zero&&rightDelta[0]==Vector3.zero&&rightDelta[1].y>.009f,"Brow geometry must not deform the opposite side");
+     new FaceExpressions(root.transform,new[]{renderer},null,true).CheckBrowSides();
+     Require(browMesh.blendShapeCount==4,"Original eyebrow mesh must not change");
+     renderer.sharedMesh=browMesh;
+     foreach(string key in new[]{"上左","上右","下左","下右"})browMesh.AddBlendShapeFrame(key,100,new[]{Vector3.up*.01f,Vector3.zero,Vector3.zero},null,null);
+     int before=browMesh.blendShapeCount;
+     new FaceExpressions(root.transform,new[]{renderer}).CheckBrowSides();
+     Require(browMesh.blendShapeCount==before,"Existing brow mode must not generate keys");
+     Debug.Log("TANAKACAP_BROW_SPLIT_GEOMETRY_OK");
+    }finally{if(split)UnityEngine.Object.DestroyImmediate(split);UnityEngine.Object.DestroyImmediate(browMesh);UnityEngine.Object.DestroyImmediate(eyeL);UnityEngine.Object.DestroyImmediate(eyeR);}
     Debug.Log("TANAKACAP_EXPRESSION_CHECKS_OK priority/empty/descriptor/grouping/gaze/no-generated-keys");
    }finally{UnityEngine.Object.DestroyImmediate(root);UnityEngine.Object.DestroyImmediate(mesh);}
   }
