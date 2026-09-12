@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — FのOFF/ON全編比較動画完成
+
+Fの通常OFFはユーザー指定ではなく、初回実装b3d583fで改善幅が小さいためエージェントが決めたと履歴確認。ユーザーはF〜I実装、Hのみ独立コミット/遅ければrevertを指定していた。OFF指定の発言があったと扱わない。
+
+ユーザーの動画要求を受け、既存F動画はなかったため新規作成。tools/compare_detector_graph.pyで既存録画全5,187観測をF-OFF/ONそれぞれ独立ROI追跡・推論・補正へ通した。通常設定body3d/pnp・3/1・G/I・口角0を共通使用。全観測でROI/送信packet完全一致。有効観測は両側顔5145、目線4951、胴体5183、左腕4571、右腕4558。無追跡だけの一致ではない。results/comparisons/detector-graph-f/report.json、各replay/framesを保持。
+
+同一PlayerでF-OFF.mp4 / F-ON.mp4 / side-by-side.mp4をresults/avatar-videos/detector-graph-fへ生成。各185.03秒・30fps・5551frame、全3本decode成功。左右比較は左OFF/右ON、デスクトップtanakacap-compare-f.batで保存先を開く。これは表示品質の同期再生で、推論速度・実遅延の比較ではない。目視はユーザー。実カメラ/目視/Unity変更なし、通常Fの設定はまだ変更していない。詳細docs/FURTHER_OPTIMIZATION.md。次は比較評価・F通常採用の判断。口の推定Zなし試行等は下記を維持。
+
 ## 2026-09-13 — 口の推定Zなし試行・比較動画、配布ライセンス整理
 
 通常設定をbody3d/pnpへ変更。現行は口角もZを使用していたため、既存HeadPoseの固定テンプレート/PnP正面化を再利用して推定Zを口輪郭から外す。頭ピッチは維持、全身のモデルZは引き続き使用。pnp_depthmouthで直前のZ口輪郭へ可逆。時間処理3/1、口角追加強調0、他部位・揺れ物は不変。実装コードを重ねず設定で既存経路を選択した。
