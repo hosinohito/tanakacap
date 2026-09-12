@@ -644,3 +644,14 @@
 - DINO全編はresults/comparisons/first-take-sam-dinov3へ処理中、ログresults/sam-setup/dinov3-full.log。開始10:32頃、約0.53秒/フレーム見込み。実行セッション27698（次の会話ではPID/ログで実行継続を確認）。途中のGPU動画検証との負荷重複あり。
 - ViT-Hはassets-source/sam-3d-body-vithに設定のみ到着、重み待ち。PythonHFトークンなし。直接URLをユーザー案内済み。受領後チェックポイント監査→推論→共通補正→3方式全編動画へ進む。
 
+
+
+## 2026-09-12 — ViT-H受領、2モデル全編推論と自動動画化を開始
+
+- ViT-H重みはC:/Users/LLMTEST/Downloads/model (1).ckptに存在。原本を残しassets-source/sam-3d-body-vith/model.ckptへコピー。設定も受領済み。追加ダウンロード待ちではない。
+- ViT-Hの20フレームCUDA推論成功（60backbone calls）、投影最大差0.000133px未満。共通MHR資産はDINOv3受領済みassets/mhr_model.ptを明示使用。docs/BODY_MODEL_COMPARISON.md。
+- DINO全編セッション27698、ViT-H全編8766で処理中。出力はresults/comparisons/first-take-sam-dinov3 と first-take-sam-vith。ログresults/sam-setup/dinov3-full.log、vith-full.log。両モデル同時のため時間分布を単独性能にしない。
+- tools/finish_body_comparison.pyをセッション97716で起動。両方全5187frame成功後、自動でresults/comparisons/body-three-modelsへ共通補正、results/avatar-videos/body-three-modelsへ個別3本と横並びを生成。ログresults/sam-setup/finish-body.log。完了後に実画像の目視確認・集計・文書更新が必要。今は全編動画完成ではない。
+- 状況確認：.venv/Scripts/python.exe tools/body_comparison_status.py。セッションが引き継がれない時は既存プロセスとログを調べ、重複推論を起動しない。
+- デスクトップtanakacap-compare-body.batからrun-body-comparison.ps1を実行可能。実行中のrawがあれば重複開始せず表示。完成済みrawを再利用し、最終的に動画フォルダーを開く。既存test/capture/analyze/hamer batも更新済み。
+

@@ -1,6 +1,6 @@
 # RTMW3D-X / SAM DINOv3 / SAM ViT-H の身体比較
 
-2026-09-12。ユーザーが上位3候補の実装完了とアバター動画化を指定。現在は接続・短い結合検証まで成功し、DINOv3全編推論中。ViT-Hは設定ファイル受領、重み待ち。全編3方式動画の完成ではない。
+2026-09-12。ユーザーが上位3候補の実装完了とアバター動画化を指定。現在は両モデルの資産受領・CUDA推論検証・接続が完了し、2モデルの全編推論中。完了後は自動で3方式動画化する。全編3方式動画の完成ではない。
 
 ## 一次比較で固定するもの
 
@@ -47,3 +47,11 @@ ViT-H受領先：assets-source/sam-3d-body-vith。DINOv3と同じファイル名
 - https://huggingface.co/facebook/sam-3d-body-vith
 - 公式関節定義：assets-source/sam-3d-body-code/sam_3d_body/metadata/mhr70.py
 - 公式単位/軸：models/heads/mhr_head.py、models/heads/camera_head.py
+
+## ViT-H受領と全編ジョブ
+
+C:/Users/LLMTEST/Downloads/model (1).ckpt（1,691,205,237 bytes）を専用フォルダーへコピー。SHA256 `3b1cb897f4bbd977bf81cbb0b30780a9582681ac642ee112865790ceb4d66056`。設定1486 bytes、SHA256 `d2e772e108b8727e9367681845fecb32806144acd0debc20868d100689470570`。原本は削除していない。
+
+両候補に同じ受領済みMHR TorchScript資産を指定し、身体表現を共通化した。ViT-HリポジトリのMHRファイルとハッシュ一致を確認したという意味ではない。ViT-Hチェックポイントの不明な欠落/余剰キーなし、20実フレームで60回のCUDAバックボーン実行と有限3D出力を確認。投影最大差0.000133px未満（results/sam-setup/vith-smoke-20）。DINO全編と同時の中央値約797msは単独性能に使わない。
+
+両モデルの全編は同時に処理中。tools/finish_body_comparison.py が両方の完了と5187frameを確認後、共通補正→3方式動画生成を行う。失敗・不足フレームは完成扱いにしない。tools/body_comparison_status.py は読み取り専用の進捗表示。再実行用はrun-body-comparison.ps1、デスクトップtanakacap-compare-body.bat。新たなカメラ録画は行わない。

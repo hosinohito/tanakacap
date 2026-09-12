@@ -22,3 +22,9 @@ $taskHamerScript = Join-Path $taskRoot 'run-hamer-comparison.ps1'
 $taskHamerContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskHamerScript`"`r`npause`r`n"
 [IO.File]::WriteAllText($taskHamerTarget,$taskHamerContents,[Text.Encoding]::Default)
 Write-Output $taskHamerTarget
+
+$taskBodyTarget = Join-Path $taskDesktop 'tanakacap-compare-body.bat'
+$taskBodyScript = Join-Path $taskRoot 'run-body-comparison.ps1'
+$taskBodyContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskBodyScript`"`r`npause`r`n"
+[IO.File]::WriteAllText($taskBodyTarget,$taskBodyContents,[Text.Encoding]::Default)
+Write-Output $taskBodyTarget
