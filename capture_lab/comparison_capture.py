@@ -23,22 +23,7 @@ STAGES=[
  ('loss_return',15,'片手ずつ画面外へ・戻す','最後に顔を手で一瞬隠して戻してください。'),
  ('end_still',10,'最後に正面で静止','姿勢を戻して、そのまま終了を待ってください。')]
 
-FACE_STAGES=[
- ('neutral',12,'正面で静止',''),
- ('pitch_down',15,'下を向いて止まる → 正面（2回）',''),
- ('pitch_up',15,'上を向いて止まる → 正面（2回）',''),
- ('yaw',18,'左を向いて止まる → 正面 → 右 → 正面',''),
- ('roll',15,'顔は正面のまま、頭を左右に傾ける',''),
- ('quick_head',12,'小さく素早くうなずく・左右を向く → 静止',''),
- ('distance',18,'顔は正面のまま、近づいて止まる → 戻る',''),
- ('blink_gaze',18,'まばたき → 頭を固定して目線だけ左右・上下',''),
- ('brows',15,'眉を上げる → 戻す → 眉を寄せる',''),
- ('mouth_shapes',20,'あ・い・う・え・お（各形で止まる）',''),
- ('mouth_corners',18,'小さく笑う → 大きく笑う → への字口',''),
- ('mouth_shift',15,'口を閉じて左右に寄せる → 片側の口角を上げる',''),
- ('pitch_expression',20,'下向きで口を開閉 → 上向きで口を開閉',''),
- ('face_loss',12,'手で顔を2秒隠す → 戻して静止（2回）',''),
- ('end_still',12,'自然な表情で正面静止','')]
+FACE_STAGES=[('free',30,'録画中','')]
 PROFILES={'body':STAGES,'face-head':FACE_STAGES}
 
 def stage_at(seconds,stages=None):
@@ -88,7 +73,7 @@ def record(camera_index=1,profile='body'):
     title=tk.StringVar(value='カメラを準備しています');hint=tk.StringVar(value='開始ボタンを押すまでは映像を保存しません。音声は録音しません。')
     tk.Label(window,textvariable=title,font=('Yu Gothic UI',21,'bold')).pack(pady=8)
     tk.Label(window,textvariable=hint,font=('Yu Gothic UI',13),wraplength=930).pack()
-    preview=tk.Label(window,text='カメラ映像は非表示です。撮影ガイドと録画は利用できます。' if not camera_display.allowed() else '');preview.pack(pady=5)
+    preview=tk.Label(window,text='カメラ映像は非表示です。' if not camera_display.allowed() else '');preview.pack(pady=5)
     status=tk.StringVar();tk.Label(window,textvariable=status,wraplength=930).pack()
     take=None;started=None;countdown=None;last_sequence=-1;camera=None
     def finish(result='interrupted',error=None):
@@ -105,12 +90,12 @@ def record(camera_index=1,profile='body'):
         countdown=time.perf_counter()+3;button.config(state='disabled')
     def close():
         finish();window.destroy()
-    button=tk.Button(window,text=f'撮影開始（約{duration/60:.1f}分）',font=('Yu Gothic UI',15),command=start);button.pack(pady=10)
+    button=tk.Button(window,text=f'撮影開始（{duration}秒）',font=('Yu Gothic UI',15),command=start);button.pack(pady=10)
     tk.Button(window,text='中断',command=lambda:finish()).pack()
     window.protocol('WM_DELETE_WINDOW',close)
     try:
         camera=Camera(camera_index);camera.__enter__()
-        title.set('顔・頭・表情の撮影：普段の着席位置へ' if profile=='face-head' else 'おなか〜頭、左右の手が映る位置へ')
+        title.set('撮影待機' if profile=='face-head' else 'おなか〜頭、左右の手が映る位置へ')
         def tick():
             nonlocal take,started,countdown,last_sequence
             try:

@@ -10,11 +10,12 @@ def test_face_capture_profile_timeline_and_metadata(tmp_path):
         assert stage_at(elapsed,FACE_STAGES)[0]==key
         elapsed+=duration
     assert stage_at(elapsed,FACE_STAGES) is None
+    assert elapsed==30 and FACE_STAGES==[('free',30,'録画中','')]
     writer=TakeWriter(tmp_path/'face',[64,48],30,{}, {},'face-head')
-    writer.append(np.zeros((48,64,3),np.uint8),0.,1,'neutral')
+    writer.append(np.zeros((48,64,3),np.uint8),0.,1,'free')
     writer.finish()
     meta=json.loads((tmp_path/'face'/'take.json').read_text(encoding='utf-8'))
-    assert meta['profile']=='face-head' and meta['stages'][-1][0]=='end_still'
+    assert meta['profile']=='face-head' and meta['stages'][-1][0]=='free'
     assert meta['status']=='complete' and meta['audio'] is False
 from capture_lab.comparison import load_take,images,SharedFace,clean,fingerprint
 from test_head_pose import projected
