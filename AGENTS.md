@@ -34,6 +34,8 @@
 
 ## 引き継ぎを維持するルール
 
+- 最新（2026-09-12）：SAM承認待ち。HaMeR全撮影CUDA推論と指だけの既存補正比較完了、ライブ接続は未実装。docs/HAMER_COMPARISON.md/HANDOFF先頭参照。既定モデル/顔/腕/掌は維持。有効率を正解率と扱わない。
+
 - 最新（2026-09-12）：MANO_RIGHT.pkl受領、assets-source/manoへ配置。SAMは申請済み承認待ち。実撮影のfirst-take比較reportはcomplete、詳細監査未完了。HaMeR環境/3D接続は未完了。HANDOFF先頭参照。端末向け案内には生URLを添える。
 
 - 最新（2026-09-12）：ユーザー撮影待ち。tanakacap-compare-capture.batで日本語ガイド・HuffYUV可逆録画、analyzeで共通入力/補正比較。実装済みは現行＋DWPose/RTMW-Xの2D対照。SAM/HaMeRは取得待ち・生出力ワーカー未検証・3D共通補正接続未完了。docs/COMPARISON_CAPTURE.mdを参照し全候補完成と扱わない。
