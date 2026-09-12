@@ -94,3 +94,7 @@ Write-Output $taskFacePnpTarget
 $taskThirtyTarget = Join-Path $taskDesktop 'tanakacap-test-30fps.bat'
 [IO.File]::WriteAllText($taskThirtyTarget,$taskContents.Replace(' -Diagnose',' -RenderFps 30 -Diagnose'),[Text.Encoding]::Default)
 Write-Output $taskThirtyTarget
+
+$taskHiddenTarget = Join-Path $taskDesktop 'tanakacap-test-no-preview.bat'
+[IO.File]::WriteAllText($taskHiddenTarget,$taskContents.Replace(' -Diagnose',' -NoPreview -Diagnose'),[Text.Encoding]::Default)
+Write-Output $taskHiddenTarget

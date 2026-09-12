@@ -11,8 +11,14 @@ namespace TanakaCap
     {
         public SpoutResources resources;
         public Shader edgeShader;
-        public int OutputWidth { get; private set; }=1280;
-        public int OutputHeight { get; private set; }=720;
+        public Shader previewShader;
+        public int OutputWidth { get; private set; }=1920;
+        public int OutputHeight { get; private set; }=1080;
+        public bool PreviewVisible { get; private set; }=true;
+        public bool SharedPreview { get; private set; }=true;
+        Camera previewCamera;
+        Material previewMaterial;
+        int previewMask;
         public double RenderSubmitMilliseconds { get; private set; }
         Camera outputCamera;
         RenderTexture texture;
@@ -24,16 +30,33 @@ namespace TanakaCap
         void Start()
         {
             EdgeAntialiasing.Active=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-edge-aa")<0;
-            var previewAA=gameObject.AddComponent<EdgeAntialiasing>();
-            previewAA.shader=edgeShader;
             var startupArgs=Environment.GetCommandLineArgs();
+            SharedPreview=Array.IndexOf(startupArgs,"--legacy-preview")<0;
+            PreviewVisible=Array.IndexOf(startupArgs,"--no-preview")<0;
             int heightIndex=Array.IndexOf(startupArgs,"--output-height");
             if(heightIndex>=0)
             {
-                if(heightIndex+1>=startupArgs.Length || !int.TryParse(startupArgs[heightIndex+1],out int height) || (height!=720 && height!=1080))
-                    throw new ArgumentException("--output-height must be 720 or 1080");
+                if(heightIndex+1>=startupArgs.Length || !int.TryParse(startupArgs[heightIndex+1],out int height) || height<64 || height>4096)
+                    throw new ArgumentException("--output-height must be 64..4096");
                 OutputHeight=height;OutputWidth=height*16/9;
             }
+            int widthIndex=Array.IndexOf(startupArgs,"--output-width");
+            if(widthIndex>=0)
+            {
+                if(widthIndex+1>=startupArgs.Length || !int.TryParse(startupArgs[widthIndex+1],out int width) || width<64 || width>4096)
+                    throw new ArgumentException("--output-width must be 64..4096");
+                OutputWidth=width;
+            }
+            if(OutputWidth>4096 || OutputWidth>SystemInfo.maxTextureSize || OutputHeight>SystemInfo.maxTextureSize)
+                throw new ArgumentException("Output dimensions exceed supported texture size");
+            previewCamera=GetComponent<Camera>();
+            previewMask=previewCamera.cullingMask;
+            if(SharedPreview)
+            {
+                if(!previewShader || !previewShader.isSupported)throw new Exception("Preview shader unavailable");
+                previewMaterial=new Material(previewShader){hideFlags=HideFlags.HideAndDontSave};
+            }
+            else gameObject.AddComponent<EdgeAntialiasing>().shader=edgeShader;
             texture=new RenderTexture(OutputWidth,OutputHeight,24,RenderTextureFormat.ARGB32);
             texture.name="TanakaCap RGBA";
             texture.antiAliasing=4;
@@ -49,7 +72,9 @@ namespace TanakaCap
             outputCamera.allowHDR=false;
             outputCamera.allowMSAA=true;
             outputCamera.targetTexture=texture;
+            outputCamera.aspect=(float)OutputWidth/OutputHeight;
             outputCamera.enabled=false;
+            previewCamera.cullingMask=SharedPreview || !PreviewVisible ? 0 : previewMask;
             outputCamera.gameObject.AddComponent<EdgeAntialiasing>().shader=edgeShader;
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"--performance-log")>=0)gameObject.AddComponent<PerformanceProbe>();
             sender=outputCamera.gameObject.AddComponent<SpoutSender>();
@@ -59,6 +84,7 @@ namespace TanakaCap
             sender.sourceTexture=texture;
             sender.keepAlpha=true;
             Debug.Log("TANAKACAP_ALPHA_OUTPUT_READY "+OutputWidth+"x"+OutputHeight+" RGBA Spout=TanakaCap edgeAA="+EdgeAntialiasing.Active);
+            Debug.Log("TANAKACAP_PREVIEW shared="+SharedPreview+" visible="+PreviewVisible);
             Application.wantsToQuit+=WantsToQuit;
             var args=Environment.GetCommandLineArgs();
             int check=Array.IndexOf(args,"--aa-check");
@@ -70,12 +96,29 @@ namespace TanakaCap
         {
             // Explicit offscreen rendering also runs when the preview is hidden.
             if(Input.GetKeyDown(KeyCode.F7))EdgeAntialiasing.Active=!EdgeAntialiasing.Active;
+            if(Input.GetKeyDown(KeyCode.F8))
+            {
+                PreviewVisible=!PreviewVisible;
+                previewCamera.cullingMask=SharedPreview || !PreviewVisible ? 0 : previewMask;
+            }
             if(outputCamera && texture && !quitting)
             {
                 var start=System.Diagnostics.Stopwatch.GetTimestamp();
                 outputCamera.Render();
                 RenderSubmitMilliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-start)*1000.0/System.Diagnostics.Stopwatch.Frequency;
             }
+        }
+
+        void OnRenderImage(RenderTexture source,RenderTexture destination)
+        {
+            if(!SharedPreview || !PreviewVisible || !texture || !previewMaterial)
+            { Graphics.Blit(source,destination);return; }
+            // The output was already rendered/antialiased this frame. Only composite
+            // its premultiplied RGBA over the preview background, with letterboxing.
+            previewMaterial.SetColor("_Background",previewCamera.backgroundColor);
+            previewMaterial.SetFloat("_OutputAspect",(float)OutputWidth/OutputHeight);
+            previewMaterial.SetFloat("_ViewAspect",(float)source.width/source.height);
+            Graphics.Blit(texture,destination,previewMaterial);
         }
 
         // Readback is diagnostic-only; normal output stays on the GPU.
@@ -142,6 +185,6 @@ namespace TanakaCap
             sender=null;outputCamera=null;texture=null;
         }
 
-        void OnDestroy(){Application.wantsToQuit-=WantsToQuit;ReleaseOutput();}
+        void OnDestroy(){Application.wantsToQuit-=WantsToQuit;ReleaseOutput();if(previewMaterial)Destroy(previewMaterial);}
     }
 }

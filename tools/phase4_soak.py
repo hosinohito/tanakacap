@@ -80,7 +80,10 @@ def main():
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--no-edge-aa",action="store_true")
     parser.add_argument("--gpu-timing",action="store_true",help="Adds profiling overhead; compare with same flag on both sides")
-    parser.add_argument("--output-height",type=int,choices=(720,1080),default=720)
+    parser.add_argument("--output-height",type=int,default=1080)
+    parser.add_argument("--output-width",type=int)
+    parser.add_argument("--no-preview",action="store_true")
+    parser.add_argument("--legacy-preview",action="store_true")
     parser.add_argument("--render-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--obs-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--demo",action="store_true",help="Render-only A/B test instead of inference")
@@ -122,13 +125,18 @@ def main():
                 if "'code': 207" not in str(error) or attempt==39:raise
                 time.sleep(.25)
         if o.call("GetStreamStatus")["outputActive"] or o.call("GetRecordStatus")["outputActive"]:raise RuntimeError("Unexpected active output in test OBS")
-        width,height=args.output_height*16//9,args.output_height
+        width,height=args.output_width or args.output_height*16//9,args.output_height
+        if not (64<=width<=4096 and 64<=height<=4096):raise ValueError("Output dimensions must be 64..4096")
+        report.update(resolution=[width,height],preview_visible=not args.no_preview,shared_preview=not args.legacy_preview)
         o.call("SetVideoSettings",baseWidth=width,baseHeight=height,outputWidth=width,outputHeight=height,
                fpsNumerator=args.obs_fps,fpsDenominator=1)
         cmd=[str(ROOT/"builds/lab/TanakaCap.exe"),"--port",str(port),"--obs","--output-height",str(height),
              "--render-fps",str(args.render_fps),"--performance-log",str(out/"player.jsonl"),"--performance-seconds",str(args.seconds+15),
              "-logFile",str(out/"player.log")]
         if args.gpu_timing:cmd+=["--performance-gpu"]
+        cmd+=["--output-width",str(width)]
+        if args.no_preview:cmd+=["--no-preview"]
+        if args.legacy_preview:cmd+=["--legacy-preview"]
         if args.no_edge_aa:cmd+=["--no-edge-aa"]
         if args.demo:cmd+=["--motion-demo"]
         player=subprocess.Popen(cmd,cwd=ROOT,creationflags=subprocess.CREATE_NO_WINDOW)

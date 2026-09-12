@@ -5,7 +5,10 @@
     [ValidateSet("legacy","width_only","face_ratio")][string]$ShoulderYawMode,
     [string]$Avatar,
     [switch]$NoLog,
-    [ValidateSet(720,1080)][int]$OutputHeight=720,
+    [ValidateRange(64,4096)][int]$OutputHeight=1080,
+    [ValidateRange(64,4096)][int]$OutputWidth,
+    [switch]$NoPreview,
+    [switch]$LegacyPreview,
     [switch]$LegacySecondaryResponse,
     [ValidateSet(30,60)][int]$RenderFps=60,
     [switch]$NoEdgeAA,
@@ -79,6 +82,9 @@ try {
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
     $taskPlayerArgs+=@('--render-fps',$RenderFps.ToString())
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
+    if ($OutputWidth) { $taskPlayerArgs+=@('--output-width',$OutputWidth.ToString()) }
+    if ($NoPreview) { $taskPlayerArgs+='--no-preview' }
+    if ($LegacyPreview) { $taskPlayerArgs+='--legacy-preview' }
     if ($LegacySecondaryResponse) { $taskPlayerArgs+='--legacy-secondary-response' }
     if ($NoEdgeAA) { $taskPlayerArgs+='--no-edge-aa' }
     if ($NoLog) { $taskPlayerArgs += @('-nolog') }

@@ -30,7 +30,7 @@
 
 ## 2026-09-12 描画の追加設定
 
-全起動で追加の軽量AAを既定ON。F7で切替、両PowerShell起動スクリプトの-NoEdgeAAで起動OFF（元のMSAAは維持）。-OutputHeight 1080で1920×1080のSpout出力、既定720。プレビューのウインドウサイズ/カメラ入力は独立。非記録・無期限・モーション専用の挙動はそのまま。
+全起動で追加の軽量AAを既定ON。F7で切替、両PowerShell起動スクリプトの-NoEdgeAAで起動OFF（元のMSAAは維持）。Spout出力はFull HD（1920×1080）既定。-OutputWidth/-OutputHeightで各64〜4096の自由指定、幅省略は16:9。-NoPreview/F8でプレビューだけ非表示、-LegacyPreviewで旧二重描画へ復帰。通常はOBS画像をプレビューに共有。ウインドウサイズ/カメラ入力は独立。非記録・無期限・モーション専用の挙動はそのまま。[詳細](SHARED_PREVIEW.md)。
 
 Playerの--performance-logと--performance-secondsは明示的な検証専用。live/motion版は渡さない。検証版-Diagnoseはresults/player-performanceへPlayer統計を記録するが、新たな自動終了時間は指定しない。GPU計測はさらに--performance-gpuを指定する。検証の保存先と条件はPHASE4_VALIDATION.md。
 
