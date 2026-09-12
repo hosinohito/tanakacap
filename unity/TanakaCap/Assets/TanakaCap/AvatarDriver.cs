@@ -18,6 +18,8 @@ namespace TanakaCap
         public float headPitch, headYaw, headRoll, mouth, mouthWidth,mouthRound,mouthSmile,leftBlink, rightBlink, torsoRoll, torsoPitch, torsoYaw;
         public bool mouthContourTracked;
         public float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
+        public bool browTracked;
+        public float browLeftInner,browLeftOuter,browRightInner,browRightOuter;
         public bool gazeTracked;
         public float gazeYaw,gazePitch;
         public bool faceDistanceTracked;
@@ -95,6 +97,8 @@ namespace TanakaCap
         public float MouthCornerEmphasis { get; set; } = 0;
         readonly Dictionary<(SkinnedMeshRenderer,string),float> cornerGains=new Dictionary<(SkinnedMeshRenderer,string),float>();
         bool detailedMouth;
+        BrowExpressions browExpressions;
+        float browLeftInner,browLeftOuter,browRightInner,browRightOuter;
         float probeDelta;
         float FrameDelta => probeDelta>0?probeDelta:Time.unscaledDeltaTime;
 
@@ -226,6 +230,7 @@ namespace TanakaCap
             meshes = GetComponentsInChildren<SkinnedMeshRenderer>(true);
             MakeMouthShapes();
             MakeGazeShapes();
+            browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
             int emphasisArg=Array.IndexOf(args,"--mouth-corner-emphasis");
             if(emphasisArg>=0)
@@ -322,6 +327,7 @@ namespace TanakaCap
             if(float.IsNaN(p.faceDistanceRatio)||float.IsInfinity(p.faceDistanceRatio))return false;
             if(float.IsNaN(p.gazeYaw)||float.IsInfinity(p.gazeYaw)||float.IsNaN(p.gazePitch)||float.IsInfinity(p.gazePitch))return false;
             float[] values = {p.headPitch,p.headYaw,p.headRoll,p.mouth,p.mouthWidth,p.mouthRound,p.mouthSmile,p.mouthLeftCorner,p.mouthRightCorner,p.mouthBow,p.leftBlink,p.rightBlink,p.torsoRoll,p.torsoPitch,p.torsoYaw,
+                p.browLeftInner,p.browLeftOuter,p.browRightInner,p.browRightOuter,
                 p.mouthShift,p.leftCrossBody,p.rightCrossBody,
                 p.leftElbow.x,p.leftElbow.y,p.leftElbow.z,p.leftWrist.x,p.leftWrist.y,p.leftWrist.z,
                 p.rightElbow.x,p.rightElbow.y,p.rightElbow.z,p.rightWrist.x,p.rightWrist.y,p.rightWrist.z,
@@ -409,6 +415,11 @@ namespace TanakaCap
                 mouthShift=Mathf.Lerp(mouthShift,Mathf.Clamp(p.mouthShift,-1,1),faceT);
             }
             if(p.faceTracked) blinkLeft = Mathf.Lerp(blinkLeft,Mathf.Clamp01(p.leftBlink),faceT);
+            if(p.faceTracked && p.browTracked){
+                browLeftInner=Mathf.Clamp(p.browLeftInner,-1,1);browLeftOuter=Mathf.Clamp(p.browLeftOuter,-1,1);
+                browRightInner=Mathf.Clamp(p.browRightInner,-1,1);browRightOuter=Mathf.Clamp(p.browRightOuter,-1,1);
+            }
+            browExpressions.Apply(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
             if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
             foreach (var mesh in meshes)
             {
@@ -1186,6 +1197,7 @@ namespace TanakaCap
 
         void CheckMotionPaths(string path)
         {
+            browExpressions.CheckMotion();
             CheckGaze();
             CheckFaceDistance();
             CheckSeatedPose();

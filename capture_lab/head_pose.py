@@ -80,6 +80,7 @@ class HeadPose:
             if self.reference is None:self.samples=[]
             packet['headPitch']=self.last_pitch
             packet['mouthContourTracked']=False
+            packet['browTracked']=False
             return self.diagnostics
         rotation,translation,angles,error=pose
         if self.reference is None and abs(packet.get('headYaw',0))<20 and abs(packet.get('headRoll',0))<15:
@@ -92,6 +93,10 @@ class HeadPose:
             self.diagnostics.update(pitch=self.last_pitch,pitch_reference=self.reference,raw_pitch=float(angles[0]),pose_angles=angles.tolist(),normalized_reprojection_error=error,mouth_normalized=False)
             return self.diagnostics
         frontal=frontal_landmarks(points,rotation,translation,image_size,self.lip_depth_scale)
+        from .brows import frontal_brows,observe
+        normalized_brows=frontal_brows(points,frontal,rotation,translation,image_size) if frontal is not None else None
+        if normalized_brows is not None:observe(normalized_brows,scores,packet)
+        else:packet['browTracked']=False
         detail=contour_controls(frontal,scores) if frontal is not None else None
         packet['mouthContourTracked']=detail is not None
         if detail is not None:packet.update(detail)
