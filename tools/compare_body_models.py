@@ -37,7 +37,7 @@ def run(common,candidates,output,limit=None):
     dump(output/'report.json',report)
     try:
         for name,candidate in inputs.items():
-            folder=output/name;folder.mkdir();control=BodyRetarget(settings['observation_block'],settings['observation_stride'],settings.get('arm_depth_mode','legacy'))
+            folder=output/name;folder.mkdir();control=BodyRetarget(settings['observation_block'],settings['observation_stride'],settings.get('arm_depth_mode','legacy'),settings.get('shoulder_yaw_mode','legacy'))
             metrics=Metrics();maximum=0.;projection_max=0.;total=0;last=None;missing=0;raw=None
             if candidate:raw=(candidate/'raw.jsonl').open(encoding='utf-8')
             try:

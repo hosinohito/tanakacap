@@ -2,6 +2,7 @@ param([int]$Camera = 1, [int]$Frames = 18000, [switch]$Diagnose,
     [ValidateSet('rtmw-l-384','dwpose-l-384')][string]$Model = 'rtmw-l-384',
     [ValidateSet(1,3)][int]$ObservationBlock = 3,
     [ValidateSet(1,3)][int]$ObservationStride = 1,
+    [ValidateSet("legacy","width_only","face_ratio")][string]$ShoulderYawMode,
     [switch]$IntegerBodyPeaks)
 $ErrorActionPreference = 'Stop'
 if (-not $PSBoundParameters.ContainsKey('ObservationBlock')) {
@@ -51,6 +52,8 @@ try {
         $taskExtra += @('--mouth-lip-depth-scale',$taskLipDepth.ToString([Globalization.CultureInfo]::InvariantCulture))
     }
     if ($taskGazeSettings.face_distance_filter) { $taskExtra += @('--face-distance-filter',$taskGazeSettings.face_distance_filter) }
+    if ($ShoulderYawMode) { $taskExtra += @('--shoulder-yaw-mode',$ShoulderYawMode) }
+    elseif ($taskGazeSettings.shoulder_yaw_mode) { $taskExtra += @('--shoulder-yaw-mode',$taskGazeSettings.shoulder_yaw_mode) }
     if ($taskGazeSettings.arm_depth_mode) { $taskExtra += @('--arm-depth-mode',$taskGazeSettings.arm_depth_mode) }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
     & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --preview --unity-port 39540 --body3d --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra

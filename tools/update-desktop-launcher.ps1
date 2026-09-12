@@ -34,3 +34,13 @@ $taskArmFolder = Join-Path $taskRoot 'results/avatar-videos/front-projection-fin
 $taskArmContents = "@echo off`r`nexplorer.exe `"$taskArmFolder`"`r`n"
 [IO.File]::WriteAllText($taskArmTarget,$taskArmContents,[Text.Encoding]::Default)
 Write-Output $taskArmTarget
+
+$taskShoulderTarget = Join-Path $taskDesktop 'tanakacap-compare-shoulder.bat'
+$taskShoulderFolder = Join-Path $taskRoot 'results/avatar-videos/shoulder-projection-final'
+$taskShoulderContents = "@echo off`r`nexplorer.exe `"$taskShoulderFolder`"`r`n"
+[IO.File]::WriteAllText($taskShoulderTarget,$taskShoulderContents,[Text.Encoding]::Default)
+Write-Output $taskShoulderTarget
+$taskShoulderTest = Join-Path $taskDesktop 'tanakacap-test-shoulder.bat'
+$taskShoulderTestContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -Diagnose -Frames 1800 -ShoulderYawMode face_ratio`r`npause`r`n"
+[IO.File]::WriteAllText($taskShoulderTest,$taskShoulderTestContents,[Text.Encoding]::Default)
+Write-Output $taskShoulderTest

@@ -110,7 +110,7 @@ def run(take,output,variants=CANDIDATES,limit=None,fixed_roi=False):
         for variant in variants:
             if variant not in CANDIDATES:raise ValueError(f'Unsupported candidate {variant}')
             folder=output/variant;folder.mkdir();models=[];shared=None;metrics=Metrics();timings=[]
-            body_control=BodyRetarget(settings['observation_block'],settings['observation_stride'],settings.get('arm_depth_mode','legacy'));cache_reader=None;cache_writer=None
+            body_control=BodyRetarget(settings['observation_block'],settings['observation_stride'],settings.get('arm_depth_mode','legacy'),settings.get('shoulder_yaw_mode','legacy'));cache_reader=None;cache_writer=None
             try:
                 if variant=='baseline':
                     model=SimCCModel('rtmw-l-384',folder);body=SimCCModel('rtmw3d-x-384',folder);models=[model,body]
