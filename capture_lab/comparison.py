@@ -65,14 +65,14 @@ def frame_mask(xy,scores,size):
     return np.where(inside,scores,0)
 
 class SharedFace:
-    def __init__(self,settings,output):
+    def __init__(self,settings,output,execution_mode='run'):
         self.s=settings;b=settings['observation_block'];stride=settings['observation_stride']
         self.filter=FaceFilter(b,stride);self.pose=HeadPose(settings['head_pitch_gain'],settings['mouth_lip_depth_scale']) if settings['head_pose_mode']=='pnp' else None
         self.distance=FaceDistance(b,stride,settings.get('face_distance_filter','stable'))
         self.gaze=None
         if settings.get('gaze_enabled'):
             from .gaze import IrisGaze
-            self.gaze=IrisGaze(output,b,stride,settings['gaze_reference'])
+            self.gaze=IrisGaze(output,b,stride,settings['gaze_reference'],execution_mode=execution_mode)
     def update(self,image,xy,scores,index,now):
         p=packet_from_landmarks(xy,scores,index)
         if self.pose:self.pose.update(xy,scores,p,image.shape[1::-1])

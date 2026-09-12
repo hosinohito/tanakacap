@@ -35,13 +35,20 @@ def run(output,comparison=None):
   videos.append(video);report[name]=meta;print(name,meta['frames'],meta['duration'],flush=True)
  if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
- labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'current':'Current - RTMW3D-X','shoulder-width':'Shoulder width - monotonic reference','shoulder-face':'Shoulder width + face ratio guard','front-projection':'RTMW3D - front projection trial','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
+ labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'separate':'Face - RTMW-L (original)','body3d':'Face - RTMW3D-X (shared with body)','current':'Current - RTMW3D-X','shoulder-width':'Shoulder width - monotonic reference','shoulder-face':'Shoulder width + face ratio guard','front-projection':'RTMW3D - front projection trial','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
  filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
- for video in videos+[combined]:
+ rendered=videos+[combined]
+ if list(inputs)==['separate','body3d']:
+  closeup=output/'face-closeup.mp4'
+  close_labels=[label.replace('pad=iw:', 'crop=640:480:320:0,scale=960:720,pad=iw:') for label in labels]
+  close_filter=';'.join(close_labels)+';[v0][v1]hstack=inputs=2[out]'
+  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',close_filter,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(closeup)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
+  rendered.append(closeup)
+ for video in rendered:
   subprocess.run([str(ff),'-hide_banner','-loglevel','error','-xerror','-i',str(video),'-f','null','-'],check=True,timeout=300,creationflags=subprocess.CREATE_NO_WINDOW)
- report['status']='complete';report['videos']={p.name:{'sha256':sha(p),'bytes':p.stat().st_size} for p in videos+[combined]}
+ report['status']='complete';report['videos']={p.name:{'sha256':sha(p),'bytes':p.stat().st_size} for p in rendered}
  (output/'report.json').write_text(json.dumps(report,indent=2));print(combined,flush=True)
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p.add_argument('--comparison',type=Path);a=p.parse_args();run(a.output,a.comparison)

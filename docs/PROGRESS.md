@@ -834,3 +834,14 @@ Windowsのmode700で作った一時ディレクトリでは同じsandboxから�
 ユーザー指定で、今後は既存録画での検証を基本とし、実カメラは明示指示がある場合、または録画では代替できない必要性を事前相談した場合だけ実施する。包括的な自走許可より本指定を優先。AGENTS/SPEC/HANDOFF/READMEへ反映、ユーザー自身のカメラ起動batは維持。
 
 追加高速化はF（同じ人物モデルの固定部Graph化）、G（顔/体入力準備共有）、H（同一観測の並行処理）、I（左右眼一括）を提案としてPERFORMANCE_OPTIONSへ記録。実測内訳を根拠にF→Gを推奨、効果未測定・実装未着手。A/E保留、B+C通常設定は維持。本ターンは文書変更のみで実カメラ/推論/テストは実行していない。
+
+
+## 2026-09-13 — RTMW3D-X顔共有の可逆実装・比較動画完成
+
+- ユーザー指定でface_source=separate/body3dを追加。共有はRTMW3Dを顔/体で1回だけ実行しRTMW-Lを生成しない。XYと信頼度を共有、顔Zの新規利用なし。頭/口/虹彩/距離/体補正・揺れ物は維持。通常tracking-settingsはseparate、頭専用も維持。
+- 全5187録画観測を共通ROI/生体出力/実撮影時刻で比較。顔に加え眼crop・顔距離・体の整合参照も変わる。顔有効5142→5145は正解率ではない。共有で開口が増え、瞬き出力が小さく、頭ピッチ基準も変わるため通常採用は保留。録画は主に体/手用で顔の全可動域を網羅していない。
+- results/avatar-videos/face-source-trial：separate.mp4 / body3d.mp4 / side-by-side.mp4 / face-closeup.mp4完成。各185.03秒/30fps/5551フレーム、左従来・右共有。全編デコード成功、30/85/150秒の顔構図・左右ラベルを確認。推論結果results/comparisons/face-source-trial。Unityソース/ビルド変更なし。
+- RTX4090/録画900観測/全部ON/graph/M/3間隔/Player・OBSなし：ループ平均27.53→22.54ms（約18%減）、中央値22.64→17.70ms。results/full-optimization-face-1789233552678811500。描画併用Hzやセンサー表示遅延の測定ではない。
+- 216 tests成功、PowerShell構文確認。別の録画30観測で共有RTMW3D/虹彩/人物検出のCUDA主要演算を監査、CPU主要計算なし。results/20260912T172632-336891Z-rtmw3d-x-384。実カメラは開いていない。
+- デスクトップtest.batを共有試行へ更新、test-face-original.batで従来、compare-face.batで拡大動画の保存先。直接-FaceSource separateで戻せる。live非記録無期限は従来既定、head-only/motion維持。
+- 次：比較動画のユーザー評価を受けて採用/調整を判断。共有側の口/瞬き、顔距離による表示サイズ差、独立2D整合参照を失う影響が評価残件。新構成OBS性能・実カメラ品質は未確認。A/E保留、揺れ物は触らない。詳細と再現はdocs/FACE_SOURCE_TRIAL.md。

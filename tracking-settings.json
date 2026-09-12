@@ -16,6 +16,7 @@
   "body_enabled": true,
   "person_detector_enabled": true,
   "tracking_mode": "full",
+  "face_source": "separate",
   "inference_mode": "graph",
   "detector_interval": 3,
   "detector_model": "yolox-m-human"

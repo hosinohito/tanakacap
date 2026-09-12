@@ -42,3 +42,7 @@ Cの例で14.968msを3回に1回へ減らすと、その部分だけの平均は
 推奨はF→G、Hはやや大きい実装、Iは小幅候補。F〜Iの速度保証はしない。CPU側の補正は現状約0.8msなので、補正削除や全面的なC++移植は優先しない。
 
 根拠：現行ソースと上記測定、[ORT CUDA Graph/stream条件](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)、[I/O Bindingと転送](https://onnxruntime.ai/docs/performance/tune-performance/iobinding.html)。公式資料が当プロジェクトの改善幅を保証するものではない。
+
+## 2026-09-13 顔推論共有の追加試行
+
+ユーザー指定でRTMW3D-X顔XYを体と共有する切替を実装。既存補正を固定した録画比較で単独ループ平均27.53→22.54ms。口/瞬きの出力差があり通常はseparateを維持。[条件・可逆操作](FACE_SOURCE_TRIAL.md)。F〜Iの採用決定ではなく、A/E保留も維持する。

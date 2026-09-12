@@ -14,9 +14,13 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 |---|---|---|
 | `tanakacap-live.bat` | カメラでアバターを動かす | 動作ログなし・無制限 |
 | `tanakacap-motion.bat` | カメラなしで自作モーションを繰り返す | 動作ログなし・無制限 |
-| `tanakacap-test.bat` | カメラの追跡を検証する | 診断ログあり・1800フレーム |
+| `tanakacap-test.bat` | RTMW3D-Xの顔共有方式を試す | 診断ログあり・1800フレーム |
+| `tanakacap-test-face-original.bat` | 従来のRTMW-L顔方式を試す | 診断ログあり・1800フレーム |
+| `tanakacap-compare-face.bat` | 顔方式の比較動画の保存先を開く | カメラ不使用 |
 
 通常はカメラ番号1。カメラプレビューのQ/Escで終了する。非記録カメラ版はアバターを閉じても推論が終了する。モーション版はアバターを閉じて終了する。詳しくは[起動モード](docs/LAUNCH_MODES.md)。
+
+顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate`で従来方式へ戻す。設定ファイルの`face_source`も同名。通常のlive起動は従来方式を維持し、上のtestだけ共有方式を明示指定する。頭専用モードは変更しない。[比較条件・動画生成手順](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 
