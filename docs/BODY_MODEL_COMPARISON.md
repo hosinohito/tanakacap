@@ -55,3 +55,9 @@ C:/Users/LLMTEST/Downloads/model (1).ckpt（1,691,205,237 bytes）を専用フ�
 両候補に同じ受領済みMHR TorchScript資産を指定し、身体表現を共通化した。ViT-HリポジトリのMHRファイルとハッシュ一致を確認したという意味ではない。ViT-Hチェックポイントの不明な欠落/余剰キーなし、20実フレームで60回のCUDAバックボーン実行と有限3D出力を確認。投影最大差0.000133px未満（results/sam-setup/vith-smoke-20）。DINO全編と同時の中央値約797msは単独性能に使わない。
 
 両モデルの全編は同時に処理中。tools/finish_body_comparison.py が両方の完了と5187frameを確認後、共通補正→3方式動画生成を行う。失敗・不足フレームは完成扱いにしない。tools/body_comparison_status.py は読み取り専用の進捗表示。再実行用はrun-body-comparison.ps1、デスクトップtanakacap-compare-body.bat。新たなカメラ録画は行わない。
+
+## 集計とリアルタイムに関する回答
+
+tools/summarize_body_comparison.py は全候補共通で可視だった連続フレームの組だけを使い、案内区間の境界や欠測をまたがず、生肘深度と補正後の変動を集計する。指/腕の観測と保持も区別。tests/test_body_temporal_audit.py と全177pytest成功（results/sam-setup/pytest-body-final）。基準5187frameで集計実行成功。最終3方式の集計は全編待ち。変換スクリプト自体のSHA256も比較レポートに追加した。
+
+ユーザーの「リアルタイム処理は不可能ということ？」への回答：現在のSAM fullをそのまま使うと、DINO単独約530ms（約1.9回/秒）で滑らかな実時間駆動には遅すぎる。30fps動画は計算済みのオフライン再生。将来のリアルタイム化が不可能と確定したわけではない。エンジン最適化、手デコーダを別モデルへ分離、既存高速推定＋低頻度SAMの併用は提案段階であり、採用・品質・30fps達成を保証していない。ユーザーから動画比較の中止指示はなく、全編作成を継続する。

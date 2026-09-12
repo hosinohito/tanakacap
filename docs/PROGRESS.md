@@ -655,3 +655,9 @@
 - 状況確認：.venv/Scripts/python.exe tools/body_comparison_status.py。セッションが引き継がれない時は既存プロセスとログを調べ、重複推論を起動しない。
 - デスクトップtanakacap-compare-body.batからrun-body-comparison.ps1を実行可能。実行中のrawがあれば重複開始せず表示。完成済みrawを再利用し、最終的に動画フォルダーを開く。既存test/capture/analyze/hamer batも更新済み。
 
+
+
+## 2026-09-12 — 共通可視性の時間集計とSAM実時間性の説明
+
+- 欠測・区間境界をまたがない生肘/補正後/ヨーの集計を追加。全177pytest成功、基準全5187frameで集計実行成功。新規3方式は推論継続中。
+- ユーザーのリアルタイム可否の質問へ、現SAM fullはDINO単独約530ms/フレームでそのままでは遅すぎること、生成する30fps動画はオフラインであることを説明。最適化/身体only/低頻度補助は提案のみ、採用決定なし。比較動画の指示は継続。
