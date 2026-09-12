@@ -51,5 +51,14 @@
     "keypoints": 133,
     "layout": "coco-wholebody",
     "purpose": "Official larger 2D comparison; does not replace RTMW3D depth"
+  },
+  "yolox-tiny-human": {
+    "url": "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_tiny_8xb8-300e_humanart-6f3252f9.zip",
+    "input_wh": [
+      416,
+      416
+    ],
+    "kind": "detector",
+    "purpose": "Optional lightweight HumanArt person ROI detector; detailed pose models remain unchanged"
   }
 }

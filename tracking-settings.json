@@ -15,5 +15,8 @@
   "shoulder_yaw_mode": "face_ratio",
   "body_enabled": true,
   "person_detector_enabled": true,
-  "tracking_mode": "full"
+  "tracking_mode": "full",
+  "inference_mode": "graph",
+  "detector_interval": 3,
+  "detector_model": "yolox-m-human"
 }

@@ -68,3 +68,8 @@ resultsにはplayer.jsonl、system.jsonl、report.json、OBSで受信したsourc
   https://docs.python.org/3.11/library/time.html#time.perf_counter
 - Windows QueryPerformanceCounter：
   https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
+
+
+## 2026-09-13 全部ON高速化の追加検証
+
+B+C（CUDA Graph＋人物ROI追跡）を通常採用。既存録画＋実Player＋隔離OBS/720p60/AAあり・各60秒で、受信20.24→32.63Hz、描画約60fpsを維持。Dの小型人物検出は35.60Hzだが既存モデルの相対Z差が大きく任意選択。RGBA合成・正常終了を確認。結果results/optimization-obs-{baseline,bc,bcd}。詳細[FULL_MODE_OPTIMIZATION.md](FULL_MODE_OPTIMIZATION.md)。新構成の実カメラ+OBS30分とセンサー〜表示遅延、実人物品質の合格は未確認。

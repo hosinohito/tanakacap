@@ -76,3 +76,8 @@ EdgeAntialiasing.cs / EdgeAntialiasing.shaderは本プロジェクトで記述�
 ## 2026-09-13 — 頭領域YuNet
 
 OpenCV Zoo face_detection_yunet_2023mar.onnx、SHA256 8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4。公式ディレクトリのモデルを含むMIT表示を確認しYUNET_LICENSE.txtを保存。新依存なし、既存ORT CUDAで実行。モデルの最新dynamic版は固定入力の今回には不要。取得元・入出力・検証はHEAD_ONLY.md。MobileNet姿勢重みの配布監査未完了という別の制約は解消していない。
+
+
+## YOLOX-tiny HumanArt（2026-09-13 任意比較）
+
+詳細推定モデルを維持した人物ROI専用の小型候補。公式RTMlib設定で示されたOpenMMLabの416×416 ONNXを取得。models/catalog.jsonとローカルreceiptへURL・SHA記録、SHA256 ceb11c07298f95c50d7c5abeb906d03340c85f23aa79e3e66966e7fb6c307250。MMPoseコードのApache-2.0を確認、重み/学習データの一般配布監査は未完了。通常同梱/既定採用せず、選択時の別取得。一次資料・比較根拠は[FULL_MODE_OPTIMIZATION.md](FULL_MODE_OPTIMIZATION.md)。

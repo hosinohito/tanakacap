@@ -1,11 +1,19 @@
 # 引き継ぎ：現在の状態
 
-## 2026-09-13 — 高速化Bの途中／pytest一時領域修正
+## 2026-09-13 — 全部ON高速化B→C→Dを実装・比較
 
-- 最新ユーザー指定は全部ONを対象にB→C→D、A/E保留。下記の「優先順位待ち」は旧状態。揺れ物は変更しない。RTMW3Dは胴体と腕・手・指を同時推論するため、手を維持してモデルの胴体部分だけ止める高速化は今回は行わない。
-- Bは未コミットの試作あり。`--inference-mode run|binding|graph`、GpuRunner、2本のaudit/benchmarkツールを追加。既定run・ランチャー未接続。4モデル出力は比較入力で最大絶対差0。`results/gpu-runner-audit-1789229936190407600/report.json`。同じ録画30warmup+900測定、全部ON、Player/OBS/previewなし：loop中央値run40.899/binding41.888/graph37.392ms。`results/full-optimization-B-1789229983578447300/summary.json`。実表示品質・実カメラ性能は未確認。
-- C/Dは未実装。次は人物ROI追跡で検出間隔を減らすC、次に公式YOLOX-tiny HumanArt416との比較D。`tools/benchmark_full_optimization.py`のC/D用CLI引数は先行記述のみでまだ使用不可。Bの最終レビュー・通常設定への反映、C/D品質比較・OBS併用測定・文書更新・コミットも残る。
-- pytest承認の質問を受け一時領域を修正。Windows mode700は同じsandboxでアクセス拒否、既定mkdirは読書成功。`tests/conftest.py`でWindows tmp_pathのみworkspaceのACLを継承、固有ディレクトリを終了時削除。pytest.iniでtests限定・cache無効。通常sandboxの`.venv/Scripts/python.exe -m pytest -q`で210件成功。OS/サンドボックスの設定変更なし。Desktopのtest.batはまだ頭専用のため、BCD採用時に全部ONへ更新する。
+- 最新ユーザー指定：全部ONでB→C→D、A（TensorRT/FP16）/E（部位更新間隔）は保留。揺れ物は触らない。RTMW3Dは体/手が共同推論なので、手に影響する胴体停止案は採用しない。
+- 通常設定はB+C：inference_mode=graph / detector_interval=3 / detector_model=yolox-m-human。run-avatar-lab.ps1の同名引数で戻せる。Python CLI既定はrun/1/Mを維持。デスクトップtestは全部ON診断に戻して更新済み。liveの非記録無期限、head-only/motionは維持。Unity再ビルド不要（今回Unityコード変更なし）。
+- B：GPU固定入出力/Graph、検出可変長出力はbindingを毎回再設定。空画像/復帰を含む5モデルの旧runとの差0、GPU主要演算確認。結果results/gpu-runner-audit-1789231210724547400。顔/体/目/部位別補正は維持。
+- C：3回の実検出で確定後、最大2観測を上半身点の往復LK flowでROI移動。不良/端/120msで即再検出。キャッシュで初期確定しない。ロストと復帰は既存保持契約。4件の新規テスト含む214 tests成功。
+- D：公式YOLOX-tiny HumanArt416を取得・GPU比較・選択実装済み。モデル別のROI差が相対Zへ大きく影響したため通常採用しない。-DetectorModel yolox-tiny-humanで任意選択。原本重み・実写・結果はGit除外。
+- 単独900観測中央値：従来B基準40.90ms→graph37.39ms、C比較37.11→22.20ms。6×150観測の同一区間比較でCの顔XY差平均0.37px、左右手0.58/0.72px、体Z差平均0.0076m。Dの体Z差平均0.0435m/p95 0.2544m。正解率ではない。results/person-optimization-audit-1789231118191184300。
+- 実Player+隔離OBS/720p60/AAあり/各60秒/既存録画最大速度：従来20.24Hz→B+C32.63Hz、任意D35.60Hz、描画全て約60fps。透過合成/画像変化/正常終了成功。results/optimization-obs-{baseline,bc,bcd}。実カメラの新規観測Hz・センサー表示遅延と混同しない。
+- 実カメラ1/MSMF1280x720/30fpsは取得成功、120観測で人物確定0。results/20260912T164948-822875Z-rtmw-l-384。人物不在とは断定せず、この試験を追従品質・全部ON実カメラ性能の成功に数えない。
+- README、SPEC、PROGRESS、PHASE4_VALIDATION、IMPLEMENTATION_PHASES、THIRD_PARTY、PERFORMANCE_OPTIONS更新。ユーザーの部位別経路の質問へINFERENCE_PIPELINE.md追加。詳細・条件・再現はFULL_MODE_OPTIMIZATION.md。
+- 次：更新済みtest.batで実人物のC有無（-DetectorInterval 1）を確認。新構成の実カメラ+OBS30分、露光〜表示遅延、腕/肩/左指・遮蔽品質、フェーズ5UI/配布環境/汎用アバター/許諾監査が残る。A/Eや揺れ物を勝手に再開しない。
+- pytestは通常sandboxの`.venv/Scripts/python.exe -m pytest -q`で実行可能。tests/conftest.pyのWindows tmp_pathがworkspace ACLを継承、OS権限変更なし。
+
 
 最新指定（2026-09-13）：スポーン時を含む揺れ物は今後調整しない。頭専用モードを先に仕上げ、次は高速化案だけを提示し、ユーザーが優先順位を指示するまで高速化の実装に着手しない。音声口パクは引き続き後日。
 

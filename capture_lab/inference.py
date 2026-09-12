@@ -13,6 +13,7 @@ import numpy as np
 import onnxruntime as ort
 
 from .models import catalog, model_path, sha256
+from .gpu_runner import GpuRunner, provider_options
 
 
 def preprocess(frame, roi, input_wh):
@@ -66,7 +67,7 @@ def provider_summary(path):
 
 
 class SimCCModel:
-    def __init__(self, name, output_dir):
+    def __init__(self, name, output_dir, execution_mode='run'):
         self.info = catalog()[name]
         path = model_path(name)
         if not path.exists():
@@ -80,8 +81,10 @@ class SimCCModel:
         if self.profiling: options.profile_file_prefix = str(output_dir / name)
         options.log_severity_level = 3
         options.intra_op_num_threads = 2
+        dynamic = self.info.get('kind') == 'detector'
         self.session = ort.InferenceSession(str(path), sess_options=options,
-                                           providers=[('CUDAExecutionProvider', {'device_id': 0})])
+                                           providers=provider_options(execution_mode,dynamic))
+        self.runner = GpuRunner(self.session,execution_mode,dynamic)
         self.session.disable_fallback()
         if self.session.get_providers()[0] != 'CUDAExecutionProvider':
             raise RuntimeError('CUDA initialization failed; refusing a CPU-only session.')
@@ -96,6 +99,7 @@ class SimCCModel:
         self.refine_body_peaks = True
         self.decode_diagnostics = None
         self.identity = {'id': name, 'sha256': sha256(path),
+                         'execution_mode':self.runner.mode,
                          'providers': self.session.get_providers(), 'input_shape': shape,
                          'onnxruntime_version': ort.__version__}
 
@@ -104,7 +108,7 @@ class SimCCModel:
         input_frame = frame[:,:,::-1] if self.info.get('color_order') == 'RGB' else frame
         tensor, center, scale = preprocess(input_frame, roi, self.info['input_wh'])
         ready = time.perf_counter()
-        outputs = self.session.run(None, {self.input_name: tensor})
+        outputs = self.runner.run(tensor,self.input_name)
         self.calls += 1
         inferred = time.perf_counter()
         if self.info.get('dimensions') == 3:
@@ -183,11 +187,12 @@ def decode_simcc3d(outputs, center, scale, input_wh, z_range=2.1744869,refine_bo
 
 
 class PersonDetector(SimCCModel):
-    def __init__(self, output_dir):
-        super().__init__('yolox-m-human', output_dir)
+    def __init__(self, output_dir, execution_mode='run', name='yolox-m-human'):
+        super().__init__(name, output_dir,execution_mode)
+        iw, ih = self.info['input_wh']
         grid_parts, stride_parts = [], []
         for stride in (8, 16, 32):
-            yy, xx = np.mgrid[:640//stride, :640//stride]
+            yy, xx = np.mgrid[:ih//stride, :iw//stride]
             grid_parts.append(np.stack([xx, yy], axis=-1).reshape(-1, 2))
             stride_parts.append(np.full((xx.size, 1), stride))
         self.grid = np.concatenate(grid_parts).astype(np.float32)
@@ -196,13 +201,15 @@ class PersonDetector(SimCCModel):
     def detect(self, frame, threshold=.7):
         start = time.perf_counter()
         h, w = frame.shape[:2]
-        ratio = min(640/w, 640/h)
+        iw, ih = getattr(self, 'info', {}).get('input_wh', (640,640))
+        ratio = min(iw/w, ih/h)
         resized = cv2.resize(frame, (int(w*ratio), int(h*ratio)))
-        padded = np.full((640, 640, 3), 114, dtype=np.uint8)
+        padded = np.full((ih, iw, 3), 114, dtype=np.uint8)
         padded[:resized.shape[0], :resized.shape[1]] = resized
         tensor = np.ascontiguousarray(padded.transpose(2, 0, 1)[None], dtype=np.float32)
         prepared = time.perf_counter()
-        result = self.session.run(None, {self.input_name: tensor})[0][0]
+        runner = getattr(self,'runner',None)
+        result = (runner.run(tensor,self.input_name) if runner else self.session.run(None, {self.input_name: tensor}))[0][0]
         inferred = time.perf_counter()
         def finish(roi, confidence):
             done = time.perf_counter()
