@@ -90,3 +90,7 @@ $taskFacePnpTarget = Join-Path $taskDesktop 'tanakacap-test-face-pnp.bat'
 $taskFacePnpContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -Diagnose -Frames 1800`r`npause`r`n"
 [IO.File]::WriteAllText($taskFacePnpTarget,$taskFacePnpContents,[Text.Encoding]::Default)
 Write-Output $taskFacePnpTarget
+
+$taskThirtyTarget = Join-Path $taskDesktop 'tanakacap-test-30fps.bat'
+[IO.File]::WriteAllText($taskThirtyTarget,$taskContents.Replace(' -Diagnose',' -RenderFps 30 -Diagnose'),[Text.Encoding]::Default)
+Write-Output $taskThirtyTarget

@@ -179,7 +179,14 @@ namespace TanakaCap
 
         void Start()
         {
-            Application.targetFrameRate = 60;
+            int renderFps = 60;
+            var renderArgs = Environment.GetCommandLineArgs();
+            int renderIndex = Array.IndexOf(renderArgs, "--render-fps");
+            if (renderIndex >= 0 && (renderIndex+1 >= renderArgs.Length ||
+                !int.TryParse(renderArgs[renderIndex+1], out renderFps) || (renderFps != 30 && renderFps != 60)))
+                throw new ArgumentException("--render-fps must be 30 or 60");
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = renderFps;
             head = animator.GetBoneTransform(HumanBodyBones.Head);
             rootRestPosition=transform.position;
             var outputCamera=Camera.main;

@@ -81,6 +81,7 @@ def main():
     parser.add_argument("--no-edge-aa",action="store_true")
     parser.add_argument("--gpu-timing",action="store_true",help="Adds profiling overhead; compare with same flag on both sides")
     parser.add_argument("--output-height",type=int,choices=(720,1080),default=720)
+    parser.add_argument("--render-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--obs-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--demo",action="store_true",help="Render-only A/B test instead of inference")
     parser.add_argument('--preprocess-mode',choices=('legacy','crop'))
@@ -102,7 +103,7 @@ def main():
     player=obs_process=capture=None;o=None
     report={"status":"running","seconds_requested":args.seconds,"scope":"Existing video stress loop, not sensor/display latency; OBS preview/composite, no encoding/stream/record",
             "inference_mode":args.inference_mode,"detector_interval":args.detector_interval,"detector_model":args.detector_model,
-            "edge_aa":not args.no_edge_aa,"demo":args.demo,"resolution":[args.output_height*16//9,args.output_height],"obs_fps_requested":args.obs_fps}
+            "edge_aa":not args.no_edge_aa,"demo":args.demo,"resolution":[args.output_height*16//9,args.output_height],"obs_fps_requested":args.obs_fps,"render_fps_requested":args.render_fps}
     (out/"report.json").write_text(json.dumps(report,indent=2))
     try:
         obs_path=ROOT/"results/phase3-obs/app/bin/64bit/obs64.exe"
@@ -125,7 +126,7 @@ def main():
         o.call("SetVideoSettings",baseWidth=width,baseHeight=height,outputWidth=width,outputHeight=height,
                fpsNumerator=args.obs_fps,fpsDenominator=1)
         cmd=[str(ROOT/"builds/lab/TanakaCap.exe"),"--port",str(port),"--obs","--output-height",str(height),
-             "--performance-log",str(out/"player.jsonl"),"--performance-seconds",str(args.seconds+15),
+             "--render-fps",str(args.render_fps),"--performance-log",str(out/"player.jsonl"),"--performance-seconds",str(args.seconds+15),
              "-logFile",str(out/"player.log")]
         if args.gpu_timing:cmd+=["--performance-gpu"]
         if args.no_edge_aa:cmd+=["--no-edge-aa"]

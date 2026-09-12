@@ -892,3 +892,8 @@ F〜I実行とH独立コミット/遅ければrevertをユーザー指定。Fは
 - 最初のOBS基準はAPI207（WebSocket接続後の出力系未準備）で失敗。検証スクリプトへ準備待ちを追加し再試験成功。失敗結果optimization-fgi-obs-baselineを保持。実カメラ未使用、モデル/実写/アバター/結果はGit除外。原本ONNXは変更せずSHA別の派生キャッシュ、既存ONNX1.22.0を利用。
 - 現行228 tests、PowerShell構文確認、desktop bat更新済み。通常live/testは採用設定を使用、head-only/motionは維持。全高速化を戻す場合-PreprocessMode legacy -NoBatchEyes -NoDetectorGraph。顔の採用設定とは独立。
 - 詳細・単独条件・再現はdocs/FURTHER_OPTIMIZATION.md。次は必要な録画品質/長時間評価と既存フェーズ残件。Hを再追加しない。ユーザー明示まで実カメラを開かない。揺れ物・A/Eへ勝手に戻らない。
+
+
+## 2026-09-13 — 描画30/60比較
+
+同じ既存録画・全部ON G+I・720p/AA・隔離OBS60で各60秒。描画60.00→29.98fps、受信44.47→46.14Hz、GPU使用率53.0→47.7%、電力145.7→142.5W。GPUは安定区間3標本の全体参考値。送信→描画投入6.54→10.32ms（窓p50中央値）、実センサー表示遅延ではない。両方透過/合成/変化/正常終了成功。Unityビルド・構文検査・desktop30fps bat生成済み。実カメラ/映像目視なし。通常60維持、-RenderFps 30で任意。Unityループ全体の頻度変更でありソルバー調整なし。追加案のプレビューへのOBSテクスチャ再利用等は未実装。詳細[描画レート比較](RENDER_RATE_COMPARISON.md)。結果results/render-rate-60、render-rate-30。

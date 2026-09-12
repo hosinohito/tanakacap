@@ -7,6 +7,7 @@
     [switch]$NoLog,
     [ValidateSet(720,1080)][int]$OutputHeight=720,
     [switch]$LegacySecondaryResponse,
+    [ValidateSet(30,60)][int]$RenderFps=60,
     [switch]$NoEdgeAA,
     [switch]$NoBody,
     [switch]$HeadOnly,
@@ -76,6 +77,7 @@ try {
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    $taskPlayerArgs+=@('--render-fps',$RenderFps.ToString())
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())
     if ($LegacySecondaryResponse) { $taskPlayerArgs+='--legacy-secondary-response' }
     if ($NoEdgeAA) { $taskPlayerArgs+='--no-edge-aa' }
