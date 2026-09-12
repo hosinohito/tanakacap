@@ -20,6 +20,7 @@
   "inference_mode": "graph",
   "detector_interval": 3,
   "detector_model": "yolox-m-human",
+  "detector_graph": true,
   "preprocess_mode": "crop",
   "batch_eyes": true,
   "mouth_corner_emphasis": 0.0
