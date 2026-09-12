@@ -83,6 +83,10 @@ def main():
     parser.add_argument("--output-height",type=int,choices=(720,1080),default=720)
     parser.add_argument("--obs-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--demo",action="store_true",help="Render-only A/B test instead of inference")
+    parser.add_argument('--preprocess-mode',choices=('legacy','crop'))
+    parser.add_argument('--batch-eyes',action='store_true')
+    parser.add_argument('--no-batch-eyes',action='store_true')
+    parser.add_argument('--detector-graph',action='store_true')
     parser.add_argument('--inference-mode',choices=('run','binding','graph'),default='run')
     parser.add_argument('--detector-interval',type=int,choices=(1,2,3),default=1)
     parser.add_argument('--detector-model',choices=('yolox-m-human','yolox-tiny-human'),default='yolox-m-human')
@@ -108,6 +112,14 @@ def main():
             try:o=OBS();break
             except OSError:time.sleep(.5)
         if o is None:raise RuntimeError("Isolated OBS not ready")
+        # WebSocket may accept connections before the output subsystem is ready.
+        for attempt in range(40):
+            try:
+                o.call("GetStreamStatus")
+                break
+            except RuntimeError as error:
+                if "'code': 207" not in str(error) or attempt==39:raise
+                time.sleep(.25)
         if o.call("GetStreamStatus")["outputActive"] or o.call("GetRecordStatus")["outputActive"]:raise RuntimeError("Unexpected active output in test OBS")
         width,height=args.output_height*16//9,args.output_height
         o.call("SetVideoSettings",baseWidth=width,baseHeight=height,outputWidth=width,outputHeight=height,
@@ -126,9 +138,13 @@ def main():
                  "--model","rtmw-l-384","--gaze",
                  '--inference-mode',args.inference_mode,'--detector-interval',str(args.detector_interval),
                  '--detector-model',args.detector_model]
+            cmd+=['--face-source',settings.get('face_source','separate'),'--preprocess-mode',args.preprocess_mode or settings.get('preprocess_mode','legacy')]
+            if (args.batch_eyes or settings.get('batch_eyes')) and not args.no_batch_eyes:cmd+=['--batch-eyes']
+            if args.detector_graph:cmd+=['--detector-graph']
             for key in ("observation_block","observation_stride","head_pose_mode","head_pitch_gain","mouth_lip_depth_scale",
                         "face_distance_filter","arm_depth_mode","shoulder_yaw_mode","gaze_reference"):
                 cmd+=["--"+key.replace("_","-"),str(settings[key])]
+            report['capture_arguments']=cmd.copy()
             with (out/"capture-console.log").open("w") as console:
                 capture=subprocess.Popen(cmd,cwd=ROOT,stdout=console,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
         start=time.monotonic();samples=[]

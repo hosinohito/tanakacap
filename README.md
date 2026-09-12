@@ -23,7 +23,7 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 
 採用構成は`-FaceSource body3d -HeadPoseMode pnp_depthmouth`。ピッチ・口角の両方にZを使う過去試行は`-HeadPoseMode depth3d`、`-HeadPoseMode pnp`で従来計算へ戻せる。通常設定はbody3d/pnp_depthmouth（PnPピッチ＋Z口角）。[同時3D化の比較](docs/FACE_DEPTH_TRIAL.md)。
 
-顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate`で従来方式へ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/Z口角の採用構成。頭専用モードは変更しない。[比較条件・動画生成手順](docs/FACE_SOURCE_TRIAL.md)。
+顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来方式へ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/Z口角の採用構成。頭専用モードは変更しない。[比較条件・動画生成手順](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 

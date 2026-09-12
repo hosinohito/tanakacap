@@ -12,7 +12,7 @@
 
 公式根拠：[ORT CUDA Graph](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)、[ONNX部分グラフ抽出](https://onnx.ai/onnx/api/utils.html)。これは速度保証やモデル重みの配布許諾を意味しない。元の許諾監査残件を維持する。
 
-G/H/Iは続行中。
+G/I採用、Hは計測後revert。詳細は以下。
 
 ## G 切り出し後にRGB化
 
@@ -31,3 +31,27 @@ G全体の平均は22.387→20.323ms、入力準備3.966→1.756ms。RTX4090/同
 録画80入力で両眼/左右片眼/両眼欠測を交互に検査。73観測眼の虹彩座標差0、視線有効状態一致、呼び出し73→54。モデル主要計算CUDA、results/iris-batch-audit。全部ON/Gあり/900観測の前後基準平均20.101/20.345ms、batch平均19.625ms。目線処理平均2.159/2.152→1.472ms。results/full-optimization-I-1789236444888274300。通常batch_eyes=trueを採用、-NoBatchEyesで復帰、-BatchEyesで指定。Python --batch-eyes、省略で旧。228 tests。
 
 最終構成はG+I、Fは小幅効果のため任意、Hはrevert済み。A/E保留。追加の高優先案は今回のGで対応し、低優先の新規施策は追加していない。
+
+## 再現と復帰
+
+```powershell
+.\.venv\Scripts\python.exe tools/benchmark_full_optimization.py --stage F --frames 900
+.\.venv\Scripts\python.exe tools/benchmark_full_optimization.py --stage G --frames 900
+.\.venv\Scripts\python.exe tools/benchmark_full_optimization.py --stage I --frames 900
+```
+
+各段階の条件を固定した比較なので、通常設定を変更してもそのまま比較が再現される。H用コマンド/workerはrevertで削除、実装は53772c7、revertはcee5557に残る。Gは9aed8d0、Iはe925743、Fはb3d583f。
+
+全部戻す場合は`run-avatar-lab.ps1 -PreprocessMode legacy -NoBatchEyes -NoDetectorGraph`。顔の採用（RTMW3D共有、PnPピッチ＋Z口角）はそのまま。既存live/head-only/motionは維持。実カメラ用batをエージェントは起動しない。
+
+## 最終Player＋OBS検証
+
+既存録画最大速度、720p60/AAあり、隔離OBS透過合成、各60秒、配信/録画なし。RTMW3D共有・PnPピッチ/Z口角は両側同じ。基準はG/Iなし、最終はG/Iあり、Fは両方OFF。
+
+| 計測 | 基準 | G＋I |
+|---|---:|---:|
+| Player受信Hz | 39.317 | 44.833 |
+| 描画fps中央値 | 59.997 | 59.997 |
+| 描画間隔p95の中央値ms | 17.155 | 17.118 |
+
+results/optimization-fgi-obs-baseline-retry/report.json、results/optimization-fgi-obs-final/report.json。RGBA/背景合成/画像変化/正常終了を機械確認。カメラfpsや露光から表示までの遅延ではなく、別人物/負荷/長時間の保証でもない。最初のbaselineはOBS API207で失敗し、WebSocket接続後の準備待ちを修正して再実行。failed結果も保持。動画や画像の目視確認は行わない。現行228 tests、起動PowerShell構文確認、デスクトップ更新済み。

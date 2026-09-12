@@ -1,6 +1,6 @@
 # 作業開始時の指示
 
-最新高速化（2026-09-13）：Fは実装済み任意（既定OFF）、G=crop前処理とI=batch_eyesを通常採用。Hは53772c7で実装、計測で遅くcee5557でrevert。顔はbody3d/pnp_depthmouthのまま。既存録画＋Player/OBSの最終比較を進行中。docs/FURTHER_OPTIMIZATION.md参照。
+最新高速化（2026-09-13）：Fは実装済み任意（既定OFF）、G=crop前処理とI=batch_eyesを通常採用。Hは53772c7で実装、計測で遅くcee5557でrevert。顔はbody3d/pnp_depthmouthのまま。既存録画＋Player/OBS60秒比較39.317→44.833Hz・描画約60fps/透過成功。カメラfpsや実遅延ではない。docs/FURTHER_OPTIMIZATION.md参照。
 
 最新指定（2026-09-13）：全部ONのF〜I高速化を実装。Hは独立コミット、遅ければrevert。Fは分割Graph実装/録画一致/GPU/900観測比較済み、効果小で任意。G→H→Iが進行中。docs/FURTHER_OPTIMIZATION.md参照。
 
