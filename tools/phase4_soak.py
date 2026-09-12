@@ -83,6 +83,9 @@ def main():
     parser.add_argument("--output-height",type=int,choices=(720,1080),default=720)
     parser.add_argument("--obs-fps",type=int,choices=(30,60),default=60)
     parser.add_argument("--demo",action="store_true",help="Render-only A/B test instead of inference")
+    parser.add_argument('--inference-mode',choices=('run','binding','graph'),default='run')
+    parser.add_argument('--detector-interval',type=int,choices=(1,2,3),default=1)
+    parser.add_argument('--detector-model',choices=('yolox-m-human','yolox-tiny-human'),default='yolox-m-human')
     args=parser.parse_args()
     if args.seconds<10:parser.error("At least 10 seconds")
     if not args.demo and (args.video is None or not args.video.is_file()):parser.error("Video not found")
@@ -94,6 +97,7 @@ def main():
         probe.bind(("127.0.0.1",0));port=probe.getsockname()[1]
     player=obs_process=capture=None;o=None
     report={"status":"running","seconds_requested":args.seconds,"scope":"Existing video stress loop, not sensor/display latency; OBS preview/composite, no encoding/stream/record",
+            "inference_mode":args.inference_mode,"detector_interval":args.detector_interval,"detector_model":args.detector_model,
             "edge_aa":not args.no_edge_aa,"demo":args.demo,"resolution":[args.output_height*16//9,args.output_height],"obs_fps_requested":args.obs_fps}
     (out/"report.json").write_text(json.dumps(report,indent=2))
     try:
@@ -119,7 +123,9 @@ def main():
             settings=json.loads((ROOT/"tracking-settings.json").read_text())
             cmd=[sys.executable,"-m","capture_lab","benchmark","--source","video","--video",str(args.video.resolve()),
                  "--loop-video","--no-log","--frames","0","--parent-pid",str(player.pid),"--unity-port",str(port),"--body3d",
-                 "--model","rtmw-l-384","--gaze"]
+                 "--model","rtmw-l-384","--gaze",
+                 '--inference-mode',args.inference_mode,'--detector-interval',str(args.detector_interval),
+                 '--detector-model',args.detector_model]
             for key in ("observation_block","observation_stride","head_pose_mode","head_pitch_gain","mouth_lip_depth_scale",
                         "face_distance_filter","arm_depth_mode","shoulder_yaw_mode","gaze_reference"):
                 cmd+=["--"+key.replace("_","-"),str(settings[key])]

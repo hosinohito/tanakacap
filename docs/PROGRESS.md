@@ -816,3 +816,14 @@ YuNet固定640/ORT CUDAを頭領域に追加し、MobileNet姿勢へ自動crop�
 Windowsのmode700で作った一時ディレクトリでは同じsandboxから書込拒否、通常mkdirでは読書成功を再現。Python公式os.mkdir仕様（https://docs.python.org/3.11/library/os.html#os.mkdir）と整合。tests/conftest.pyのWindows tmp_pathだけ既存workspaceのACLを継承し、UUID別領域を終了時に削除。pytest.iniで収集をtestsに限定、cache無効。OSの権限変更・sandbox解除はせず、通常実行で210 tests成功。README手順を更新。
 
 高速化はユーザー指定で全部ONのB→C→D、A/E保留へ変更済み。B試作の単独録画900測定中央値40.899→37.392ms、比較した4モデルの出力差0。詳細と未完了作業はHANDOFF先頭。C/D未実装、既定設定・デスクトップはまだ変更していない。
+
+
+## 2026-09-13 — 全部ON高速化 B→C→D 完了・B+C通常採用
+
+ユーザー指定でA/E保留、B→C→Dを実装・評価。BはGPU固定buffer/Graph、Cは3実検出確定後に最大2観測のROI画像追跡。Dは公式tiny416を取得・選択実装したがZ差が大きく任意候補に留めた。通常はgraph/3/M、全モデルON・既存補正維持。胴体OFFは手と共同推論のため高速化に採用しない。頭専用と揺れ物も変更なし。
+
+単独B中央値40.90→37.39ms、C比較37.11→22.20ms。6区間900観測でCの顔点差平均0.37px、左右手0.58/0.72px、Dは約1.9px。体Z差はC平均0.0076m、D0.0435m/p95 0.2544m。正解比較ではない。D初回は動的NMS出力binding再利用で形状変化時に失敗し、毎回解除・再設定して再測定。5モデル空画像/復帰込み出力差0、CUDA主要演算確認。新規4件を含む214 tests、PowerShell構文成功。
+
+既存録画+実Player+隔離OBS/720p60/AAあり/各60秒、受信20.24→32.63Hz、D35.60Hz、描画約60fps。RGBA合成・画像変化・正常終了確認。results/optimization-obs-{baseline,bc,bcd}、同一録画位置/900観測比較はresults/full-optimization-{B,C,D}-*、6区間品質差はresults/person-optimization-audit-1789231118191184300。詳細・一次資料はFULL_MODE_OPTIMIZATION.md。
+
+実カメラ1の取得は成功したが人物確定0/120であり追従・性能成功とは扱わない（results/20260912T164948-822875Z-rtmw-l-384）。新構成の実人物品質、実カメラ+OBS30分、実遅延は残る。デスクトップtestを全部ONへ更新、live/head-only/motionの非記録無期限を維持。README/仕様/引き継ぎ/フェーズ状態を更新。ユーザーの経路説明要求はINFERENCE_PIPELINE.mdへ部位別表で記録。モデル/録画/アバター/結果をGitへ入れず、外部pushなし。

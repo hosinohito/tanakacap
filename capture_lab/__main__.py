@@ -14,7 +14,8 @@ import cv2
 import numpy as np
 
 from .capture import Camera
-from .inference import DetectionGate, PersonDetector, SimCCModel
+from .inference import PersonDetector, SimCCModel
+from .person_region import PersonRegionTracker
 from .models import ROOT, catalog, fetch
 from .retarget import LocalSender, packet_from_landmarks, FaceFilter
 from .body3d import BodyRetarget
@@ -129,12 +130,13 @@ def benchmark(args):
         if args.unity_port:
             sender = LocalSender(args.unity_port)
         profile_output = None if getattr(args, 'no_ort_profile', False) else output
-        model = SimCCModel(args.model, profile_output)
+        execution = {} if args.inference_mode=='run' else dict(execution_mode=args.inference_mode)
+        model = SimCCModel(args.model, profile_output, **execution)
         if args.gaze:
             from .gaze import IrisGaze
-            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference)
+            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **execution)
         if args.body3d:
-            body_model = SimCCModel('rtmw3d-x-384', profile_output)
+            body_model = SimCCModel('rtmw3d-x-384', profile_output, **execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
             report['body_model'] = body_model.identity
             report['body_note'] = 'Learned relative depth; XY scale uses nominal 0.36m shoulder span. Not metric ground truth.'
@@ -146,10 +148,12 @@ def benchmark(args):
             if body_model:
                 body_model.predict(dummy,[0,0,args.width,args.height])
         report['initialization_pose_warmup_calls'] = 3
-        gate = DetectionGate()
+        region_tracker = None
         if args.source != 'synthetic' and args.roi is None and not args.fixed_roi:
-            detector = PersonDetector(profile_output)
+            detector_options = {} if args.detector_model == 'yolox-m-human' else {'name': args.detector_model}
+            detector = PersonDetector(profile_output, **execution, **detector_options)
             report['detector'] = detector.identity
+            region_tracker = PersonRegionTracker(detector, args.detector_interval)
         if args.source == 'camera':
             camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
             camera.__enter__()
@@ -177,6 +181,7 @@ def benchmark(args):
                     ok, image = video.read()
                     if not ok and getattr(args,'loop_video',False):
                         video.set(cv2.CAP_PROP_POS_FRAMES,0)
+                        if region_tracker: region_tracker.reset()
                         ok, image = video.read()
                     if not ok:
                         break
@@ -190,8 +195,8 @@ def benchmark(args):
                 roi = roi_for(image, args.roi)
                 detect_ms, person_score = 0., None
                 if detector:
-                    roi, person_score, detect_ms = detector.detect(image)
-                    roi = gate.update(roi)
+                    stamp = acquired if camera else video.get(cv2.CAP_PROP_POS_FRAMES)/max(1.,video.get(cv2.CAP_PROP_FPS))
+                    roi, person_score, detect_ms = region_tracker.update(image, stamp)
                 if roi is not None:
                     points, scores, timing = model.predict(image, roi)
                     pose_executed = True
@@ -200,10 +205,11 @@ def benchmark(args):
                     scores = np.zeros(133)
                     timing = {'preprocess_ms': 0., 'inference_call_ms': 0., 'postprocess_ms': 0., 'pipeline_ms': 0.}
                     pose_executed = False
+                if region_tracker: region_tracker.observe(points, scores)
                 timing['face_model_ms'] = timing['pipeline_ms']
                 timing['input_wait_read_ms'] = (read_done-iteration_start)*1000
                 timing['detector_ms'] = detect_ms
-                if detector: timing.update(detector.timing)
+                if region_tracker: timing.update(region_tracker.timing)
                 timing['pipeline_ms'] += detect_ms
                 body_xy = body_scores = None
                 timing['body3d_ms'] = 0.
@@ -261,6 +267,7 @@ def benchmark(args):
                 row = {'frame': index, 'sequence': last_sequence if camera else index,
                        'image_size':[image.shape[1],image.shape[0]],
                        'pose_executed': pose_executed, 'person_score': person_score,
+                       'person_region': region_tracker.diagnostics if region_tracker else None,
                        **timing, 'skipped_camera_frames': skipped,
                        'capture_read_to_result_ms': (done-acquired)*1000 if camera else None,
                        'coverage': part_coverage(scores, args.threshold)}
@@ -448,8 +455,11 @@ def main():
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
             sub.add_argument('--head-only',action='store_true',help='Direct head pose with automatic CUDA head region detection; no expression/gaze/body networks')
             sub.add_argument('--head-roi-mode', choices=('auto','fixed'), default='auto', help='Head-only: auto acquisition/loss/recovery, or legacy fixed crop')
+            sub.add_argument('--inference-mode',choices=('run','binding','graph'),default='run',help='Same CUDA models: legacy run, reusable GPU buffers, or CUDA graph replay')
             sub.add_argument('--no-body',action='store_true',help='Disable body network and all body/arm/hand/distance controls; retain face/head')
             sub.add_argument('--parent-pid',type=int,help='Stop when the avatar player exits (Windows)')
+            sub.add_argument('--detector-model', choices=('yolox-m-human','yolox-tiny-human'), default='yolox-m-human')
+            sub.add_argument('--detector-interval', type=int, choices=(1,2,3), default=1)
             sub.add_argument('--model', choices=[k for k,v in catalog().items() if v.get('kind') != 'detector' and v.get('dimensions',2)==2], default='rtmw-l-384')
             sub.add_argument('--source', choices=['synthetic', 'camera', 'video'], default='synthetic')
             sub.add_argument('--video')

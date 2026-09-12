@@ -296,8 +296,28 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 通常は全モデルON。run-avatar-lab.ps1の-NoBodyで体/腕/掌/指/顔距離による胴体移動、-NoGazeで目線推論をOFFにできます。体OFFでも顔の表情・頭の向きは従来通りです。tracking-settings.jsonのbody_enabled/person_detector_enabled/gaze_enabledでも次回起動から切替できます。人物検出OFF（-NoPersonDetector）は画像全体を固定範囲にする診断用で、無人時の誤推定や精度低下があります。
 
--HeadOnly（デスクトップtanakacap-head-only.bat）は、小型の直接頭姿勢モデルとGPU頭領域検出で、頭の向きだけを動かします。起動時の矩形選択は不要。移動・接近に合わせて範囲を更新し、見失ったら最後の姿勢を保持、再検出後に復帰します。Pで停止/再開、Rで自動取得をリセット、Sで対象の頭を選択。表情ランドマーク・虹彩・体・従来の人物検出モデルは読み込みません。音声口パクは後日の課題。-HeadRoiMode fixedで以前の手動固定範囲へ戻せます。今回のtanakacap-test.batは頭専用の記録付き検証、live.batは通常全機能、head-only.batは頭専用の非記録・無期限です。追加2モデルの取得・条件・制限は[頭専用モード](docs/HEAD_ONLY.md)、処理時間は[推論内訳](docs/INFERENCE_BREAKDOWN.md)を参照してください。
+-HeadOnly（デスクトップtanakacap-head-only.bat）は、小型の直接頭姿勢モデルとGPU頭領域検出で、頭の向きだけを動かします。起動時の矩形選択は不要。移動・接近に合わせて範囲を更新し、見失ったら最後の姿勢を保持、再検出後に復帰します。Pで停止/再開、Rで自動取得をリセット、Sで対象の頭を選択。表情ランドマーク・虹彩・体・従来の人物検出モデルは読み込みません。音声口パクは後日の課題。-HeadRoiMode fixedで以前の手動固定範囲へ戻せます。今回のtanakacap-test.batは全部ON高速化の記録付き検証、live.batは通常全機能、head-only.batは頭専用の非記録・無期限です。追加2モデルの取得・条件・制限は[頭専用モード](docs/HEAD_ONLY.md)、処理時間は[推論内訳](docs/INFERENCE_BREAKDOWN.md)を参照してください。
 
 同じアプリの起動オプション-TrackingMode full / face_head / head_only、またはtracking-settings.jsonのtracking_modeで構成を選べます。fullが既定。face_headは従来の顔表情・頭のみ、head_onlyは直接頭姿勢モデル＋小型頭領域検出です。-HeadOnlyはhead_onlyの別名であり、別製品・別Playerではありません。部位の反映だけでなく不要な推論モデルの生成を止めます。
 
 本家PhysBoneと独自揺れ物の比較動画は、生成済みの環境ではデスクトップtanakacap-compare-physbone.batから開けます。正面/髪の拡大、通常速度/半速の4本。再生成手順と比較条件は[本家比較](docs/PHYSBONE_REFERENCE.md)を参照してください。
+
+
+## 全部ONの高速化
+
+通常の`run-avatar-lab.ps1`とデスクトップtest/liveは、`tracking-settings.json`の`inference_mode=graph`、`detector_interval=3`、`detector_model=yolox-m-human`を使う。頭専用モードは従来のまま。GPU転送・起動を削減し、人物領域は最大2観測の画像追跡を挟む。顔・体・手・目線の詳細モデルは毎観測実行する。画像追跡不良、切り出し端、120ms経過で人物検出へ戻す。
+
+```powershell
+# 従来の実行・毎回の人物検出へ戻す（設定ファイルは変更しない）
+.\run-avatar-lab.ps1 -InferenceMode run -DetectorInterval 1 -DetectorModel yolox-m-human
+
+# 小型人物検出Dを試す。詳細モデル・補正は同じ
+.\.venv\Scripts\python.exe -m capture_lab fetch yolox-tiny-human
+.\run-avatar-lab.ps1 -DetectorModel yolox-tiny-human
+```
+
+`-InferenceMode run|binding|graph`、`-DetectorInterval 1|2|3`、`-DetectorModel yolox-m-human|yolox-tiny-human`で各変更を戻せる。Python CLIでは同名の`--inference-mode`、`--detector-interval`、`--detector-model`を使用する。Python CLIの既定は既存比較の再現のためrun/1/mediumのまま。小型モデルは切り出しの差が深度にも影響したため通常採用せず、追加取得は選択時のみ。
+
+結果・条件・残る検証は[全部ON高速化](docs/FULL_MODE_OPTIMIZATION.md)を参照。A（TensorRT/FP16）とE（部位ごとの更新頻度）は保留。
+
+部位別のモデル、補正、表示までの経路は[現在の推論経路](docs/INFERENCE_PIPELINE.md)を参照。

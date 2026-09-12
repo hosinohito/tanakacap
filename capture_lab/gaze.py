@@ -7,6 +7,7 @@ import onnxruntime as ort
 from .inference import provider_summary
 from .models import sha256
 from .motion_gate import DirectionGate
+from .gpu_runner import GpuRunner, provider_options
 
 MODEL = Path(__file__).resolve().parents[1]/'models/iris-landmark.onnx'
 MODEL_HASH = 'e3c8ae73a21415e396688d655d5f1d9e1cb5a01b7ed19962de76c06458bfddcb'
@@ -70,7 +71,7 @@ def contour_offset(iris, contour, flip):
 
 
 class IrisGaze:
-    def __init__(self, output, block=3, stride=1, reference='contour'):
+    def __init__(self, output, block=3, stride=1, reference='contour', execution_mode='run'):
         if reference not in ('contour','legacy'):raise ValueError('Unknown gaze reference')
         self.reference=reference
         if not MODEL.exists() or sha256(MODEL)!=MODEL_HASH: raise RuntimeError('Iris model missing or hash mismatch')
@@ -80,7 +81,8 @@ class IrisGaze:
         if self.profiling: options.profile_file_prefix=str(output/'iris')
         options.log_severity_level=3
         options.intra_op_num_threads=2
-        self.session=ort.InferenceSession(str(MODEL),sess_options=options,providers=['CUDAExecutionProvider'])
+        self.session=ort.InferenceSession(str(MODEL),sess_options=options,providers=provider_options(execution_mode))
+        self.runner=GpuRunner(self.session,execution_mode)
         self.session.disable_fallback()
         if self.session.get_providers()[0]!='CUDAExecutionProvider': raise RuntimeError('Iris requires CUDA')
         self.gate=DirectionGate(.35,float('inf'),block,stride)
@@ -96,7 +98,9 @@ class IrisGaze:
                 eye=np.asarray(points[idx:idx+6])
                 tensor=eye_crop(frame,eye,flip) if np.all(np.asarray(scores[idx:idx+6])>.4) and packet.get(side+'Blink',1)<.55 else None
                 if tensor is None: reasons.append(side+':unobserved'); continue
-                iris,contour=self.session.run(['output_iris','output_eyes_contours_and_brows'],{'input_1':tensor})
+                runner=getattr(self,'runner',None)
+                names=['output_iris','output_eyes_contours_and_brows']
+                iris,contour=runner.run(tensor,'input_1',names) if runner else self.session.run(names,{'input_1':tensor})
                 self.calls+=1
                 roi_value=iris_offset(iris,flip)
                 refined=contour_offset(iris,contour,flip)
