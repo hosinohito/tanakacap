@@ -336,3 +336,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 前処理は`preprocess_mode=crop`（切り出し後のRGB化）を通常採用。`-PreprocessMode legacy`で以前へ戻せる。入力テンソルは同一。[計測](docs/FURTHER_OPTIMIZATION.md)。
 
 左右眼は`batch_eyes=true`で1回の推論にまとめる。`-NoBatchEyes`で従来へ、`-BatchEyes`で明示指定。派生ONNXは初回にmodels内へ自動生成し原本を保持。Hの並行処理は計測で遅くなったためrevert済み。[結果](docs/FURTHER_OPTIMIZATION.md)。
+
+描画上限は`-RenderFps 30|60`（既定60）。`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。
