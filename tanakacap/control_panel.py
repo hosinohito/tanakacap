@@ -275,9 +275,10 @@ def main(test_hook=None):
     ttk.Button(f,text='アバターを選択',command=avatar).grid(row=1,column=1,sticky='w')
     row(f,6,'推論モード','mode',list(MODES))
     parts=ttk.Frame(f);parts.grid(row=8,column=0,columnspan=2,sticky='w',pady=12)
-    costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))['parts']
-    for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物検出')]:
-        ttk.Checkbutton(parts,text=text+' 負荷'+str(costs[key]['tenths'])+'割',variable=variables[key]).pack(anchor='w',pady=4)
+    costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))
+    for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物範囲の自動検出')]:
+        load_text=('処理時間 約'+str(costs['parts'][key]['tenths'])+'割') if costs.get('valid_for_current_configuration',False) else '負荷未計測'
+        ttk.Checkbutton(parts,text=text+'（'+load_text+'）',variable=variables[key]).pack(anchor='w',pady=4)
     def parts_state(*args):
         motion=variables['source'].get()=='motion'
         for widget in f_input.winfo_children():

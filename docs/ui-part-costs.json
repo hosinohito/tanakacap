@@ -3,8 +3,19 @@
   "scope": "RTX4090, recorded 900 observations, shared body/face, batch eyes, FP32 historical benchmark. Mean stage/read_to_send_ms, excluding decode/render/wait. Not savings from disabling a checkbox, nor a live FP16 measurement.",
   "total_ms": 17.673496666830033,
   "parts": {
-    "body": {"ms": 7.506031221742483, "tenths": 4},
-    "gaze": {"ms": 1.4723572218079224, "tenths": 1},
-    "detector": {"ms": 6.767945222640669, "tenths": 4}
-  }
+    "body": {
+      "ms": 7.506031221742483,
+      "tenths": 4
+    },
+    "gaze": {
+      "ms": 1.4723572218079224,
+      "tenths": 1
+    },
+    "detector": {
+      "ms": 6.767945222640669,
+      "tenths": 4
+    }
+  },
+  "valid_for_current_configuration": false,
+  "display_note": "Historical FP32 stage-time proportions; do not display as current load or toggle savings."
 }
