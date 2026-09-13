@@ -64,6 +64,7 @@ namespace TanakaCap
             }
             if(OutputWidth>4096 || OutputWidth>SystemInfo.maxTextureSize || OutputHeight>SystemInfo.maxTextureSize)
                 throw new ArgumentException("Output dimensions exceed supported texture size");
+            if(!Application.isBatchMode)Screen.SetResolution(OutputWidth,OutputHeight,FullScreenMode.Windowed);
             previewCamera=GetComponent<Camera>();
             previewCamera.backgroundColor=Color.black;
             int backgroundArg=Array.IndexOf(startupArgs,"--preview-background");

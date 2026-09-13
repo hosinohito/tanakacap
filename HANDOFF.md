@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+最新（2026-09-13）：自由入力の表示は「自由入力（推論上限をつけて負荷を軽減できます）」、ウインドウ表示は「アバターのウインドウを表示（オフにすると負荷軽減になります）」。Python UI右下に終了ボタン、既存の停止完了待ちで推論/Playerとともに閉じる。Unity構図ボタンを撤去、パネル既定表示・Escで開閉（F9撤去）、FOV 15〜80度のスライダー追加。起動時のウインドウ解像度を出力解像度に合わせる。通常Player更新済み、構図保存/reset/FOV・デモ描画・実ウインドウ960x540・実Tk終了ボタン検査成功。Escの実キー操作は未検証。results/framing-panel-v2。既存review6 ZIPは今回の変更前で再作成していない。
+
 ## 2026-09-13 — ライセンス実物監査と推論同期UI修正
 
 監査を実施しdocs/RELEASE_LICENSE_AUDIT.mdへ根拠・判断・残件を記録。本文14件をrelease/noticesに出所/SHA付きで追加、THIRD_PARTY/TERMSを同梱。build_release.pyにaudit_release_licenses.pyの検査を接続。NVIDIA .h122/.hpp14/.lib5を製品から除外、DLL20は不変。review5は2,085,247,898 bytes/CRC成功、合成虹彩CUDA381/CPU0確認。5残件はconfig.json：cuDNN9と旧wheel本文/nvJitLink、HumanArt YOLOX-M #3271未回答、RTMW-L/頭モデル適用範囲、OpenCV内部FFmpeg対応ソース、Unity適用契約/プラン/内部由来。禁止と未確認を混同しない。問い合わせ未送信。公開可ゲートは解除しない。

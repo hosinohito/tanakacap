@@ -7,8 +7,8 @@ namespace TanakaCap {
  // Window controls are not drawn into the explicit OBS render texture.
  public sealed class AvatarFraming:MonoBehaviour {
   [Serializable] public class Settings { public float height,zoom,fov=35; }
-  Camera cameraComponent;Vector3 rest;Settings settings=new Settings();string path;bool expanded;Font uiFont;
-  float appliedHeight,appliedZoom,restFov;Vector3 lastMouse;
+  Camera cameraComponent;Vector3 rest;Settings settings=new Settings();string path;bool expanded=true;Font uiFont;
+  float appliedHeight,appliedZoom,appliedFov,restFov;Vector3 lastMouse;
   void Start(){
    cameraComponent=GetComponent<Camera>();rest=transform.position;
    restFov=cameraComponent.fieldOfView;settings.fov=restFov;
@@ -41,16 +41,15 @@ namespace TanakaCap {
    var next=rest+transform.up*settings.height-transform.forward*settings.zoom;
    var delta=next-transform.position;
    foreach(var driver in FindObjectsOfType<AvatarDriver>())driver.CameraFramingChanged(delta);
-   transform.position=next;appliedHeight=settings.height;appliedZoom=settings.zoom;
+   transform.position=next;appliedHeight=settings.height;appliedZoom=settings.zoom;appliedFov=settings.fov;
    var output=GetComponent<AlphaOutput>();if(output)output.FramingChanged();
   }
   public bool OverControls(){
    var mouse=new Vector2(Input.mousePosition.x,Screen.height-Input.mousePosition.y);
-   return new Rect(Screen.width-122,12,110,28).Contains(mouse)||(expanded&&new Rect(Screen.width-282,48,270,180).Contains(mouse));
+   return enabled&&expanded&&new Rect(Screen.width-282,12,270,232).Contains(mouse);
   }
   void Update(){
-   if(Input.GetKeyDown(KeyCode.F9))expanded=!expanded;
-   if(Input.GetKeyDown(KeyCode.Escape))expanded=false;
+   if(Input.GetKeyDown(KeyCode.Escape))expanded=!expanded;
    if(!OverControls()){
     bool changed=false;
     if(Input.GetMouseButton(1)&&!Input.GetMouseButtonDown(1)){
@@ -70,16 +69,17 @@ namespace TanakaCap {
   void ResetFraming(){settings=new Settings{fov=restFov};Apply();if(File.Exists(path))File.Delete(path);}
   void OnGUI(){
    var oldFont=GUI.skin.font;if(uiFont)GUI.skin.font=uiFont;
-   if(GUI.Button(new Rect(Screen.width-122,12,110,28),"構図"))expanded=!expanded;
    if(!expanded){GUI.skin.font=oldFont;return;}
-   GUI.Box(new Rect(Screen.width-282,48,270,180),"");
-   GUI.Label(new Rect(Screen.width-270,58,250,22),"上下");
-   settings.height=GUI.HorizontalSlider(new Rect(Screen.width-270,88,242,20),settings.height,-.6f,.6f);
-   GUI.Label(new Rect(Screen.width-270,110,250,22),"寄り・引き");
-   settings.zoom=GUI.HorizontalSlider(new Rect(Screen.width-270,140,242,20),settings.zoom,-.6f,1f);
-   if(settings.height!=appliedHeight||settings.zoom!=appliedZoom)Apply();
-   if(GUI.Button(new Rect(Screen.width-270,177,110,30),"保存"))Save();
-   if(GUI.Button(new Rect(Screen.width-150,177,110,30),"リセット"))ResetFraming();
+   GUI.Box(new Rect(Screen.width-282,12,270,232),"");
+   GUI.Label(new Rect(Screen.width-270,22,250,22),"上下");
+   settings.height=GUI.HorizontalSlider(new Rect(Screen.width-270,52,242,20),settings.height,-.6f,.6f);
+   GUI.Label(new Rect(Screen.width-270,74,250,22),"寄り・引き");
+   settings.zoom=GUI.HorizontalSlider(new Rect(Screen.width-270,104,242,20),settings.zoom,-.6f,1f);
+   GUI.Label(new Rect(Screen.width-270,126,250,22),"FOV  "+settings.fov.ToString("F1")+"°");
+   settings.fov=GUI.HorizontalSlider(new Rect(Screen.width-270,156,242,20),settings.fov,15,80);
+   if(settings.height!=appliedHeight||settings.zoom!=appliedZoom||settings.fov!=appliedFov)Apply();
+   if(GUI.Button(new Rect(Screen.width-270,198,110,30),"保存"))Save();
+   if(GUI.Button(new Rect(Screen.width-150,198,110,30),"リセット"))ResetFraming();
    GUI.skin.font=oldFont;
   }
  }

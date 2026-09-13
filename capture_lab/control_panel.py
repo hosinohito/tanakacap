@@ -219,7 +219,7 @@ def main(test_hook=None):
         canvas.bind('<MouseWheel>',lambda event,c=canvas:c.yview_scroll(-int(event.delta/120),'units'))
         frames[name]=frame
     display_names={'source':{'camera':'カメラ','video':'保存済み録画','motion':'デモモーション'},
-                   'mode':MODES,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力'},
+                   'mode':MODES,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力（推論上限をつけて負荷を軽減できます）'},
                    'expression':{'existing':'既存キー優先','auto-custom':'自動独自キー（実験用）'}}
     display_names.update({key:value[2] for key,value in OPTIONS.items()})
     def row(frame,index,label,key,choices=None):
@@ -287,7 +287,7 @@ def main(test_hook=None):
     row(f,3,'出力の幅','width');row(f,4,'出力の高さ','height')
     ttk.Button(f,text='Full HD に戻す',command=lambda:(variables['width'].set('1920'),variables['height'].set('1080'))).grid(row=5,column=1,sticky='w')
     ttk.Checkbutton(f,text='軽量アンチエイリアス',variable=variables['aa']).grid(row=6,column=0,columnspan=2,sticky='w',pady=12)
-    ttk.Checkbutton(f,text='アバターのウインドウを表示',variable=variables['preview']).grid(row=7,column=0,columnspan=2,sticky='w')
+    ttk.Checkbutton(f,text='アバターのウインドウを表示（オフにすると負荷軽減になります）',variable=variables['preview']).grid(row=7,column=0,columnspan=2,sticky='w')
     background=ttk.Frame(f);background.grid(row=8,column=0,columnspan=2,sticky='w',pady=8)
     ttk.Label(background,text='背景').pack(side='left',padx=(0,12))
     for value,label in [('none','指定しない'),('green','緑'),('blue','青'),('magenta','マゼンタ')]:
@@ -353,6 +353,7 @@ def main(test_hook=None):
     def close():
         nonlocal closing
         closing=True;stop()
+    ttk.Button(buttons,text='終了',command=close).pack(side='right')
     window.protocol('WM_DELETE_WINDOW',close)
     def tick():
         nonlocal pending,was_running,last_error
