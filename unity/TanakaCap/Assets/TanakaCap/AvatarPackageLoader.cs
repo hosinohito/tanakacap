@@ -52,7 +52,10 @@ namespace TanakaCap {
      foreach(var warning in m.warnings??new string[0])Debug.LogWarning("Avatar package: "+warning);
     }
    }catch(Exception e){
-    error=e.Message;Debug.LogError("TANAKACAP_PACKAGE_ERROR "+e);
+    RuntimeStartup.RecordError(e);
+    error=e.Message+"\nError log: "+RuntimeStartup.ErrorLogPath;
+    if(!string.IsNullOrEmpty(RuntimeStartup.LogWriteFailure))error+="\nLog write failed: "+RuntimeStartup.LogWriteFailure;
+    Debug.Log("TANAKACAP_PACKAGE_ERROR "+e);
     if(avatar)Destroy(avatar);if(bundle){bundle.Unload(true);bundle=null;}
     show=true;if(Application.isBatchMode){var output=FindObjectOfType<AlphaOutput>();if(output)output.exitCode=2;Application.Quit(2);}
    }

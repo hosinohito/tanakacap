@@ -89,4 +89,4 @@ OBSにSpout2プラグインを追加し、Spoutソースで **TanakaCap** を選
 OBS用プラグイン： https://github.com/Off-World-Live/obs-spout2-plugin/releases
 
 
-エラーが出た場合は、本体の実行ファイル `TanakaCap.exe` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。
+エラーが出た場合は、起動用 `TanakaCap.bat` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。

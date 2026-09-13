@@ -63,7 +63,7 @@ def save_settings(values):
 def commands(config, port, status_port, player_pid=0):
     c=validate(config);tracking=json.loads((ROOT/'tracking-settings.json').read_text(encoding='utf-8'))
     cap=0 if c['rate']=='sync' else c['fps'] if c['rate']=='custom' else int(c['rate'])
-    player=[str(ROOT/'builds/lab/TanakaCap.exe'),'-nolog','--port',str(port),'--ui-status-port',str(status_port),
+    player=[str(ROOT/'builds/lab/TanakaCap.exe'),'-nolog','--error-log',str(ROOT/'logs/player-errors.log'),'--port',str(port),'--ui-status-port',str(status_port),
             '--avatar',str(Path(c['avatar']).resolve()),'--output-width',str(c['width']),
             '--output-height',str(c['height']),'--expression-mode',c['expression'],'--mouth-corner-emphasis',str(c['emphasis']),
             '--gaze-gain',str(c['gaze_gain'])]
@@ -232,15 +232,15 @@ def main(test_hook=None):
         else:widget=ttk.Combobox(frame,textvariable=variables[key],values=choices,state='readonly',width=32) if choices else ttk.Entry(frame,textvariable=variables[key],width=32)
         widget.grid(row=index,column=1,sticky='ew');return widget
     f=frames['入力・推論']
-    row(f,0,'入力','source',['camera','video','motion'])
+    row(f,2,'モーション入力','source',['camera','video','motion'])
     from .camera_devices import enumerate_cameras
     try:cameras=enumerate_cameras()
     except OSError:cameras=[]
     display_names['camera']={str(d['index']):f"{d['name']} ({d['index']})" for d in cameras}
     current=variables['camera'].get()
     if current not in display_names['camera']:display_names['camera'][current]='カメラ '+current+'（未検出）'
-    camera_choice=row(f,1,'カメラ','camera',list(display_names['camera']))
-    row(f,2,'録画のパス','video')
+    camera_choice=row(f,3,'カメラ','camera',list(display_names['camera']))
+    row(f,4,'録画のパス','video')
     takes=sorted((ROOT/'results/comparison-takes').glob('*/camera.avi'))
     def choose_take():
         picker=tk.Toplevel(window);picker.title('録画を選択');picker.geometry('650x280')
@@ -249,9 +249,9 @@ def main(test_hook=None):
         def choose():
             if box.curselection():variables['video'].set(str(takes[box.curselection()[0]]));variables['source'].set('video');picker.destroy()
         ttk.Button(picker,text='この録画を使う',command=choose).pack(pady=8)
-    ttk.Button(f,text='保存済み録画から選択',command=choose_take).grid(row=3,column=1,sticky='w')
+    ttk.Button(f,text='保存済み録画から選択',command=choose_take).grid(row=5,column=1,sticky='w')
     def source_state(*args):
-        for index,wanted in [(1,'camera'),(2,'video'),(3,'video')]:
+        for index,wanted in [(3,'camera'),(4,'video'),(5,'video')]:
             for widget in f_input.winfo_children():
                 info=widget.grid_info() or getattr(widget,'_saved_grid',{})
                 if int(info.get('row',-1))==index:
@@ -260,11 +260,11 @@ def main(test_hook=None):
                     else:widget.grid_remove()
     f_input=f
     variables['source'].trace_add('write',source_state);source_state()
-    row(f,4,'アバター (.tcap)','avatar')
+    row(f,0,'アバター (.tcap)','avatar')
     def avatar():
         path=filedialog.askopenfilename(filetypes=[('TanakaCap avatar','*.tcap')])
         if path:variables['avatar'].set(path)
-    ttk.Button(f,text='アバターを選択',command=avatar).grid(row=5,column=1,sticky='w')
+    ttk.Button(f,text='アバターを選択',command=avatar).grid(row=1,column=1,sticky='w')
     row(f,6,'推論モード','mode',list(MODES))
     parts=ttk.Frame(f);parts.grid(row=8,column=0,columnspan=2,sticky='w',pady=12)
     costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))['parts']
