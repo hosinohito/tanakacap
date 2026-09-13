@@ -14,7 +14,7 @@ from .models import ROOT, sha256
 from .inference import provider_summary
 from .motion_gate import DirectionGate
 from .retarget import LocalSender
-from .capture import Camera
+from .capture import Camera, camera_from_args
 from .head_region import HeadRegionDetector, HeadRegionTracker
 
 MODEL = ROOT / "models/head-mobilenetv3-small.onnx"
@@ -105,7 +105,7 @@ def run(args):
             detector = HeadRegionDetector(output if not args.no_ort_profile else None)
         if args.unity_port: sender = LocalSender(args.unity_port)
         if args.source == "camera":
-            camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
+            camera = camera_from_args(args)
             camera.__enter__()
         elif args.source == "video":
             video = cv2.VideoCapture(args.video)

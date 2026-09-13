@@ -21,6 +21,8 @@ def player_path():
 SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON（顔・頭・体・腕・指・目線）','face_head':'顔・頭（表情あり・目線なし）','head_only':'頭のみ（軽量・表情なし）'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/player/avatars/haolan.tcap'),
+             camera_id='',camera_powerline='keep',camera_lowlight='keep',camera_backend='dshow',camera_format='auto',
+             camera_width=1280,camera_height=720,camera_fps=30,
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
              aa=True,preview=True,background='none',expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp',
              brow_exaggeration=0.,eye_exaggeration=0.,eyelid_exaggeration=0.,mouth_exaggeration=0.)
@@ -34,7 +36,9 @@ def validate(values):
     for key,choices in dict(source=('camera','video','motion'),mode=tuple(MODES),rate=('60','sync','30','custom'),expression=('existing','auto-custom'),background=('none','green','blue','magenta')).items():
         if data[key] not in choices:raise ValueError('Invalid '+key)
     if data['head_pose_mode'] not in ('pnp','size2d','legacy','depth3d','pnp_depthmouth'):raise ValueError('Invalid head_pose_mode')
-    for key,lo,hi in [('camera',0,31),('fps',1,240),('width',64,4096),('height',64,4096)]:
+    for key,choices in dict(camera_powerline=('keep','off','50hz','60hz'),camera_lowlight=('keep','fixed','variable'),camera_backend=('dshow','msmf'),camera_format=('auto','native','MJPG','YUY2','NV12')).items():
+        if data[key] not in choices:raise ValueError('Invalid '+key)
+    for key,lo,hi in [('camera',0,255),('fps',1,240),('width',64,4096),('height',64,4096),('camera_width',64,8192),('camera_height',64,8192),('camera_fps',1,240)]:
         value=float(data[key])
         if not math.isfinite(value) or value!=int(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} の整数を指定してください')
         data[key]=int(value)
@@ -46,7 +50,7 @@ def validate(values):
         data[key]=value
     for key in ('body','gaze','detector','aa','preview'):
         if type(data[key]) is not bool:raise ValueError('Invalid '+key)
-    for key in ('avatar','video'):
+    for key in ('avatar','video','camera_id'):
         if not isinstance(data[key],str):raise ValueError('Invalid '+key)
     return data
 
@@ -93,7 +97,14 @@ def commands(config, port, status_port, player_pid=0):
            '--frames','0','--warmup','0','--unity-port',str(port),'--parent-pid',str(player_pid),
            '--status-port',str(status_port),'--inference-limit',str(cap)]
     if c['source']=='video':infer+=['--video',str(Path(c['video']).resolve()),'--loop-video']
-    else:infer+=['--camera',str(c['camera']),'--backend','dshow']
+    else:
+        if c['camera_backend']=='msmf' and not c['camera_id']:
+            raise ValueError('このカメラは取得方式間で一意に識別できません。DirectShowを使用してください。')
+        infer+=['--camera',str(c['camera']),'--backend',c['camera_backend'],
+                '--camera-powerline',c['camera_powerline'],'--pixel-format',c['camera_format'],
+                '--camera-lowlight',c['camera_lowlight'],
+                '--width',str(c['camera_width']),'--height',str(c['camera_height']),'--fps',str(c['camera_fps'])]
+        if c['camera_id']:infer+=['--camera-id',c['camera_id']]
     body=c['mode']=='full' and c['body']
     infer+=['--face-source',tracking.get('face_source','body3d') if body else 'separate']
     for key,default in [('observation_block',3),('observation_stride',1),('head_pose_mode','pnp'),('head_pitch_gain',1.8),
@@ -224,7 +235,7 @@ def main(test_hook=None):
     state=ttk.Label(outer,text='');state.pack(anchor='w')
     tabs=ttk.Notebook(outer);tabs.pack(fill='both',expand=True,pady=12)
     frames={};scroll_panes=[]
-    for name in ('入力・推論','描画・OBS','表情','実験'):
+    for name in ('入力・推論','カメラ','描画・OBS','表情','実験'):
         pane=ttk.Frame(tabs);tabs.add(pane,text=name)
         canvas=tk.Canvas(pane,highlightthickness=0,background=style.lookup('TFrame','background'))
         scroll=ttk.Scrollbar(pane,orient='vertical',command=canvas.yview);scroll.pack(side='right',fill='y')
@@ -239,6 +250,10 @@ def main(test_hook=None):
                    'mode':MODES,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力（推論上限をつけて負荷を軽減できます）'},
                    'expression':{'existing':'既存キー優先','auto-custom':'自動独自キー（実験用）'}}
     display_names.update({key:value[2] for key,value in OPTIONS.items()})
+    display_names.update(camera_powerline={'keep':'変更しない','off':'無効（照明によって縞が出る場合があります）','50hz':'50 Hz','60hz':'60 Hz'},
+                         camera_lowlight={'keep':'変更しない','fixed':'速度優先（暗所でのfps低下を抑える）','variable':'明るさ優先（暗所ではfps低下を許可）'},
+                         camera_backend={'dshow':'DirectShow（既定）','msmf':'Media Foundation'},
+                         camera_format={'auto':'自動（対応形式から選択）','native':'機器既定','MJPG':'MJPEG（圧縮）','YUY2':'YUY2（非圧縮）','NV12':'NV12（非圧縮）'})
     def row(frame,index,label,key,choices=None):
         ttk.Label(frame,text=label,width=20,wraplength=190).grid(row=index,column=0,sticky='w',padx=(0,15),pady=9)
         if choices and key in display_names:
@@ -253,10 +268,31 @@ def main(test_hook=None):
     from .camera_devices import enumerate_cameras
     try:cameras=enumerate_cameras()
     except OSError:cameras=[]
+    saved_id=variables['camera_id'].get()
+    if saved_id:
+        matching=[d for d in cameras if d.get('device_id','').casefold()==saved_id.casefold()]
+        variables['camera'].set(str(matching[0]['index']) if len(matching)==1 else '-1')
     display_names['camera']={str(d['index']):f"{d['name']} ({d['index']})" for d in cameras}
     current=variables['camera'].get()
     if current not in display_names['camera']:display_names['camera'][current]='カメラ '+current+'（未検出）'
     camera_choice=row(f,3,'カメラ','camera',list(display_names['camera']))
+    def camera_selected(event=None):
+        selected=next((d for d in cameras if str(d['index'])==variables['camera'].get()),None)
+        if selected:
+            new_id=selected.get('device_id','')
+            if variables['camera_id'].get() and new_id!=variables['camera_id'].get():
+                variables['camera_powerline'].set('keep');variables['camera_lowlight'].set('keep')
+            variables['camera_id'].set(new_id)
+    camera_choice.bind('<<ComboboxSelected>>',camera_selected,add='+')
+    if not saved_id:camera_selected()
+    camera_frame=frames['カメラ']
+    row(camera_frame,0,'ちらつき防止','camera_powerline',list(display_names['camera_powerline']))
+    row(camera_frame,1,'カメラ解像度・幅','camera_width')
+    row(camera_frame,2,'カメラ解像度・高さ','camera_height')
+    row(camera_frame,3,'カメラ fps','camera_fps')
+    row(camera_frame,4,'転送形式','camera_format',list(display_names['camera_format']))
+    row(camera_frame,5,'取得方式','camera_backend',list(display_names['camera_backend']))
+    row(camera_frame,6,'暗所補正（自動露出時）','camera_lowlight',list(display_names['camera_lowlight']))
     row(f,4,'録画のパス','video')
     takes=sorted((ROOT/'results/comparison-takes').glob('*/camera.avi'))
     def choose_take():
@@ -268,6 +304,7 @@ def main(test_hook=None):
         ttk.Button(picker,text='この録画を使う',command=choose).pack(pady=8)
     ttk.Button(f,text='保存済み録画から選択',command=choose_take).grid(row=5,column=1,sticky='w')
     def source_state(*args):
+        tabs.tab(frames['カメラ'].master.master,state='normal' if variables['source'].get()=='camera' else 'disabled')
         for index,wanted in [(3,'camera'),(4,'video'),(5,'video')]:
             for widget in f_input.winfo_children():
                 info=widget.grid_info() or getattr(widget,'_saved_grid',{})
