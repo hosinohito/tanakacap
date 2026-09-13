@@ -593,3 +593,6 @@
 
 
 2026-09-13 最新指定：バグ修正を継続するためZIP作成は不要。今後はローカル実行用Player/Exporter/UIだけ更新し、明示指示までリリース梱包しない。fixes12梱包を中断。ローカルはrun-ui.ps1（デスクトップtanakacap.bat）から最新tanakacapソースとbuilds/playerを使用。カメラの寄り拡大、枠なし/寸法一致、10行ログ欄を反映済み。273テスト、Tk、実ウインドウ960x540/1920x1080・枠再発からの復旧を確認済み。GitHub未更新。
+
+
+2026-09-13 最新指定：別PCでの試験用に、今後の修正報告では毎回、今回変更したコピー対象と別PC側のコピー先を明記する。ZIPは作らない。今回のコピー元はbuilds/releases/0.1.1-fixes12/TanakaCapの展開済みapp、tanakacap、TanakaCap.bat、使い方.md（最新ソース/Playerと照合済み）。別PCの既存本体直下へ同名配置。runtime/models/個人ui-settings.json/アバターの再コピーは今回不要。
