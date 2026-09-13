@@ -425,3 +425,7 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 従来のPowerShell起動は`-RenderFps 30|60`（既定60）。操作UIは60/推論同期/30/自由入力と推論上限の連動に対応する。[UI](docs/CONTROL_PANEL.md)。従来batでは`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。
 
 着せ替え済みアバターの準備は[利用説明書](docs/USER_GUIDE.md#着せ替えツール別の準備)を参照。MA/VRCFury/キセテネ/AvatarToolsとAAO併用を記載し、すべて原本を残す複製プロジェクトで作業します。公式根拠と現行Exporterの制約は[調査記録](docs/EXPORT_TOOL_RESEARCH.md)。
+
+### Constraintを含むアバターの書き出し
+
+PhysBoneとUnity Constraintが同じボーンを制御する場合、そのボーンはConstraintを優先します。競合しない子ボーンの揺れは維持し、省略した揺れの箇所を`.report.json`に記録します。元の揺れの完全再現ではありません。v0.1.0配布プラグインの一律拒否は修正済みソースで解消していますが、公開ZIPへの反映はまだです。

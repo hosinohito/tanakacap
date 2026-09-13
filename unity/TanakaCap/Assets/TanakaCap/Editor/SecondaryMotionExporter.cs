@@ -99,13 +99,12 @@ namespace TanakaCap.Editor {
      string bp=AnimationUtility.CalculateTransformPath(b,copy.transform);
      if(c.ignored.Any(p=>bp==p||bp.StartsWith(p+"/",StringComparison.Ordinal)))return;
      if(human.Contains(b))throw new Exception("PhysBone controls Humanoid bone: "+bp);
-     if(b.GetComponents<Component>().Any(x=>x is UnityEngine.Animations.IConstraint))throw new Exception("PhysBone/Constraint overlap: "+bp);
      var children=b.Cast<Transform>().Where(x=>!c.ignored.Contains(AnimationUtility.CalculateTransformPath(x,copy.transform))).ToArray();
      Vector3 tail=c.endpointPosition;
      if(children.Length==1 || children.Length>1&&c.multiChildType==1)tail=children[0].localPosition;
      else if(children.Length>1&&c.multiChildType==2){tail=Vector3.zero;foreach(var child in children)tail+=child.localPosition;tail/=children.Length;}
      else if(children.Length>1)tail=Vector3.zero;
-     if(tail.sqrMagnitude>1e-10f)selected.Add(Tuple.Create(b,tail,depth));
+     if(ShouldSimulate(b,tail,bp,warnings))selected.Add(Tuple.Create(b,tail,depth));
      foreach(var child in children)visit(child,depth+1);
     };visit(t,0);
     int maxDepth=selected.Count==0?1:Math.Max(1,selected.Max(x=>x.Item3)+1);
@@ -116,6 +115,15 @@ namespace TanakaCap.Editor {
    warnings.Add("Independent PhysBone-parameter conversion: "+chains.Count+" chains / "+bones.Count+" segments / "+colliders.Count+" explicit colliders. Force mapping, curve depth and collision response approximate; not the VRChat solver. No global/player collisions, grab/pose or animator parameters.");
    if(chains.Count==0)warnings.Add("No readable PhysBone chains; secondary motion unavailable.");
    return new SecondaryPhysicsData{chains=chains.ToArray(),bones=bones.ToArray(),colliders=colliders.ToArray()};
+  }
+  internal static bool ShouldSimulate(Transform bone,Vector3 tail,string path,List<string> warnings){
+   if(tail.sqrMagnitude<=1e-10f)return false;
+   var constraints=bone.GetComponents<Component>().Where(c=>c is UnityEngine.Animations.IConstraint).ToArray();
+   if(constraints.Length==0)return true;
+   // Native constraints run after LateUpdate. Keep them intact instead of
+   // scheduling a second rotation writer which they would overwrite.
+   warnings.Add("Constraint takes priority over secondary motion at "+path+" ("+string.Join(", ",constraints.Select(c=>c.GetType().Name))+"). Constraint preserved; PhysBone simulation omitted on this bone only. Unconstrained descendants are still collected. This can reduce the original sway.");
+   return false;
   }
  }
 }
