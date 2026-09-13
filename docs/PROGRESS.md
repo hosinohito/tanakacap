@@ -1251,3 +1251,5 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 2026-09-13：診断用ファイルを整理。再利用するカメラ診断bat/Pythonをtools/diagnostics/へ移動し、ルート解決とDesktop起動先を更新。一時検証用ファイルはDesktop/tanakacap-tools、再利用する診断はtools/diagnosticsへ配置し、プロジェクト直下に増やさない。実カメラは起動せずパスと構文のみ確認。ZIP作成なし。
 
 2026-09-13：ユーザー実行のresults/camera-diagnostic-1789286758250960600を確認。取得のみ720p=11.515/11.480fps、640x480=25.046/25.214fps。MJPG要求も全件実形式YUY2（844715353）で形式間比較は不成立。推論なしでも約11Hz再現、カメラ取得経路が制限要因。解像度/fps設定が形式を戻す可能性に対しFOURCCを最後へ移動、actual_format/format_matches_requestと不一致警告を追加。モックで設定順序と実形式確認テスト成功。実機改善・USB帯域原因は未確定。同じDesktop診断batのユーザー再実行で確認、エージェントは実カメラ未起動。ZIPなし。
+
+2026-09-13：ユーザー再実行results/camera-diagnostic-1789286987550314800で形式設定順修正の実機効果を確認。720p MJPG=25.0527fps、VGA MJPG=25.0442fps、720p YUY2=11.4792fps、VGA YUY2=25.3873fps。全件要求形式と実形式一致。720p取得は旧約11.5から約25.1fpsへ改善。通常Python UIはDSHOWで共通Cameraを使用するため修正適用済み、再起動で反映。推論/Player併用での実速度と30fps未達の原因は未確認。配布PCはtanakacap/capture.pyのみ同位置へ上書き、Unity再ビルド/ZIP不要。
