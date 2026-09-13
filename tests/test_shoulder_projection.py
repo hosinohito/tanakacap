@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.shoulder_projection import ShoulderProjection
+from tanakacap.shoulder_projection import ShoulderProjection
 
 IDS=np.array([27,28,29,30,36,39,42,45])+23
 

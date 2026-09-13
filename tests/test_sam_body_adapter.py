@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from tools.sam_body_adapter import adapt,projection_error,BODY_MAP,LEFT_MAP,RIGHT_MAP
-from capture_lab.body3d import BodyRetarget
+from tanakacap.body3d import BodyRetarget
 
 
 def prediction():

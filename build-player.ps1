@@ -8,5 +8,5 @@ if (-not (Test-Path -LiteralPath (Join-Path $taskProject 'Assets\HAOLAN\Phys_Hao
 }
 # Explicit Wait is required: Unity is a Windows GUI executable.
 $taskProcess = Start-Process -FilePath $Unity -ArgumentList @('-batchmode','-quit','-projectPath', ('"'+$taskProject+'"'),
-    '-executeMethod','TanakaCap.Editor.BuildLab.Build','-logFile',('"'+$taskLog+'"')) -WindowStyle Hidden -PassThru -Wait
+    '-executeMethod','TanakaCap.Editor.BuildPlayer.Build','-logFile',('"'+$taskLog+'"')) -WindowStyle Hidden -PassThru -Wait
 if ($taskProcess.ExitCode -ne 0) { throw "Unity failed. See $taskLog" }

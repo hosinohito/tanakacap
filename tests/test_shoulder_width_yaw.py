@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from capture_lab.torso_yaw import shoulder_yaw_magnitude
-from capture_lab.body3d import BodyRetarget
+from tanakacap.torso_yaw import shoulder_yaw_magnitude
+from tanakacap.body3d import BodyRetarget
 from test_body3d import body,packet
 
 

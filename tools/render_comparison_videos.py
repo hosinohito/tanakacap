@@ -9,7 +9,7 @@ def sha(p):
  return h.hexdigest()
 def run(output,comparison=None):
  output=output.resolve();output.mkdir(parents=True,exist_ok=False)
- ff=ROOT/'tools/bin/ffmpeg.exe';player=ROOT/'builds/lab/TanakaCap.exe'
+ ff=ROOT/'tools/bin/ffmpeg.exe';player=ROOT/'builds/player/TanakaCap.exe'
  variants={}
  inputs={'current':ROOT/'results/comparisons/first-take/baseline/replay.jsonl','hamer-fingers':ROOT/'results/comparisons/first-take-hamer/fingers/replay.jsonl'}
  scope='Same original capture and camera; only finger geometry differs. Offline rendering, not live latency. Opaque MP4 preview; OBS RGBA output unchanged.'
@@ -27,7 +27,7 @@ def run(output,comparison=None):
   clocks.append([row['dt'] for row in rows])
  if not clocks[0] or any(clock[1:]!=clocks[0][1:] or len(clock)!=len(clocks[0]) for clock in clocks[1:]):raise ValueError('Replay clocks differ')
  expected=len(clocks[0])
- report={'status':'running','scope':scope,'sources':{k:{'path':str(p),'sha256':sha(p)} for k,p in inputs.items()},'assembly_sha256':sha(ROOT/'builds/lab/TanakaCap_Data/Managed/Assembly-CSharp.dll'),'ffmpeg_sha256':sha(ff)}
+ report={'status':'running','scope':scope,'sources':{k:{'path':str(p),'sha256':sha(p)} for k,p in inputs.items()},'assembly_sha256':sha(ROOT/'builds/player/TanakaCap_Data/Managed/Assembly-CSharp.dll'),'ffmpeg_sha256':sha(ff)}
  (output/'report.json').write_text(json.dumps(report,indent=2))
  videos=[]
  for name,source in inputs.items():

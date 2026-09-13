@@ -349,7 +349,7 @@ def benchmark(args):
                     if body_model and sender:
                         cv2.putText(display,body_retarget.calibration.status,(12,125),cv2.FONT_HERSHEY_SIMPLEX,.55,(0,255,255),2)
                     cv2.putText(display,f'Confirmation: mean {args.observation_block}, stride {args.observation_stride}',(12,150),cv2.FONT_HERSHEY_SIMPLEX,.55,(0,255,255),2)
-                    camera_display.show('tanakacap capture lab', display)
+                    camera_display.show('TanakaCap capture', display)
                     key=cv2.waitKey(1) & 0xff
                     if key in (27, ord('q')):
                         break

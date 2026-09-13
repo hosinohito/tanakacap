@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from capture_lab.retarget import packet_from_landmarks,FaceFilter
+from tanakacap.retarget import packet_from_landmarks,FaceFilter
 
 
 def face_points(width=80):

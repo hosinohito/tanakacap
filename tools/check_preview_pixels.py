@@ -17,7 +17,7 @@ def main():
     parser.add_argument("folder", type=Path)
     args = parser.parse_args()
     result = {}
-    background = np.array([.09, .07, .06]) * 255  # BuildLab camera, BGR/gamma
+    background = np.array([.09, .07, .06]) * 255  # BuildPlayer camera, BGR/gamma
     for name in ("screen", "hidden", "square"):
         path = args.folder / (name + ".png")
         screen = cv2.imread(str(path))

@@ -18,7 +18,7 @@
 「Zなし」は**モデルが毎観測出すZを口へ入れない**意味。固定テンプレートの唇深度と顔の向きの補正は残る（`mouth_lip_depth_scale=1.5`）。単なる画像XYへ戻すと、過去の「下向きで口角が上がる」問題を戻す可能性があるため。モデル自体は腕などに必要なZを引き続き推論するので、GPU推論の削減策ではない。
 
 - 現在の試行：`tracking-settings.json`の`head_pose_mode=pnp`、通常test/liveから利用。
-- 直前へ戻す：`head_pose_mode=pnp_depthmouth`、または`run-avatar-lab.ps1 -HeadPoseMode pnp_depthmouth`。
+- 直前へ戻す：`head_pose_mode=pnp_depthmouth`、または`run-avatar.ps1 -HeadPoseMode pnp_depthmouth`。
 - デスクトップ`tanakacap-test-mouth-z.bat`は直前方式。エージェントは実カメラ起動を行わない。
 - `depth3d`は頭ピッチまでZにする過去試行なので、今回の戻し先ではない。
 

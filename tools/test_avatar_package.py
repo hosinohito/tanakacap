@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def run(output=None):
  p=output or ROOT/'results/avatar-package-tests'/datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S-%fZ')
  p=p.resolve();p.mkdir(parents=True,exist_ok=False)
- package=ROOT/'builds/lab/avatars/haolan.tcap';exe=ROOT/'builds/lab/TanakaCap.exe'
+ package=ROOT/'builds/player/avatars/haolan.tcap';exe=ROOT/'builds/player/TanakaCap.exe'
  with zipfile.ZipFile(package) as z:
   valid=json.loads(z.read('manifest.json'));assert hashlib.sha256(z.read('avatar.bundle')).hexdigest()==valid['bundleSha256']
  results={}

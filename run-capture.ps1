@@ -8,8 +8,8 @@ $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
     $taskPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
-    if (-not (Test-Path -LiteralPath $taskPython)) { throw 'Run setup-lab.ps1 first.' }
-    $taskArgs = @('-m','capture_lab','benchmark','--source','camera','--model',$Model,
+    if (-not (Test-Path -LiteralPath $taskPython)) { throw 'Run setup.ps1 first.' }
+    $taskArgs = @('-m','tanakacap','benchmark','--source','camera','--model',$Model,
                   '--camera',"$Camera",'--backend','msmf','--frames',"$Frames")
     if (-not $Headless) { $taskArgs += '--preview' }
     & $taskPython @taskArgs

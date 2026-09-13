@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 import pytest
-from capture_lab.head_pose import TEMPLATE,POSE_IDS,fit_pose,frontal_landmarks,camera_matrix,HeadPose
-from capture_lab.mouth_detail import contour_controls
+from tanakacap.head_pose import TEMPLATE,POSE_IDS,fit_pose,frontal_landmarks,camera_matrix,HeadPose
+from tanakacap.mouth_detail import contour_controls
 
 
 def projected(pitch=0,yaw=0,roll=0,depth=.7,shift=(0,0),expression=0,lip_depth_scale=1.):

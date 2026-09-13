@@ -4,9 +4,9 @@ from pathlib import Path
 from collections import Counter,defaultdict
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.visibility import screen_visibility
-from capture_lab.hand_orientation import palm_basis
-from capture_lab.face_distance import FaceDistance
+from tanakacap.visibility import screen_visibility
+from tanakacap.hand_orientation import palm_basis
+from tanakacap.face_distance import FaceDistance
 
 def reason(xyz,scores,zscores,offset):
  ids=np.array([0,5,9,17])+offset;p=xyz[ids];s=scores[ids]

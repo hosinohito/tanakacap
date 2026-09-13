@@ -6,6 +6,7 @@ using UnityEngine;
 namespace TanakaCap {
  // Window controls are not drawn into the explicit OBS render texture.
  public sealed class AvatarFraming:MonoBehaviour {
+  public const float MinimumZoom=-1.4f,MaximumZoom=1f;
   [Serializable] public class Settings { public float height,zoom,fov=35; }
   Camera cameraComponent;Vector3 rest;Settings settings=new Settings();string path;bool expanded=true;Font uiFont;
   float appliedHeight,appliedZoom,appliedFov,restFov;Vector3 lastMouse;
@@ -36,7 +37,7 @@ namespace TanakaCap {
    Apply();
   }
   void Apply(){
-   settings.height=Mathf.Clamp(settings.height,-.6f,.6f);settings.zoom=Mathf.Clamp(settings.zoom,-.6f,1f);
+   settings.height=Mathf.Clamp(settings.height,-.6f,.6f);settings.zoom=Mathf.Clamp(settings.zoom,MinimumZoom,MaximumZoom);
    settings.fov=Mathf.Clamp(settings.fov,15,80);cameraComponent.fieldOfView=settings.fov;
    var next=rest+transform.up*settings.height-transform.forward*settings.zoom;
    var delta=next-transform.position;
@@ -74,7 +75,7 @@ namespace TanakaCap {
    GUI.Label(new Rect(Screen.width-270,22,250,22),"上下");
    settings.height=GUI.HorizontalSlider(new Rect(Screen.width-270,52,242,20),settings.height,-.6f,.6f);
    GUI.Label(new Rect(Screen.width-270,74,250,22),"寄り・引き");
-   settings.zoom=GUI.HorizontalSlider(new Rect(Screen.width-270,104,242,20),settings.zoom,-.6f,1f);
+   settings.zoom=GUI.HorizontalSlider(new Rect(Screen.width-270,104,242,20),settings.zoom,MinimumZoom,MaximumZoom);
    GUI.Label(new Rect(Screen.width-270,126,250,22),"FOV  "+settings.fov.ToString("F1")+"°");
    settings.fov=GUI.HorizontalSlider(new Rect(Screen.width-270,156,242,20),settings.fov,15,80);
    if(settings.height!=appliedHeight||settings.zoom!=appliedZoom||settings.fov!=appliedFov)Apply();

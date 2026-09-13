@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.arm_filter import filter_arm
+from tanakacap.arm_filter import filter_arm
 
 
 def test_depth_outlier_does_not_delay_visible_arm_raise():

@@ -4,9 +4,9 @@ from collections import Counter
 from pathlib import Path
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from capture_lab.body3d import BodyRetarget
-from capture_lab.comparison import dump,line,fingerprint
-from capture_lab.models import sha256
+from tanakacap.body3d import BodyRetarget
+from tanakacap.comparison import dump,line,fingerprint
+from tanakacap.models import sha256
 from compare_body_models import difference
 
 

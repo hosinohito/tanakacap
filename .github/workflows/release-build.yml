@@ -21,7 +21,7 @@ jobs:
         run: |
           uv venv --python 3.11 .venv
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          uv pip sync --python .venv/Scripts/python.exe requirements-lab.lock.txt
+          uv pip sync --python .venv/Scripts/python.exe requirements.lock.txt
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           .venv/Scripts/python.exe tools/prepare_release_ci.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

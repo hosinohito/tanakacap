@@ -18,8 +18,8 @@ def run_profile(variant,output):
     from sam_3d_body.models.heads.mhr_head import MHRHead
     import sam_3d_body.sam_3d_body_estimator as estimator_module
     from compare_external_model import run
-    from capture_lab.comparison import dump
-    from capture_lab.models import sha256
+    from tanakacap.comparison import dump
+    from tanakacap.models import sha256
     original=SAM3DBodyEstimator.process_one_image;original_init=SAM3DBodyEstimator.__init__;original_mhr=MHRHead.mhr_forward;original_batch=estimator_module.prepare_batch
     steps=[];calls=0
     def init(estimator,*a,**kw):

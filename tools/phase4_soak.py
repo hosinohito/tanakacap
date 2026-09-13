@@ -130,7 +130,7 @@ def main(*, inference_mode='graph-fp16'):
         report.update(resolution=[width,height],preview_visible=not args.no_preview,shared_preview=not args.legacy_preview)
         o.call("SetVideoSettings",baseWidth=width,baseHeight=height,outputWidth=width,outputHeight=height,
                fpsNumerator=args.obs_fps,fpsDenominator=1)
-        cmd=[str(ROOT/"builds/lab/TanakaCap.exe"),"--port",str(port),"--obs","--output-height",str(height),
+        cmd=[str(ROOT/"builds/player/TanakaCap.exe"),"--port",str(port),"--obs","--output-height",str(height),
              "--render-fps",str(args.render_fps),"--performance-log",str(out/"player.jsonl"),"--performance-seconds",str(args.seconds+15),
              "-logFile",str(out/"player.log")]
         if args.gpu_timing:cmd+=["--performance-gpu"]
@@ -142,7 +142,7 @@ def main(*, inference_mode='graph-fp16'):
         player=subprocess.Popen(cmd,cwd=ROOT,creationflags=subprocess.CREATE_NO_WINDOW)
         if not args.demo:
             settings=json.loads((ROOT/"tracking-settings.json").read_text())
-            cmd=[sys.executable,"-c",f"from capture_lab.__main__ import main; main(inference_mode={inference_mode!r})","benchmark","--source","video","--video",str(args.video.resolve()),
+            cmd=[sys.executable,"-c",f"from tanakacap.__main__ import main; main(inference_mode={inference_mode!r})","benchmark","--source","video","--video",str(args.video.resolve()),
                  "--loop-video","--no-log","--frames","0","--parent-pid",str(player.pid),"--unity-port",str(port),"--body3d",
                  "--model","rtmw-l-384","--gaze",
                  '--detector-interval',str(args.detector_interval),

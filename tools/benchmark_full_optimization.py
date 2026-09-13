@@ -26,7 +26,7 @@ def main():
                    'body3d':['--inference-mode','graph','--detector-interval','3','--face-source','body3d']}}[args.stage]
     reports={}
     for name,extra in modes.items():
-        command=[sys.executable,'-m','capture_lab','benchmark','--source','video','--video',
+        command=[sys.executable,'-m','tanakacap','benchmark','--source','video','--video',
             str(ROOT/'results/comparison-takes/20260911T235327-031115Z/camera.avi'),
             '--frames',str(args.frames),'--warmup','30','--body3d','--gaze','--unity-port','39549',
             '--no-ort-profile','--arm-depth-mode','front_projection','--shoulder-yaw-mode','face_ratio',*extra]
@@ -37,7 +37,7 @@ def main():
         if '--inference-mode' in command:
             at=command.index('--inference-mode'); mode=command[at+1]
             del command[at:at+2]
-        command[1:3]=['-c',f'from capture_lab.__main__ import main; main(inference_mode={mode!r})']
+        command[1:3]=['-c',f'from tanakacap.__main__ import main; main(inference_mode={mode!r})']
         with (out/(name+'.log')).open('wb') as log:
             subprocess.run(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True,timeout=600)
         text=(out/(name+'.log')).read_text(encoding='utf-8',errors='replace').replace('\0','')

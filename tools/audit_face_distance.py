@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.face_distance import FaceDistance
+from tanakacap.face_distance import FaceDistance
 
 def main():
     parser=argparse.ArgumentParser()

@@ -23,7 +23,7 @@ UIの「表情」で眉・目線・まぶた・口の大げさ度を個別に0�
 
 眉は4フレーム処理後に可変速度で追従する。小さい差はゆっくり、大きい差は速く、左右内外4値を独立処理。既定ON、Playerの`--no-adaptive-brow-follow`で従来の直接反映へ戻せる。頭の可変追従の採否とは独立。
 
-検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定する。既存の独自キーを保持し、実行時コピーへ眉の左右分割キーと不足する口寄せ・目線キーを補う。直接指定は`run-avatar-lab.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
+検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定する。既存の独自キーを保持し、実行時コピーへ眉の左右分割キーと不足する口寄せ・目線キーを補う。直接指定は`run-avatar.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
 
 眉はデモ/auto-customで左右分割を生成し、片側の上下・困り眉・怒り眉を独立駆動する。眼ボーンと読取可能な既知の眉モーフが必要。existingでは左右別の既存キーを優先し、左右共通キーしかなければ共通表示を維持する。既存キーモードで独自キーは生成しない。
 
@@ -31,7 +31,7 @@ UIの「表情」で眉・目線・まぶた・口の大げさ度を個別に0�
 
 頭の固定速度／可変速度の比較は`tanakacap-compare-head-follow.bat`、または`results/avatar-videos/head-follow/face-closeup.mp4`（左が従来）。試行Player引数は`--adaptive-head-follow`、通常起動は従来の固定追従を維持。[比較条件](docs/HEAD_FOLLOW_COMPARISON.md)。
 
-顔・頭・表情の検証録画はデスクトップの`tanakacap-face-capture.bat`（30秒で自動終了）。動作案内なし、実写画面・音声なしで保存する。保存先は`results/comparison-takes/<日時>/`。直接起動は`run-comparison-lab.ps1 -Mode capture -Profile face-head`。既存の全身用撮影は従来どおり。
+顔・頭・表情の検証録画はデスクトップの`tanakacap-face-capture.bat`（30秒で自動終了）。動作案内なし、実写画面・音声なしで保存する。保存先は`results/comparison-takes/<日時>/`。直接起動は`run-comparison.ps1 -Mode capture -Profile face-head`。既存の全身用撮影は従来どおり。
 
 Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出力するWindows用プロジェクト。Unity Editorの書き出しプラグインと、外部アバターファイルを読み込む専用Unityアプリで構成する。
 
@@ -49,7 +49,7 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 .\run-ui.ps1
 ```
 
-UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtkinterが必要（現環境で検証済み）。UI自体の別ビルドは不要、Playerは通常どおり`build-unity-lab.ps1`でビルドする。UI設定はローカルの`ui-settings.json`へ保存し、従来bat用の`tracking-settings.json`とは分ける。
+UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtkinterが必要（現環境で検証済み）。UI自体の別ビルドは不要、Playerは通常どおり`build-player.ps1`でビルドする。UI設定はローカルの`ui-settings.json`へ保存し、従来bat用の`tracking-settings.json`とは分ける。
 
 デスクトップの次のbatを、使いたいもの一つだけ起動する。
 
@@ -77,27 +77,27 @@ UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtki
 --explicitly-allow-displaying-raw-camera-images-on-screen-for-this-session-only
 ```
 
-必要な場合に限り、`python -m capture_lab benchmark ...`または`python -m capture_lab.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
+必要な場合に限り、`python -m tanakacap benchmark ...`または`python -m tanakacap.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
 
 現在の既定は`-FaceSource body3d -HeadPoseMode pnp`。ピッチは固定3D顔型へのPnP当てはめを使う。2D比率のsize2dはUI「実験」→「頭角度」で選べる任意試行として残す。口・眉の正面化は維持。頭のみモードは別モデル。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。
 
-顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
+顔方式は`run-avatar.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
 
 PowerShellからも起動できる。以下のコマンドはすべてリポジトリのルートで実行する。仮想環境のactivateは不要。
 
 ```powershell
 Set-Location D:\work\tanakacap
-.\run-avatar-lab.ps1 -Camera 1 -NoLog
+.\run-avatar.ps1 -Camera 1 -NoLog
 ```
 
 ```powershell
 # カメラを使わない表示確認
-.\run-motion-lab.ps1
+.\run-motion.ps1
 ```
 
 ```powershell
 # 診断付きの短いカメラ検証
-.\run-avatar-lab.ps1 -Camera 1 -Diagnose -Frames 1800
+.\run-avatar.ps1 -Camera 1 -Diagnose -Frames 1800
 ```
 
 ## 新しい環境のセットアップ
@@ -118,7 +118,7 @@ Set-Location D:\work\tanakacap
 | 描画 | Built-in Render Pipeline / lilToon **2.3.4**。URP/HDRPへの変更は未対応 |
 | OBS（出力を使う場合） | 検証済みはOBS Studio 32.2.2 + Spout2プラグイン1.12.0 |
 
-Python依存は[requirements-lab.lock.txt](requirements-lab.lock.txt)に固定している。主要な使用版はONNX Runtime GPU 1.30.0、OpenCV 5.0.0.93、NumPy 2.4.6。CUDA/cuDNNのPythonパッケージもlockから導入する。CPU-only実行は主構成として許可しない。別GPUやドライバーでの可否は実行確認が必要。
+Python依存は[requirements.lock.txt](requirements.lock.txt)に固定している。主要な使用版はONNX Runtime GPU 1.30.0、OpenCV 5.0.0.93、NumPy 2.4.6。CUDA/cuDNNのPythonパッケージもlockから導入する。CPU-only実行は主構成として許可しない。別GPUやドライバーでの可否は実行確認が必要。
 
 uvの導入先：https://docs.astral.sh/uv/getting-started/installation/
 
@@ -139,11 +139,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ### 2. Python環境と通常の推論モデル
 
 ```powershell
-.\setup-lab.ps1 -Python 3.11.16
-.\.venv\Scripts\python.exe -m capture_lab environment
+.\setup.ps1 -Python 3.11.16
+.\.venv\Scripts\python.exe -m tanakacap environment
 ```
 
-[setup-lab.ps1](setup-lab.ps1)は`.venv`作成、lockに従う依存同期、RTMW-L / DWPose-L / YOLOX-m-human / RTMW3D-Xの取得を行う。初回はネットワークが必要。モデルは`models/`へ保存し、取得元は[モデルカタログ](models/catalog.json)で管理する。再実行するとPython依存はlockへ同期される。
+[setup.ps1](setup.ps1)は`.venv`作成、lockに従う依存同期、RTMW-L / DWPose-L / YOLOX-m-human / RTMW3D-Xの取得を行う。初回はネットワークが必要。モデルは`models/`へ保存し、取得元は[モデルカタログ](models/catalog.json)で管理する。再実行するとPython依存はlockへ同期される。
 
 通常のカメラ起動はRTMW-Lの顔・手などの2D点、RTMW3D-Xの身体、YOLOXの人物検出を使う。設定は[tracking-settings.json](tracking-settings.json)。SAM / HaMeR / MANOは比較研究用で、通常起動の必須依存ではない。
 
@@ -210,28 +210,28 @@ KlakSpout 2.0.6は`unity/TanakaCap/Packages/jp.keijiro.klak.spout/`にGit管理�
 
 ```powershell
 New-Item -ItemType Directory -Force results | Out-Null
-.\build-unity-lab.ps1
+.\build-player.ps1
 ```
 
 Unityの配置が異なる場合は実行ファイルを指定する。別バージョンへ読み替えず、2022.3.22f1を使う。
 
 ```powershell
-.\build-unity-lab.ps1 -Unity 'C:\YourUnityPath\2022.3.22f1\Editor\Unity.exe'
+.\build-player.ps1 -Unity 'C:\YourUnityPath\2022.3.22f1\Editor\Unity.exe'
 ```
 
 スクリプトはUnityをバッチ起動し、HAOLANのシーン準備、検証、アバター書き出し、外部Loaderを使うPlayerとExporterのビルドを行う。ログは`results/unity-build.log`。成功時は`TANAKACAP_BUILD_OK`が記録される。
 
 | 成果物 | 用途 |
 |---|---|
-| `builds/lab/TanakaCap.exe`と同じフォルダーの関連ファイル | 再生アプリ。exeだけを移動しない |
-| `builds/lab/avatars/haolan.tcap` | 既定で読み込む外部アバター |
-| `builds/lab/avatars/haolan.tcap.report.json` | 変換設定・省略機能の警告 |
-| `builds/lab/TanakaCapExporter.unitypackage` | Unity Editor用の書き出しプラグイン |
-| `builds/lab/THIRD_PARTY.md`、規約PDF、モーションのLICENSE | 素材・依存の案内 |
+| `builds/player/TanakaCap.exe`と同じフォルダーの関連ファイル | 再生アプリ。exeだけを移動しない |
+| `builds/player/avatars/haolan.tcap` | 既定で読み込む外部アバター |
+| `builds/player/avatars/haolan.tcap.report.json` | 変換設定・省略機能の警告 |
+| `builds/player/TanakaCapExporter.unitypackage` | Unity Editor用の書き出しプラグイン |
+| `builds/player/THIRD_PARTY.md`、規約PDF、モーションのLICENSE | 素材・依存の案内 |
 
 ビルド時は原本の依存hashが変わらないことを確認する。アバター書き出し成功後、以前の`.tcap`を日時付き`.bak`へ退避して置き換える。Playerを含む成果物フォルダー全体の更新が原子的に完了する保証ではない。ビルド失敗時はログを確認する。
 
-Unity Editorで開くプロジェクトは`unity/TanakaCap`。生成シーンはビルド時に再作成されるため、恒久的な変更は`Assets/TanakaCap/Editor/BuildLab.cs`や各ソースへ反映する。
+Unity Editorで開くプロジェクトは`unity/TanakaCap`。生成シーンはビルド時に再作成されるため、恒久的な変更は`Assets/TanakaCap/Editor/BuildPlayer.cs`や各ソースへ反映する。
 
 ## 起動batを作成・更新する
 
@@ -241,7 +241,7 @@ Unity Editorで開くプロジェクトは`unity/TanakaCap`。生成シーンは
 
 現在のWindowsユーザーのデスクトップに起動batを作成・上書きする。プロジェクトを別フォルダーへ移動した場合も再実行する。通常・非記録・モーション版のほか、比較用のbatも生成される。比較用は録画や追加モデルなど別の準備が必要。
 
-batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -Camera 0 -NoLog`などで確認する。継続利用する番号は`tools/update-desktop-launcher.ps1`のカメラ引数へ反映し、batを再生成する。
+batのカメラ番号1が合わない環境では、まず`run-avatar.ps1 -Camera 0 -NoLog`などで確認する。継続利用する番号は`tools/update-desktop-launcher.ps1`のカメラ引数へ反映し、batを再生成する。
 
 | キー | アバターウィンドウでの操作 |
 |---|---|
@@ -264,7 +264,7 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 
 ```powershell
 # 通常版にも以前のガンマと開口抑制を適用する例
-.\run-motion-lab.ps1 -MouthCornerGamma 2 -MouthOpenSmileSuppression 0.9 -MouthCornerEmphasis 0
+.\run-motion.ps1 -MouthCornerGamma 2 -MouthOpenSmileSuppression 0.9 -MouthCornerEmphasis 0
 ```
 
 眉も既存顔点から追跡する。表情は通常`-ExpressionMode existing`で、機能別にPerfect Sync/ARKit→MMD→VRCの既存キーを使用し、独自キーは生成しない。目線も既存方向キー、なければ眼ボーンを使う。足りない機能は無効とし、変換レポートとPlayerログに対応表を残す。Perfect Syncの推論を再実装したものではない。
@@ -272,9 +272,9 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 `-ExpressionMode auto-custom`は実験用。既存キー優先を基本に、ARKitで不足する口角の左右分離・唇限定の横寄せ・瞳限定移動を実行時に生成する。既知の作者形状と眼ボーンが材料として必要で、任意アバターへの自動対応を保証しない。素材メッシュ原本は変更しない。
 
 ```powershell
-.\run-motion-lab.ps1 -ExpressionMode auto-custom
+.\run-motion.ps1 -ExpressionMode auto-custom
 # 通常の既存キーだけへ戻す
-.\run-motion-lab.ps1 -ExpressionMode existing
+.\run-motion.ps1 -ExpressionMode existing
 ```
 
 眉を追加した従来版は`builds/demos/haolan-custom-brows/`に別保存し、通常ビルドで上書きしない。このローカル保存物はGitには含まれず、別PCではソースのチェックポイント`6806913`と正規取得した素材から再作成が必要。配布可能な自作モーションとアバター素材の許諾は別扱い。[方式・比較条件](docs/EXPRESSION_PORTABILITY.md)。
@@ -284,10 +284,10 @@ batのカメラ番号1が合わない環境では、まず`run-avatar-lab.ps1 -C
 出力はFull HD（1920×1080）が既定。幅・高さを自由指定できる（各64〜4096、幅省略時は高さから16:9で計算）。カメラ入力の解像度やモデルは変えない。OBS側のソースサイズも合わせる。異なる縦横比は出力カメラの水平視野が変わり、プレビューは縦横比を保って余白を付ける。
 
 ```powershell
-.\run-avatar-lab.ps1 -Camera 1 -NoLog -OutputWidth 1280 -OutputHeight 720
-.\run-motion-lab.ps1 -OutputWidth 960 -OutputHeight 960
+.\run-avatar.ps1 -Camera 1 -NoLog -OutputWidth 1280 -OutputHeight 720
+.\run-motion.ps1 -OutputWidth 960 -OutputHeight 960
 # 追加AAだけを無効化して比較
-.\run-motion-lab.ps1 -NoEdgeAA
+.\run-motion.ps1 -NoEdgeAA
 ```
 
 OBS用画像をプレビューにも再利用し、アバターの二重描画を省く。`-NoPreview`またはF8でプレビューだけ非表示にでき、OBS出力・追跡・操作用ウインドウは継続する。F8で再表示。`-LegacyPreview`で旧二重描画へ戻せる。どちらもavatar/motion両起動スクリプトで使用可能。詳細は[描画共有と解像度](docs/SHARED_PREVIEW.md)。
@@ -302,8 +302,8 @@ OBS用画像をプレビューにも再利用し、アバターの二重描画�
 4. 同名の`.report.json`で省略機能・警告を確認する。未知のスクリプト等はエラーで停止する。
 
 ```powershell
-.\run-avatar-lab.ps1 -Camera 1 -NoLog -Avatar 'D:\avatars\my-avatar.tcap'
-.\run-motion-lab.ps1 -Avatar 'D:\avatars\my-avatar.tcap'
+.\run-avatar.ps1 -Camera 1 -NoLog -Avatar 'D:\avatars\my-avatar.tcap'
+.\run-motion.ps1 -Avatar 'D:\avatars\my-avatar.tcap'
 ```
 
 書き出しと再生はUnity版・プラットフォーム・プロファイルの一致が必要。詳細は[パッケージとOBS](docs/PHASE3_PACKAGE_OBS.md)、[PhysBone互換変換の範囲](docs/SECONDARY_MOTION.md)。
@@ -319,7 +319,7 @@ OBS側にはUnity内のKlakSpoutとは別に、[Spout2プラグイン1.12.0](htt
 3. `Composite mode`を`Premultiplied Alpha`にする。
 4. 背景ソースを下に置き、透過を確認する。クロマキーは使わない。
 
-送信元登録だけで成功とは判断せず、実画像・輪郭・背景合成を確認する。複数Playerを同時に起動すると同じ送信名が競合する。詳細は[OBS手順](docs/OBS_LAB.md)と[実受信検証](docs/PHASE3_PACKAGE_OBS.md)。
+送信元登録だけで成功とは判断せず、実画像・輪郭・背景合成を確認する。複数Playerを同時に起動すると同じ送信名が競合する。詳細は[OBS手順](docs/OBS.md)と[実受信検証](docs/PHASE3_PACKAGE_OBS.md)。
 
 ## 開発時の確認
 
@@ -356,7 +356,7 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 | 原本/ZIP/PDFがない | 素材表のファイル名とZIP内部パスを確認。利用規約PDFもビルドに必要 |
 | `Refusing to overwrite changed import` | 取り込み先が変更済み。変更を保存し、原本用コピーと改変用を分ける |
 | `Iris model missing or hash mismatch` | 追加の虹彩モデル取得とSHA256を確認 |
-| CUDA初期化・DLLエラー | `nvidia-smi`、`capture_lab environment`、lockに従う依存導入を確認。CPUでの代替を成功にしない |
+| CUDA初期化・DLLエラー | `nvidia-smi`、`tanakacap environment`、lockに従う依存導入を確認。CPUでの代替を成功にしない |
 | アバターが読めない | exe隣の`avatars/haolan.tcap`、書き出し版/プラットフォーム、変換レポートとビルドログを確認 |
 | カメラが違う/開けない | `-Camera`の番号、Windowsのカメラアクセス許可、他アプリの占有を確認 |
 | OBSに出ない/透明一色 | OBS側Spout2導入、送信元、複数Playerの競合を確認。モーション版で切り分ける |
@@ -367,10 +367,10 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 | 場所 | 内容 |
 |---|---|
-| `capture_lab/` | 取得・推論・追跡補正・Unityへの制御送信 |
+| `tanakacap/` | 取得・推論・追跡補正・Unityへの制御送信 |
 | `unity/TanakaCap/Assets/TanakaCap/` | アバター表示・駆動・揺れ・書き出し・読み込み |
 | `tools/`、`tests/` | 検証・比較・素材準備・起動bat生成 |
-| `models/catalog.json`、`requirements-lab*.txt` | モデル取得先とPython依存の固定 |
+| `models/catalog.json`、`requirements.txt` / `requirements.lock.txt` | モデル取得先とPython依存の固定 |
 | `assets-source/`、`models/`の重み | ローカル素材。Git除外 |
 | `builds/`、`results/`、`.venv/`、`.cache/` | 生成物・記録・環境。Git除外 |
 
@@ -386,7 +386,7 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 ## 推論の部位切替・頭専用の試験モード
 
-通常は全モデルON。run-avatar-lab.ps1の-NoBodyで体/腕/掌/指/顔距離による胴体移動、-NoGazeで目線推論をOFFにできます。体OFFでも顔の表情・頭の向きは従来通りです。tracking-settings.jsonのbody_enabled/person_detector_enabled/gaze_enabledでも次回起動から切替できます。人物検出OFF（-NoPersonDetector）は画像全体を固定範囲にする診断用で、無人時の誤推定や精度低下があります。
+通常は全モデルON。run-avatar.ps1の-NoBodyで体/腕/掌/指/顔距離による胴体移動、-NoGazeで目線推論をOFFにできます。体OFFでも顔の表情・頭の向きは従来通りです。tracking-settings.jsonのbody_enabled/person_detector_enabled/gaze_enabledでも次回起動から切替できます。人物検出OFF（-NoPersonDetector）は画像全体を固定範囲にする診断用で、無人時の誤推定や精度低下があります。
 
 -HeadOnly（デスクトップtanakacap-head-only.bat）は、小型の直接頭姿勢モデルとGPU頭領域検出で、頭の向きだけを動かします。起動時の矩形選択は不要。移動・接近に合わせて範囲を更新し、見失ったら最後の姿勢を保持、再検出後に復帰します。Pで停止/再開、Rで自動取得をリセット、Sで対象の頭を選択。表情ランドマーク・虹彩・体・従来の人物検出モデルは読み込みません。音声口パクは後日の課題。-HeadRoiMode fixedで以前の手動固定範囲へ戻せます。今回のtanakacap-test.batは全部ON高速化の記録付き検証、live.batは通常全機能、head-only.batは頭専用の非記録・無期限です。追加2モデルの取得・条件・制限は[頭専用モード](docs/HEAD_ONLY.md)、処理時間は[推論内訳](docs/INFERENCE_BREAKDOWN.md)を参照してください。
 
@@ -397,15 +397,15 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 ## 全部ONの高速化
 
-通常の`run-avatar-lab.ps1`とデスクトップtest/liveは、CUDA混合FP16（内部既定`graph-fp16`）と、`tracking-settings.json`の`detector_interval=3`、`detector_model=yolox-m-human`を使う。頭専用モードは従来のまま。GPU転送・起動を削減し、人物領域は最大2観測の画像追跡を挟む。顔・体・手・目線の詳細モデルは毎観測実行する。画像追跡不良、切り出し端、120ms経過で人物検出へ戻す。
+通常の`run-avatar.ps1`とデスクトップtest/liveは、CUDA混合FP16（内部既定`graph-fp16`）と、`tracking-settings.json`の`detector_interval=3`、`detector_model=yolox-m-human`を使う。頭専用モードは従来のまま。GPU転送・起動を削減し、人物領域は最大2観測の画像追跡を挟む。顔・体・手・目線の詳細モデルは毎観測実行する。画像追跡不良、切り出し端、120ms経過で人物検出へ戻す。
 
 ```powershell
 # 従来の実行・毎回の人物検出へ戻す（設定ファイルは変更しない）
-.\run-avatar-lab.ps1 -DetectorInterval 1 -DetectorModel yolox-m-human
+.\run-avatar.ps1 -DetectorInterval 1 -DetectorModel yolox-m-human
 
 # 小型人物検出Dを試す。詳細モデル・補正は同じ
-.\.venv\Scripts\python.exe -m capture_lab fetch yolox-tiny-human
-.\run-avatar-lab.ps1 -DetectorModel yolox-tiny-human
+.\.venv\Scripts\python.exe -m tanakacap fetch yolox-tiny-human
+.\run-avatar.ps1 -DetectorModel yolox-tiny-human
 ```
 
 `-DetectorInterval 1|2|3`、`-DetectorModel yolox-m-human|yolox-tiny-human`で人物領域更新と検出器を選べる。Python CLIは`--detector-interval`、`--detector-model`。精度はFP16固定で、`-InferenceMode`/`--inference-mode`と設定キー`inference_mode`は削除済み。Python CLIの人物更新/検出器既定は1/medium。小型モデルは切り出しの差が深度にも影響したため通常採用せず、追加取得は選択時のみ。
@@ -444,6 +444,8 @@ Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書�
 
 診断：書出しプラグインで確認事項とreport場所を案内し、操作UI下部では新しいPlayerログを警告・継続中/エラーとして色分け表示します。詳細手順は利用者向け「使い方」の「警告・エラーを確認する」を参照してください。
 
-配布ZIPでは再生アプリ一式を `app/` に配置する。開発用の `builds/lab/` とは区別し、UIは配布時に `app/TanakaCap.exe` を使用する。ローカル更新時もexeだけでなく `app/` 全体をコピーする。
+配布ZIPでは再生アプリ一式を `app/` に配置する。開発用の `builds/player/` とは区別し、UIは配布時に `app/TanakaCap.exe` を使用する。ローカル更新時もexeだけでなく `app/` 全体をコピーする。
 
-配布Pythonパッケージは `tanakacap/`。ビルド時に開発ソース `capture_lab/` を同名で配置し、配布batは `-m tanakacap.control_panel` を起動する。
+配布Pythonパッケージは `tanakacap/`。ビルド時に開発ソース `tanakacap/` を同名で配置し、配布batは `-m tanakacap.control_panel` を起動する。
+
+公開用UI設定ひな形は `ui-settings.example.json`。個人の `ui-settings.json` はGit管理せず、配布ビルドはひな形から生成する。`tracking-settings.json` と `docs/ui-part-costs.json` は共通設定として管理する。

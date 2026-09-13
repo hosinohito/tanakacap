@@ -25,7 +25,7 @@ def check():
         'unity/TanakaCap/Packages/jp.keijiro.klak.spout/Editor/SpoutResources.asset',
         'unity/TanakaCap/Packages/jp.keijiro.klak.spout/Plugin/KlakSpout.dll',
         'unity/TanakaCap/Packages/jp.lilxyzw.liltoon/package.json',
-        'capture_lab/control_panel.py', 'tracking-settings.json',
+        'tanakacap/control_panel.py', 'tracking-settings.json', 'ui-settings.example.json',
         'models/catalog.json', 'docs/ui-part-costs.json', 'docs/USER_GUIDE.md',
         'LICENSE', 'release/THIRD_PARTY.md', 'release/THIRD_PARTY_TERMS.md',
     ):
@@ -40,7 +40,7 @@ def check():
         require('.venv/Lib/site-packages/' + item['path'], item['sha256'])
     normalize = lambda s: re.sub(r'[-_.]+', '-', s).lower()
     installed = {normalize(d.metadata['Name']): d.version for d in metadata.distributions()}
-    for line in (ROOT / 'requirements-lab.lock.txt').read_text(encoding='utf-8-sig').splitlines():
+    for line in (ROOT / 'requirements.lock.txt').read_text(encoding='utf-8-sig').splitlines():
         if '==' in line:
             name, version = line.strip().split('==', 1)
             if installed.get(normalize(name)) != version:

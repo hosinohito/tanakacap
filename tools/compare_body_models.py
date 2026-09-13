@@ -3,9 +3,9 @@ import argparse,copy,json,sys
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.body3d import BodyRetarget
-from capture_lab.comparison import dump,line,fingerprint,Metrics
-from capture_lab.models import sha256
+from tanakacap.body3d import BodyRetarget
+from tanakacap.comparison import dump,line,fingerprint,Metrics
+from tanakacap.models import sha256
 from sam_body_adapter import adapt
 
 

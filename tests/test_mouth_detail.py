@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from capture_lab.mouth_detail import contour_controls
-from capture_lab.retarget import packet_from_landmarks
-from capture_lab.body3d import BodyRetarget
-from capture_lab.torso_yaw import elbow_yaw
+from tanakacap.mouth_detail import contour_controls
+from tanakacap.retarget import packet_from_landmarks
+from tanakacap.body3d import BodyRetarget
+from tanakacap.torso_yaw import elbow_yaw
 from test_mouth_width import face_points
 
 

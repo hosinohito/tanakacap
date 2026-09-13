@@ -6,7 +6,7 @@
 
 ## 実装と注意
 
-Player `--render-fps 30|60`、run-avatar-lab.ps1 `-RenderFps 30|60`、既定60。Application.targetFrameRateとvSyncCount=0を起動時に設定。これはUnityのフレームループ全体の上限であり、カメラ描画だけを間引く実装ではない。姿勢表示の更新・揺れ物の呼び出し間隔も変わるが、推論更新頻度や揺れ物ソルバー/パラメーターは変更しない。UDPは毎フレーム最大64件を取り込み最新を反映するため受信Hzと描画fpsは別。
+Player `--render-fps 30|60`、run-avatar.ps1 `-RenderFps 30|60`、既定60。Application.targetFrameRateとvSyncCount=0を起動時に設定。これはUnityのフレームループ全体の上限であり、カメラ描画だけを間引く実装ではない。姿勢表示の更新・揺れ物の呼び出し間隔も変わるが、推論更新頻度や揺れ物ソルバー/パラメーターは変更しない。UDPは毎フレーム最大64件を取り込み最新を反映するため受信Hzと描画fpsは別。
 
 30ではOBSへ新規に渡る絵も約30枚/秒、OBS側は60fpsのままで同じ絵を使う観測が増える。撮影fps/認識Hz/描画fps/OBS設定を混同しない。実アバターの見た目確認はユーザー担当、エージェントは画像を目視しない。
 

@@ -4,7 +4,7 @@ Push-Location $PSScriptRoot
 try {
     if ($Mode -eq 'capture') {
         Write-Host 'モデル比較用の元カメラ映像を撮影します。開始ボタンを押すまでは保存しません。'
-        & '.\.venv\Scripts\python.exe' -m capture_lab.comparison_capture --camera 1 --profile $Profile
+        & '.\.venv\Scripts\python.exe' -m tanakacap.comparison_capture --camera 1 --profile $Profile
     } else {
         if (-not $Take) {
             $taskTakes=@()
@@ -23,7 +23,7 @@ try {
             return
         }
         Write-Host "同一入力で比較します: $Take"
-        & '.\.venv\Scripts\python.exe' -m capture_lab.comparison $Take
+        & '.\.venv\Scripts\python.exe' -m tanakacap.comparison $Take
     }
     if ($LASTEXITCODE -ne 0) { throw "Comparison exited with code $LASTEXITCODE" }
 } finally { Pop-Location }

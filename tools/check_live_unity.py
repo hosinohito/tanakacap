@@ -11,12 +11,12 @@ def main():
     folder = ROOT/'results'/'unity'/f'live-{time.time_ns()}'
     folder.mkdir(parents=True)
     with (folder/'capture.log').open('w',encoding='utf-8') as log:
-        capture = subprocess.Popen([str(ROOT/'.venv/Scripts/python.exe'),'-m','capture_lab','benchmark',
+        capture = subprocess.Popen([str(ROOT/'.venv/Scripts/python.exe'),'-m','tanakacap','benchmark',
                                    '--source','camera','--camera','1','--frames','300','--unity-port','39540','--body3d'],
                                   cwd=ROOT,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
         try:
             time.sleep(8)
-            result = subprocess.run([str(ROOT/'builds/lab/TanakaCap.exe'),'-batchmode','--snapshot',str(folder/'avatar.png'),
+            result = subprocess.run([str(ROOT/'builds/player/TanakaCap.exe'),'-batchmode','--snapshot',str(folder/'avatar.png'),
                                      '-logFile',str(folder/'player.log')],cwd=ROOT,timeout=40,
                                     creationflags=subprocess.CREATE_NO_WINDOW)
             capture.wait(timeout=45)

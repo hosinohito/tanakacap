@@ -17,21 +17,21 @@ BOOTHのHAOLAN 1.6原本を独立プロジェクトに取り込み、lilToon 2.3
 ## 起動
 
 ```powershell
-.\run-avatar-lab.ps1 -Camera 1
+.\run-avatar.ps1 -Camera 1
 ```
 
 アバターウィンドウとカメラ診断プレビューが起動する。診断ウィンドウのQ/Escで終了。アバター側はF1で状態表示切替、F2でデモ動作切替。正面の自然な姿勢でアバター側のCを押すと、胴体回転の基準を取り直す。デモはカメラ追跡の証拠にしない。最大18000計測フレームで終了する。起動スクリプトは標準で--body3dを付ける。
 
-不具合の切り分けには `.\run-avatar-lab.ps1 -Camera 1 -Diagnose -Frames 1200` を使う。正面静止、左腕上げ、右腕上げ、腕を前へ出す、左右ひねり、掌を返す動作を順に試す。診断モードは関節座標・深度・送信制御値を保存するが、Webカメラ画像の録画は行わない。
+不具合の切り分けには `.\run-avatar.ps1 -Camera 1 -Diagnose -Frames 1200` を使う。正面静止、左腕上げ、右腕上げ、腕を前へ出す、左右ひねり、掌を返す動作を順に試す。診断モードは関節座標・深度・送信制御値を保存するが、Webカメラ画像の録画は行わない。
 
-OBSに試しに映す場合は通常のゲームキャプチャ／ウィンドウキャプチャでtanakacap labを選ぶ。今回OBS側の取得検証はまだ行っていない。透過出力も未実装。
+OBSに試しに映す場合は通常のゲームキャプチャ／ウィンドウキャプチャでTanakaCapを選ぶ。今回OBS側の取得検証はまだ行っていない。透過出力も未実装。
 
 ## 再構築と検証
 
 ```powershell
 # 最初の取り込みだけ。Unityがインポート後に変更した作業ファイルは上書き拒否する。
 .venv\Scripts\python.exe tools\prepare_unity.py
-.\build-unity-lab.ps1
+.\build-player.ps1
 .venv\Scripts\python.exe -m pytest -q
 .venv\Scripts\python.exe tools\smoke_unity.py
 .venv\Scripts\python.exe tools\check_live_unity.py
@@ -39,7 +39,7 @@ OBSに試しに映す場合は通常のゲームキャプチャ／ウィンド�
 
 原本ZIPと公式lilToonのZIPはassets-sourceにある。再構築用Editorは現在このPCの2022.3.22f1。シェーダー対応と既存環境での初期検証用に限定した選択で、公開配布用の採用版ではない。[Unityの修正情報](https://unity.com/security/sept-2025-01)に沿った更新版で再検証してから一般配布する。
 
-出力はbuilds/lab/TanakaCap.exe。診断ログと描画画像はresults/unity。クレジットと規約はビルドにコピーする。アバター原本ZIPは変更しない。再生成される検証シーンも独立プロジェクト内のみ。
+出力はbuilds/player/TanakaCap.exe。診断ログと描画画像はresults/unity。クレジットと規約はビルドにコピーする。アバター原本ZIPは変更しない。再生成される検証シーンも独立プロジェクト内のみ。
 
 ## 現在の限界
 
@@ -101,7 +101,7 @@ Kなしでも、十分な観測が溜まった腕では投影長とモデル深�
 その後の3回の評価で、手首のねじれがないことをユーザーが確認。腕の遅れを受け、XYと奥行きの速度制限を分離し、大きいXY動作の応答を上げ、Unityの腕補間を短縮して再ビルドした。45テスト合格。合成フィルタ比較の90%応答は283→150msだが、実カメラから描画までの遅延ではない。実使用での遅れと震えは確認が必要。
 
 ```powershell
-.\run-avatar-lab.ps1 -Camera 1 -Diagnose -Frames 1800
+.\run-avatar.ps1 -Camera 1 -Diagnose -Frames 1800
 ```
 
 1. カメラプレビューをクリックしてKを押す。

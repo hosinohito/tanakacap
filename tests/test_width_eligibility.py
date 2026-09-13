@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.arm_width import width_eligibility,measure_arm_widths,consistent_section_width
+from tanakacap.arm_width import width_eligibility,measure_arm_widths,consistent_section_width
 
 def test_eligibility_does_not_depend_on_successful_contour_or_palm():
     xy=np.zeros((133,2));s=np.zeros(133)

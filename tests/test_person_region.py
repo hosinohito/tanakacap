@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from capture_lab.person_region import PersonRegionTracker
+from tanakacap.person_region import PersonRegionTracker
 
 
 class Detector:

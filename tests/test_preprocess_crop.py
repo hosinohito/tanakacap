@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from capture_lab.inference import preprocess
+from tanakacap.inference import preprocess
 
 
 @pytest.mark.parametrize('roi',[[0,0,1280,720],[137.2,25.7,563.8,620.1],[-20,10,1300,800]])

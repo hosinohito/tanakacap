@@ -5,11 +5,11 @@ from pathlib import Path
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.head_pose import HeadPose
-from capture_lab.head_pose_size import SizeHeadPose
-from capture_lab.retarget import packet_from_landmarks, FaceFilter
-from capture_lab.comparison import dump, line
-from capture_lab.models import sha256
+from tanakacap.head_pose import HeadPose
+from tanakacap.head_pose_size import SizeHeadPose
+from tanakacap.retarget import packet_from_landmarks, FaceFilter
+from tanakacap.comparison import dump, line
+from tanakacap.models import sha256
 
 
 def main():

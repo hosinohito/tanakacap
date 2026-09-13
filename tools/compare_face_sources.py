@@ -10,10 +10,10 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from capture_lab.comparison import SharedFace, load_take, images, dump, line, fingerprint, frame_mask
-from capture_lab.inference import SimCCModel, PersonDetector
-from capture_lab.person_region import PersonRegionTracker
-from capture_lab.body3d import BodyRetarget
+from tanakacap.comparison import SharedFace, load_take, images, dump, line, fingerprint, frame_mask
+from tanakacap.inference import SimCCModel, PersonDetector
+from tanakacap.person_region import PersonRegionTracker
+from tanakacap.body3d import BodyRetarget
 
 
 def run(take, output, limit=None, pose_comparison=False):

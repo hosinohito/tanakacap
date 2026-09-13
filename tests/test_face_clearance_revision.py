@@ -1,4 +1,4 @@
-from capture_lab.body3d import BodyRetarget
+from tanakacap.body3d import BodyRetarget
 from test_body3d import body,packet
 
 
@@ -15,7 +15,7 @@ def test_crossing_constraint_is_zero_immediately_when_observed_outside():
 
 
 def test_frontal_reference_can_recover_from_initial_width_error_using_face_scale():
-    from capture_lab.torso_yaw import ShoulderWidthReference
+    from tanakacap.torso_yaw import ShoulderWidthReference
     reference=ShoulderWidthReference();reference.width=.36
     assert reference.update(150,.002,0)>20
     for i in range(10):reference.observe_frontal(150,.002,.01,True,i*.04)

@@ -1,6 +1,6 @@
 import numpy as np
-from capture_lab.body_geometry import DepthAssist, visible_in_front_of_torso, visible_hand_inward
-from capture_lab.retarget import FaceFilter
+from tanakacap.body_geometry import DepthAssist, visible_in_front_of_torso, visible_hand_inward
+from tanakacap.retarget import FaceFilter
 
 
 def test_outward_hand_and_posterior_elbow_are_not_forced_forward_mirrored():

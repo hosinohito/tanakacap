@@ -1,8 +1,8 @@
 import sys
 import pytest
-from capture_lab import control_panel as ui
-from capture_lab.camera_display import DISPLAY_FLAG
-from capture_lab.live_status import LiveStatus
+from tanakacap import control_panel as ui
+from tanakacap.camera_display import DISPLAY_FLAG
+from tanakacap.live_status import LiveStatus
 
 
 def test_pacing_waits_before_work_and_does_not_catch_up():

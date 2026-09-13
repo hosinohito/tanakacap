@@ -25,7 +25,7 @@
 | YOLOX-M HumanArt、RTMW-L | [作者のモデル保管庫](https://huggingface.co/Tau-J/RTMPose)はApache-2.0。使用ZIPのSHA一致を確認 | 商用利用・再配布可。MMPose/YOLOXの本文、著作権、派生の変更通知を保持。詳細MODEL_LICENSE_DECISIONS.md |
 | YOLOX-tiny、RTMW-X、DWPose比較用 | MMPose/YOLOX系、使用アーカイブごとの照合は今回の3モデルに含めない | 通常製品に入れない。将来追加する時に版・SHA・許諾を照合 |
 | 虹彩ONNX | [PINTO 049の個別LICENSE](https://github.com/PINTO0309/PINTO_model_zoo/blob/main/049_iris_landmark/LICENSE)はApache-2.0、TensorFlow Authors通知。ローカル`models/iris-landmark.LICENSE` | 原本とbatch2派生の出所・SHA・変更内容を記録して通知を同梱。モデル集全体のライセンスから推測しない |
-| 顔の固定テンプレート | MediaPipe canonical_face_modelからの対応点抽出。`capture_lab/data/face_template.json`に元URL/SHA、同ディレクトリにApache本文 | 対応点抽出・座標変更を派生物として通知。今回の口Zなしでも使用する |
+| 顔の固定テンプレート | MediaPipe canonical_face_modelからの対応点抽出。`tanakacap/data/face_template.json`に元URL/SHA、同ディレクトリにApache本文 | 対応点抽出・座標変更を派生物として通知。今回の口Zなしでも使用する |
 | 頭専用MobileNet V3 small | [作者のモデル別一覧](https://huggingface.co/yakhyo/uniface-weights)が重みをMITと明示、現行原本SHA一致 | MITで商用利用・再配布可、著作権と本文を同梱。データ自体の配布権ではない |
 | 頭領域YuNet 2023mar | [公式モデルディレクトリ](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet)のMIT、`YUNET_LICENSE.txt` | 通知とモデルSHAを維持 |
 | Unity Player / Editor | [Unity Editor Software Terms](https://unity.com/legal/editor-terms-of-service/software)による条件付きのランタイム配布 | 使用した2022.3.22f1に適用する契約、契約プラン、第三者通知を出荷時に固定。Editorや認証済み環境を丸ごと同梱しない。最新版Web契約を過去版へ無条件に遡及させない |

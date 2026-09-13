@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from capture_lab.control_panel import DEFAULT,Session
+from tanakacap.control_panel import DEFAULT,Session
 
 
 def run():

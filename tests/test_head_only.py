@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.head_only import angles_from_rotation
+from tanakacap.head_only import angles_from_rotation
 def test_rotation_rejects_invalid_pose():
     assert angles_from_rotation(np.zeros((3,3))) is None
     assert angles_from_rotation(np.full((3,3),np.nan)) is None
@@ -12,8 +12,8 @@ def test_rotation_identity_and_camera_axes():
 
 def test_head_only_never_loads_other_models_or_creates_logs(monkeypatch):
     import sys
-    from capture_lab import __main__ as app
-    from capture_lab import head_only
+    from tanakacap import __main__ as app
+    from tanakacap import head_only
     def forbidden(*args, **kwargs):
         raise AssertionError("Head-only must not load full models or create result files")
     monkeypatch.setattr(app,"output_folder",forbidden)
@@ -36,7 +36,7 @@ def test_head_only_never_loads_other_models_or_creates_logs(monkeypatch):
     monkeypatch.setattr(head_only,"HeadOnlyModel",Model)
     monkeypatch.setattr(head_only.cv2,"VideoCapture",lambda p:Video())
     monkeypatch.setattr(head_only,"LocalSender",Sender)
-    monkeypatch.setattr(sys,"argv",["capture_lab","benchmark","--source","video","--video","dummy",
+    monkeypatch.setattr(sys,"argv",["tanakacap","benchmark","--source","video","--video","dummy",
                                   "--head-only","--head-roi-mode","fixed","--no-log","--frames","5","--warmup","0",
                                   "--roi","0","0","32","32","--unity-port","39549"])
     app.main()

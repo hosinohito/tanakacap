@@ -3,7 +3,7 @@ import sys,json,time
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.gaze import IrisGaze
+from tanakacap.gaze import IrisGaze
 
 output=Path('results/gaze-contour'); output.mkdir(exist_ok=True,parents=True)
 model=IrisGaze(output)

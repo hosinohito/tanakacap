@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.inference import SimCCModel, PersonDetector, preprocess
-from capture_lab.gaze import IrisGaze
+from tanakacap.inference import SimCCModel, PersonDetector, preprocess
+from tanakacap.gaze import IrisGaze
 
 
 def main():

@@ -11,8 +11,8 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.head_region import HeadRegionDetector, HeadRegionTracker, crop_for
-from capture_lab.head_only import HeadOnlyModel
+from tanakacap.head_region import HeadRegionDetector, HeadRegionTracker, crop_for
+from tanakacap.head_only import HeadOnlyModel
 
 
 def main():

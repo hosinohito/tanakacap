@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.brows import measure,observe,BrowFilter,KEYS
+from tanakacap.brows import measure,observe,BrowFilter,KEYS
 
 
 def face():

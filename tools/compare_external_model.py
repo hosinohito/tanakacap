@@ -9,8 +9,8 @@ from unittest.mock import patch
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.comparison import load_take,images,line,dump
-from capture_lab.models import sha256
+from tanakacap.comparison import load_take,images,line,dump
+from tanakacap.models import sha256
 
 
 def hand_boxes(xy,scores):

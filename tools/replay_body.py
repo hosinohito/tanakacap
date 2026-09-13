@@ -12,8 +12,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from capture_lab.body3d import BodyRetarget
-from capture_lab.retarget import FaceFilter,packet_from_landmarks
+from tanakacap.body3d import BodyRetarget
+from tanakacap.retarget import FaceFilter,packet_from_landmarks
 
 FLAGS = ('torsoTracked', 'leftArmTracked', 'rightArmTracked',
          'leftHandTracked', 'rightHandTracked')

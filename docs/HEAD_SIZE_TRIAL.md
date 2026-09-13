@@ -19,4 +19,4 @@
 - アバター動画：`results/avatar-videos/head-size2d/face-closeup.mp4`、`side-by-side.mp4`。左pnp、右size2d。ユーザーの現在設定に合わせ表情は両方auto-custom。動画はオフライン再生で実時間性能の比較ではない。
 - 262 pytest成功（`results/pytest-head-size-complete`）、Tk操作テスト成功。拡縮/平行移動/唇と顎の変更に対する不変性、上下符号、欠測保持、PnP失敗との分離、口・眉の一致、UIの往復を検査。実カメラ試験・実写画面表示・動画の目視評価なし。
 
-起動は通常UIまたは更新した`tanakacap-test.bat`。起動後に正面で短く静止する。直接指定は`run-avatar-lab.ps1 -HeadPoseMode size2d`、復帰は`-HeadPoseMode pnp`。既存の`tanakacap-test-face-pnp.bat`も旧方式を維持。
+起動は通常UIまたは更新した`tanakacap-test.bat`。起動後に正面で短く静止する。直接指定は`run-avatar.ps1 -HeadPoseMode size2d`、復帰は`-HeadPoseMode pnp`。既存の`tanakacap-test-face-pnp.bat`も旧方式を維持。

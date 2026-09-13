@@ -1193,7 +1193,7 @@ namespace TanakaCap
                 current != null && Time.unscaledTime-lastReceived<.3f ? (current.tracked ? "Tracking" : "Holding last pose (no person)") : (current==null?"Waiting for capture":"Holding last pose (stream stopped)");
             if(current!=null && (current.leftOutOfView || current.rightOutOfView))
                 state+=" / Hand outside frame: "+(current.leftOutOfView?"L ":"")+(current.rightOutOfView?"R":"");
-            GUI.Box(new Rect(12,12,450,154),"tanakacap development lab");
+            GUI.Box(new Rect(12,12,450,154),"TanakaCap development");
             GUI.Label(new Rect(24,38,430,22),error ?? state);
             GUI.Label(new Rect(24,62,430,22),"F1: status  F2: demo  F3: OBS  F6: hair/cloth  C: neutral torso  " + (current != null && current.body3d ? "3D body" : "2D body"));
             GUI.Label(new Rect(24,86,430,22),"F4: gaze "+(!gazeEnabled?"OFF":current!=null && current.gazeTracked && Time.unscaledTime-lastReceived<.3f?"tracking":"returning")+" / "+(gazeIrisMode && gazeMesh?"iris":"bones")+" / "+gazeAngles.ToString("F1"));

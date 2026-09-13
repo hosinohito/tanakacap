@@ -12,7 +12,7 @@
 
 80入力（録画全域を60フレーム間隔で抽出＋空画像）で最終ROI差0・信頼度差0、両経路の主要計算CUDAを確認。results/detector-graph-audit/report.json。全部ON/録画900観測/30warmup/Player・OBSなしではループ平均22.248→22.028ms、p95 34.303→33.669ms。人物処理平均6.689→6.445ms。results/full-optimization-F-1789235965349655900/summary.json。効果は小さいため通常既定へまだ入れず選択可能にする。
 
-`run-avatar-lab.ps1 -DetectorGraph`、`-NoDetectorGraph`で解除。Pythonは`--detector-graph`、省略で旧経路。設定detector_graphも利用できる。225 tests成功。
+`run-avatar.ps1 -DetectorGraph`、`-NoDetectorGraph`で解除。Pythonは`--detector-graph`、省略で旧経路。設定detector_graphも利用できる。225 tests成功。
 
 ### Fの全編比較動画の再現
 
@@ -61,7 +61,7 @@ G全体の平均は22.387→20.323ms、入力準備3.966→1.756ms。RTX4090/同
 
 各段階の条件を固定した比較なので、通常設定を変更してもそのまま比較が再現される。H用コマンド/workerはrevertで削除、実装は53772c7、revertはcee5557に残る。Gは9aed8d0、Iはe925743、Fはb3d583f。
 
-全部戻す場合は`run-avatar-lab.ps1 -PreprocessMode legacy -NoBatchEyes -NoDetectorGraph`。顔の採用（RTMW3D共有、PnPピッチ＋Z口角）はそのまま。既存live/head-only/motionは維持。実カメラ用batをエージェントは起動しない。
+全部戻す場合は`run-avatar.ps1 -PreprocessMode legacy -NoBatchEyes -NoDetectorGraph`。顔の採用（RTMW3D共有、PnPピッチ＋Z口角）はそのまま。既存live/head-only/motionは維持。実カメラ用batをエージェントは起動しない。
 
 ## 最終Player＋OBS検証
 

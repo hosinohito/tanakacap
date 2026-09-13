@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.gaze_range import GazeRange
+from tanakacap.gaze_range import GazeRange
 
 
 def observe(c, value, start, count=10):

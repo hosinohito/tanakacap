@@ -1,6 +1,6 @@
 import numpy as np
-from capture_lab.motion_gate import DirectionGate,RotationGate
-from capture_lab.body_geometry import DepthAssist
+from tanakacap.motion_gate import DirectionGate,RotationGate
+from tanakacap.body_geometry import DepthAssist
 
 
 def test_single_alternating_small_changes_are_not_followed():

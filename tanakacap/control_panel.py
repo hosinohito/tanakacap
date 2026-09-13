@@ -15,11 +15,11 @@ from .player_diagnostics import PlayerDiagnostics
 ROOT=Path(__file__).resolve().parents[1]
 def player_path():
     packaged=ROOT/'app/TanakaCap.exe'
-    return packaged if packaged.is_file() else ROOT/'builds/lab/TanakaCap.exe'
+    return packaged if packaged.is_file() else ROOT/'builds/player/TanakaCap.exe'
 
 SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON（顔・頭・体・腕・指・目線）','face_head':'顔・頭（表情あり・目線なし）','head_only':'頭のみ（軽量・表情なし）'}
-DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/lab/avatars/haolan.tcap'),
+DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/player/avatars/haolan.tcap'),
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
              aa=True,preview=True,background='none',expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp',
              brow_exaggeration=0.,eye_exaggeration=0.,eyelid_exaggeration=0.,mouth_exaggeration=0.)
@@ -146,7 +146,7 @@ class Session:
         if not Path(c['avatar']).is_file():raise ValueError('アバターファイルが見つかりません')
         if c['source']=='video' and not Path(c['video']).is_file():raise ValueError('録画ファイルが見つかりません')
         exe=player_path()
-        if not exe.is_file():raise ValueError('Playerをビルドしてください（build-unity-lab.ps1）')
+        if not exe.is_file():raise ValueError('Playerをビルドしてください（build-player.ps1）')
         self.poll();self.status={};self.last={}
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
             probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
@@ -346,7 +346,7 @@ def main(test_hook=None):
             if is_demo:variables[key].set('1')
             entry.configure(state='disabled' if is_demo else 'normal');scale.configure(state='disabled' if is_demo else 'normal')
     variables['avatar'].trace_add('write',demo_strength_state);demo_strength_state()
-    messages=tk.Text(outer,height=3,font=('Yu Gothic UI',9),state='disabled');messages.pack(fill='x')
+    messages=tk.Text(outer,height=10,font=('Yu Gothic UI',9),state='disabled');messages.pack(fill='x')
     messages.tag_configure('warning',foreground='#9a5700')
     messages.tag_configure('error',foreground='#b00020')
     buttons=ttk.Frame(outer);buttons.pack(fill='x',pady=(12,0))

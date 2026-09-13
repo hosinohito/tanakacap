@@ -3,7 +3,7 @@ from pathlib import Path
 import sys,json
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.head_pose import fit_pose,frontal_landmarks
+from tanakacap.head_pose import fit_pose,frontal_landmarks
 source=Path(sys.argv[1]);out=Path(sys.argv[2]);out.parent.mkdir(parents=True,exist_ok=True)
 rows=[json.loads(l) for l in source.read_text().splitlines()]
 values={k:[] for k in (1.,1.5,2.,2.5,3.)}

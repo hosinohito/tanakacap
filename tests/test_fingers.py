@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.fingers import FingerTracker
+from tanakacap.fingers import FingerTracker
 
 
 def hand(bent=False):

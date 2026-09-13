@@ -1217,3 +1217,12 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：配布名のlab撤去不足を訂正。配布Pythonパッケージをtanakacapへ変更し、bat・UIからの推論子プロセス起動も同名に統一。開発ソース名capture_labは維持し、パッケージ名を固定せず起動できるようにする。配布フォルダーはappとtanakacap。fixes9を再梱包して検査する。
+
+
+2026-09-13：配布だけでなく公開ソース全体を整理する指定へ対応。Pythonソースtanakacap、requirements.txt/requirements.lock.txt、setup.ps1、build-player.ps1、run-capture/run-avatar/run-motion/run-comparison.ps1へ統一。Unity BuildPlayerクラスとmetaを一緒に改名、開発出力はbuilds/playerへ移動。実写/モデル/アバターは変更なし。ツール・テスト・CI・現行文書参照を更新。個人ui-settings.jsonは引き続き非公開、公開ひな形ui-settings.example.jsonから配布設定を生成。過去PROGRESSは履歴として旧名を残す。273テスト成功、fixes10でUnity/配布の再検査を行う。
+
+
+2026-09-13：追加指定でカメラ寄り上限を-0.6→-1.4へ拡大。ウインドウはProcess.MainWindowHandleへの一度だけの適用をやめ、同一プロセスのUnityWndClassを探して枠とクライアント寸法を定期確認する。起動時の非同期SetResolutionが枠を再設定した場合も修復し、クライアント寸法を描画解像度へ揃える。検証はカメラを使わずデモモーションで行う。
+
+
+2026-09-13：ウインドウ修正は実Player＋保存デモで960x540/1920x1080双方のクライアント寸法と外寸の一致、タイトルバーなし、外部から枠/800x450を再設定した後の自動復旧を確認（results/window-sizing/report.json）。実カメラ未使用。操作UIログ欄は3→10行へ拡大し、その分タブ領域を縮小。Tk検査成功。fixes11はUnityビルド成功、UI追加を含めるため梱包中断、同Playerでfixes12を梱包する。開発用builds/playerも最新Playerへ更新。

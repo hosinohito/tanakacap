@@ -30,7 +30,7 @@
 
 外部モーション素材・人物の録画は使っていない。このソースと生成モーションは0BSDとし、利用・改変・商用/非商用再配布に表示義務を加えない。docs/PROCEDURAL_MOTION_LICENSE.txtを参照。モーションの許諾とHAOLAN/シェーダー/Unity等の許諾は別で、アバター原本の再配布許可を意味しない。
 
-直接起動：run-avatar-lab.ps1 -NoLog / run-motion-lab.ps1。アバター指定はどちらも-Avatar。カメラ版はtracking-settings.jsonの採用設定を引き継ぐ。
+直接起動：run-avatar.ps1 -NoLog / run-motion.ps1。アバター指定はどちらも-Avatar。カメラ版はtracking-settings.jsonの採用設定を引き継ぐ。
 
 検証：tests/test_no_log.pyで保存処理が呼ばれないこと、無期限ループがPlayer終了で止まること、保存指定との競合拒否を確認。実GPUモデルのsynthetic 3フレームでも非記録で終了成功。30分連続の実カメラ安定性は未確認。
 
@@ -48,7 +48,7 @@ Playerの--performance-logと--performance-secondsは明示的な検証専用。
 
 ## 2026-09-12 統合構成オプション
 
-共通run-avatar-lab.ps1の-TrackingMode full（既定）/face_head/head_onlyで切替。tracking-settings.jsonにもtracking_mode。-NoBody/-NoGaze/-NoPersonDetectorの個別OFFは推論生成を省略。-HeadOnlyはhead_onlyの別名。頭専用ショートカットtanakacap-head-only.batは-NoLogで無期限、自動頭領域取得/ロスト復帰あり。音声口パクは後日。[頭専用](HEAD_ONLY.md)。run-avatar-lab.ps1とrun-motion-lab.ps1の-LegacySecondaryResponseで以前の減衰へ戻せる。
+共通run-avatar.ps1の-TrackingMode full（既定）/face_head/head_onlyで切替。tracking-settings.jsonにもtracking_mode。-NoBody/-NoGaze/-NoPersonDetectorの個別OFFは推論生成を省略。-HeadOnlyはhead_onlyの別名。頭専用ショートカットtanakacap-head-only.batは-NoLogで無期限、自動頭領域取得/ロスト復帰あり。音声口パクは後日。[頭専用](HEAD_ONLY.md)。run-avatar.ps1とrun-motion.ps1の-LegacySecondaryResponseで以前の減衰へ戻せる。
 
 ## 2026-09-13 頭専用の自動化
 

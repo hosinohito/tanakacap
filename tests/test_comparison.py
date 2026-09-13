@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
-from capture_lab.comparison_capture import TakeWriter,stage_at,STAGES
+from tanakacap.comparison_capture import TakeWriter,stage_at,STAGES
 
 def test_face_capture_profile_timeline_and_metadata(tmp_path):
     import json
-    from capture_lab.comparison_capture import FACE_STAGES
+    from tanakacap.comparison_capture import FACE_STAGES
     elapsed=0
     for key,duration,title,instruction in FACE_STAGES:
         assert stage_at(elapsed,FACE_STAGES)[0]==key
@@ -17,7 +17,7 @@ def test_face_capture_profile_timeline_and_metadata(tmp_path):
     meta=json.loads((tmp_path/'face'/'take.json').read_text(encoding='utf-8'))
     assert meta['profile']=='face-head' and meta['stages'][-1][0]=='free'
     assert meta['status']=='complete' and meta['audio'] is False
-from capture_lab.comparison import load_take,images,SharedFace,clean,fingerprint
+from tanakacap.comparison import load_take,images,SharedFace,clean,fingerprint
 from test_head_pose import projected
 
 def test_lossless_take_and_timestamp_roundtrip(tmp_path):
@@ -44,9 +44,9 @@ def test_capture_stage_boundaries():
 
 def test_shared_face_matches_live_sequence_and_fingerprint(tmp_path):
     settings={'observation_block':3,'observation_stride':1,'head_pose_mode':'pnp','head_pitch_gain':1.8,'mouth_lip_depth_scale':1.5,'face_distance_filter':'stable','gaze_enabled':False}
-    from capture_lab.retarget import packet_from_landmarks,FaceFilter
-    from capture_lab.head_pose import HeadPose
-    from capture_lab.face_distance import FaceDistance
+    from tanakacap.retarget import packet_from_landmarks,FaceFilter
+    from tanakacap.head_pose import HeadPose
+    from tanakacap.face_distance import FaceDistance
     face=SharedFace(settings,tmp_path);pose=HeadPose();f=FaceFilter(3,1);d=FaceDistance(3,1);image=np.zeros((720,1280,3),np.uint8)
     for i in range(35):
         xy,scores=projected(pitch=0 if i<20 else 15);now=i/30

@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import pytest
-from capture_lab.head_pose import TEMPLATE, camera_matrix
-from capture_lab.head_pose3d import fit_face3d, HeadPose3D
-from capture_lab.mouth_detail import contour_controls
+from tanakacap.head_pose import TEMPLATE, camera_matrix
+from tanakacap.head_pose3d import fit_face3d, HeadPose3D
+from tanakacap.mouth_detail import contour_controls
 
 
 def observed(pitch=0, yaw=0, roll=0, distance=.7, expression=0, root_offset=0):
@@ -52,8 +52,8 @@ def test_missing_lip_depth_holds_expression_without_losing_head():
 
 
 def test_mixed_mode_preserves_pnp_pitch_and_depth_lips_independently():
-    from capture_lab.head_pose import HeadPose
-    from capture_lab.head_pose3d import PnPPitchDepthMouth
+    from tanakacap.head_pose import HeadPose
+    from tanakacap.head_pose3d import PnPPitchDepthMouth
     models=[HeadPose(),HeadPose3D(),PnPPitchDepthMouth()]
     for pitch in [0]*10+[20,-20,10]:
         p,s,z,zs=observed(pitch,expression=.003)

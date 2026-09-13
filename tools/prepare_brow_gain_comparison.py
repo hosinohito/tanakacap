@@ -2,10 +2,10 @@
 import json,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from capture_lab.brows import BrowFilter,KEYS
-from capture_lab.head_pose import HeadPose
-from capture_lab.retarget import packet_from_landmarks
-from capture_lab.comparison import dump,line
+from tanakacap.brows import BrowFilter,KEYS
+from tanakacap.head_pose import HeadPose
+from tanakacap.retarget import packet_from_landmarks
+from tanakacap.comparison import dump,line
 
 def main():
     source=ROOT/'results/comparisons/head-follow-input/source/frames.jsonl'
