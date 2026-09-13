@@ -452,4 +452,6 @@ Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書�
 
 開発UI（`run-ui.ps1`）は `logs/development-*.jsonl` に設定・コンソール・入力待ち/推論/描画の数値を記録する。8MiBでローテーション、詳細ORTトレース・実写画像・音声は保存しない。配布環境（`runtime/python.exe`あり）はエラーログのみ。
 
-CMS-V43BKの取得診断は `diagnose-camera.bat`（デスクトップの `tanakacap-tools/tanakacap-diagnose-camera.bat` も同じ）。カメラ利用を停止してユーザー自身で実行する。30fps要求で720p/640×480・MJPEG/YUY2を比較し、`results/camera-diagnostic-*/summary.json` に保存する。映像表示/保存や推論は行わない。仕様は[メーカー製品ページ](https://www.sanwa.co.jp/product/syohin?code=CMS-V43BK-3)。
+CMS-V43BKの取得診断は `tools/diagnostics/diagnose-camera.bat`（デスクトップの `tanakacap-tools/tanakacap-diagnose-camera.bat` も同じ）。カメラ利用を停止してユーザー自身で実行する。30fps要求で720p/640×480・MJPEG/YUY2を比較し、`results/camera-diagnostic-*/summary.json` に保存する。映像表示/保存や推論は行わない。仕様は[メーカー製品ページ](https://www.sanwa.co.jp/product/syohin?code=CMS-V43BK-3)。
+
+診断ツールの配置：継続利用するものは `tools/diagnostics/`、一時検証用ファイルはデスクトップの `tanakacap-tools/` に置く。プロジェクト直下には診断用batを追加しない。

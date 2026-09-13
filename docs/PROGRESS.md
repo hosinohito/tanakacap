@@ -1247,3 +1247,5 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：カメラ約11Hz/処理20〜40ms申告。実デバイス名HD webcam-CMS-V43BK（DirectShow index1、Microsoft usbvideo OK）を読み取り照合。公式https://www.sanwa.co.jp/product/syohin?code=CMS-V43BK-3 は最大1280x720/30fps、YUY2/MJPEG。先の60fps試行案を撤回。diagnose-camera.bat→tools/diagnose_camera.pyは実機名で一意選択、DSHOWで720p/640x480×MJPG/YUY2を各120観測、各45秒タイムアウト、results/camera-diagnostic-*/summary.jsonと個別ログを生成。ユーザー自身の起動用で、エージェントはカメラを起動していない。開発UIはruntime/python.exeなしの場合logs/development-*.jsonlへ設定/コンソール/約0.5秒ごとの数値ステータス（入力待ち・各推論段・描画）を既定記録、8MiBローテーション。配布版はエラーログのみ。詳細ORTトレースや実写/音声は記録しない。既存273テスト+新規2ログ検査/Tk検査成功。今件このPC試験なのでコピー不要、別PCならtanakacap全体、診断も必要ならtools/diagnose_camera.pyとdiagnose-camera.bat（開発venv前提）。
+
+2026-09-13：診断用ファイルを整理。再利用するカメラ診断bat/Pythonをtools/diagnostics/へ移動し、ルート解決とDesktop起動先を更新。一時検証用ファイルはDesktop/tanakacap-tools、再利用する診断はtools/diagnosticsへ配置し、プロジェクト直下に増やさない。実カメラは起動せずパスと構文のみ確認。ZIP作成なし。
