@@ -1,8 +1,10 @@
 # tanakacap
 
+UIの「表情」で眉・目線・まぶた・口の大げさ度を個別に0〜1で調整できる（0は追加強調なし）。デモ用アバターは全項目を常に最大へ固定。デモ起動は最新Playerを使い、口寄せ等の不足キーを実行時コピーへ補完する。既存のキーは置き換えず、保存デモ原本は不変。[設定と比較動画](docs/FACIAL_EXAGGERATION.md)。
+
 眉は4フレーム処理後に可変速度で追従する。小さい差はゆっくり、大きい差は速く、左右内外4値を独立処理。既定ON、Playerの`--no-adaptive-brow-follow`で従来の直接反映へ戻せる。頭の可変追従の採否とは独立。
 
-検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定する。既存の独自キーを使い、眉だけは実行時コピーに左右分割キーを追加する。直接指定は`run-avatar-lab.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
+検証は保存済みデモ用シェイプキーアバターを使う。`tanakacap-test.bat`は最新Player＋`builds/demos/haolan-custom-brows/avatars/haolan.tcap`を指定する。既存の独自キーを保持し、実行時コピーへ眉の左右分割キーと不足する口寄せ・目線キーを補う。直接指定は`run-avatar-lab.ps1 -DemoAvatar`（Player側は`--avatar <デモtcap> --use-demo-shape-keys`）。保存済みデモ一式は上書きしない。眉の強調は`tracking-settings.json`の`brow_gain`で調整（既定2、1で従来、範囲0.5〜4）。通常UIも同設定を推論へ渡す。
 
 眉はデモ/auto-customで左右分割を生成し、片側の上下・困り眉・怒り眉を独立駆動する。眼ボーンと読取可能な既知の眉モーフが必要。existingでは左右別の既存キーを優先し、左右共通キーしかなければ共通表示を維持する。既存キーモードで独自キーは生成しない。
 
@@ -41,7 +43,7 @@ UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtki
 | `tanakacap-compare-f.bat` | 高速化FのOFF／ON比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-compare-fp16.bat` | CUDA FP32／FP16比較動画の保存先を開く | カメラ不使用 |
 | `tanakacap-test-fp16.bat` | 通常testと同じFP16起動（旧ショートカットの互換用） | ユーザーが起動するカメラ試験 |
-| `tanakacap-demo-custom-brows.bat` | 眉追加時点の従来表情デモを保存版Playerで再生 | カメラなし・非記録・無期限 |
+| `tanakacap-demo-custom-brows.bat` | 保存デモアバターを最新Playerの全項目強調で再生 | カメラなし・非記録・無期限 |
 | `tanakacap-test-auto-expressions.bat` | 実験用の自動独自キー方式 | ユーザーが起動するカメラ試験 |
 | `tanakacap-motion-auto-expressions.bat` | 自動独自キー方式で自作モーション再生 | カメラなし・非記録・無期限 |
 | `tanakacap-compare-expressions.bat` | 従来デモ／既存キー／自動独自キーの顔拡大比較動画の場所を開く | 保存動画 |

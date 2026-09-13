@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 部位別強調UIとデモ強調固定
+
+ユーザー指定でUI表情タブに眉/目線/まぶた閉じ/口の4独立スライダーを実装。0〜1、0は追加作用なし。保存/適用で再起動。Player引数--brow-exaggeration/--eye-exaggeration/--eyelid-exaggeration/--mouth-exaggeration。表示倍率は眉1→1.75、目線基準感度に1→1.5、閉眼1→1.8、口各形状1→1.7と口角既存強調max。各上限/左右/ロスト保持を維持。眉gain2やgaze_gain4は基準として残る。目閉じのモデル/閾値/4フレーム処理は未変更、今回追加したのは表示感度。
+
+デモflag --use-demo-shape-keysでは全項目1固定。UIでも保存デモを選ぶと1表示でスライダーを無効化。旧デモmotion batを最新Player＋保存demo.tcapへ更新、凍結原本は維持。デモの不足口寄せ/目線キーを既存の唇/虹彩レシピで実行時補完し、既にあるTCキーは再生成せず保持。shiftL未マップの旧制限は解消。通常existingでは生成なし。
+
+比較はresults/avatar-videos/facial-exaggeration/face-closeup.mp4、左normal=追加強調0、右exaggerated=全1。最新版の同アバター/補完済みキー/同853packet。旧Player比較ではない。比較専用の--comparison-neutral-exaggerationは--render-replayのみ許可。元映像/推論は変更なし。269 tests/Tk操作/Unity強調独立テスト成功。初回新スクリプトimport途中の一時CS0246後、最終ビルド成功。実カメラ/実写表示/エージェント目視なし。詳細docs/FACIAL_EXAGGERATION.md。
+
 最新比較（2026-09-13）：眉の振動対策なし/ありの比較はresults/avatar-videos/brow-follow/face-closeup.mp4（左brow-direct/右brow-adaptive）。同じ新30秒録画の853packet、PnP/gain2/4フレーム法/左右分割デモアバターを固定し、--no-adaptive-brow-followの有無だけ変更。準備はtools/prepare_brow_follow_comparison.py、入力reportはresults/comparisons/brow-follow。頭や目閉じは変更せず、オフライン30fps比較。既存の眉倍率比較とは別。
 
 ## 2026-09-13 — 眉にも可変速度の振動対策

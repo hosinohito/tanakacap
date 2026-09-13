@@ -27,10 +27,12 @@ def run():
             try:
                 variables['source'].set('video');variables['video'].set('recorded-only.avi')
                 variables['gamma'].set('1.7');variables['suppression'].set('.4');variables['fps'].set('37')
+                for key,value in [('brow_exaggeration',.2),('eye_exaggeration',.4),('eyelid_exaggeration',.6),('mouth_exaggeration',.8)]:variables[key].set(str(value))
                 variables['rate'].set('custom');window.update_idletasks()
                 assert variables['gamma'].get()=='1.7'
                 actions['start']();assert session.running
                 assert session.started[-1]['gamma']==1.7 and session.started[-1]['fps']==37
+                assert [session.started[-1][key] for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration')]==[.2,.4,.6,.8]
                 variables['mode'].set('head_only');actions['apply']()
                 assert not session.running
                 window.after(500,finish)

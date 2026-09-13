@@ -105,6 +105,7 @@ namespace TanakaCap
         bool autoExpressions;
         bool adaptiveHeadFollow;
         bool adaptiveBrowFollow=true;
+        FacialExaggeration exaggeration=new FacialExaggeration();
 
         public static float FollowBrow(float current,float target,float dt,bool adaptive=true)
         {
@@ -262,12 +263,14 @@ namespace TanakaCap
             string expressionMode=expressionIndex<0?"existing":expressionIndex+1<renderArgs.Length?renderArgs[expressionIndex+1]:"";
             if(expressionMode!="existing" && expressionMode!="auto-custom")throw new ArgumentException("--expression-mode must be existing or auto-custom");
             bool demoShapes=Array.IndexOf(renderArgs,"--use-demo-shape-keys")>=0;
+            exaggeration=FacialExaggeration.Parse(renderArgs,demoShapes);
             autoExpressions=expressionMode=="auto-custom" || demoShapes;
-            if(autoExpressions && !demoShapes){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
+            if(autoExpressions){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
             if(autoExpressions)BrowShapeSplit.Generate(meshes,leftEye,rightEye,ExpressionClone);
             expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
             if(Array.IndexOf(renderArgs,"--check-brow-sides")>=0)expressions.CheckBrowSides();
             Debug.Log("TANAKACAP_EXPRESSION_MODE "+expressionMode);
+            Debug.Log("TANAKACAP_EXAGGERATION brow="+exaggeration.Brow+" eye="+exaggeration.Eye+" eyelid="+exaggeration.Eyelid+" mouth="+exaggeration.Mouth);
             browExpressions=new BrowExpressions(meshes);
             var args = Environment.GetCommandLineArgs();
             adaptiveHeadFollow=Array.IndexOf(args,"--adaptive-head-follow")>=0;
@@ -465,12 +468,12 @@ namespace TanakaCap
                 browRightInner=FollowBrow(browRightInner,p.browRightInner,FrameDelta,adaptiveBrowFollow);
                 browRightOuter=FollowBrow(browRightOuter,p.browRightOuter,FrameDelta,adaptiveBrowFollow);
             }
-            expressions.ApplyBrows(browLeftInner,browLeftOuter,browRightInner,browRightOuter);
+            expressions.ApplyBrows(exaggeration.BrowValue(browLeftInner),exaggeration.BrowValue(browLeftOuter),exaggeration.BrowValue(browRightInner),exaggeration.BrowValue(browRightOuter));
             if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
             expressions.CornerGamma=MouthCornerGamma;expressions.OpenSmileSuppression=MouthOpenSmileSuppression;
-            expressions.ApplyMouth(mouth,mouthWidth,mouthRound,detailedMouth?mouthLeftCorner:mouthSmile,
-                detailedMouth?mouthRightCorner:mouthSmile,mouthShift,mouthBow,MouthCornerEmphasis);
-            expressions.Blink(blinkLeft,blinkRight);
+            expressions.ApplyMouth(exaggeration.MouthValue(mouth),exaggeration.MouthValue(mouthWidth),exaggeration.MouthValue(mouthRound),exaggeration.MouthValue(detailedMouth?mouthLeftCorner:mouthSmile),
+                exaggeration.MouthValue(detailedMouth?mouthRightCorner:mouthSmile),exaggeration.MouthValue(mouthShift),exaggeration.MouthValue(mouthBow),Mathf.Max(MouthCornerEmphasis,exaggeration.Mouth));
+            expressions.Blink(exaggeration.LidValue(blinkLeft),exaggeration.LidValue(blinkRight));
             expressions.Commit();
         }
 
@@ -687,7 +690,7 @@ namespace TanakaCap
         void DriveGaze(TrackingPacket packet,bool live,float dt)
         {
             bool valid=gazeEnabled && live && packet!=null && packet.faceTracked && packet.gazeTracked;
-            var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain,-12,12)):(gazeEnabled?CameraGazeTarget():Vector2.zero);
+            var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain*exaggeration.EyeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain*exaggeration.EyeGain,-12,12)):(gazeEnabled?CameraGazeTarget():Vector2.zero);
             gazeAngles=Vector2.Lerp(gazeAngles,target,1-Mathf.Exp(-Mathf.Max(0,dt)*(valid?22f:2f)));
             if(gazeAngles.sqrMagnitude<.0001f)gazeAngles=Vector2.zero;
             for(int eyeIndex=0;eyeIndex<2;eyeIndex++)
@@ -730,6 +733,7 @@ namespace TanakaCap
                 var names=new[]{"TC_GazeRight","TC_GazeLeft","TC_GazeDown","TC_GazeUp"};
                 for(int d=0;d<4;d++)
                 {
+                    if(mesh.GetBlendShapeIndex(names[d])>=0)continue;
                     var delta=new Vector3[mesh.vertexCount];
                     var direction=renderer.transform.InverseTransformVector(transform.TransformVector(directions[d]));
                     for(int i=0;i<delta.Length;i++)delta[i]=direction*(support[i]/maximum);
@@ -1075,8 +1079,8 @@ namespace TanakaCap
                     for(int i=0;i<shift.Length;i++)opposite[i]=-shift[i];
                     if(moved==0){Debug.LogWarning("Auto mouth shift unavailable: no isolated lip support on "+renderer.name);}
                     else {
-                    mesh.AddBlendShapeFrame("TC_MouthShiftLeft",100,shift,null,null);
-                    mesh.AddBlendShapeFrame("TC_MouthShiftRight",100,opposite,null,null);
+                    if(mesh.GetBlendShapeIndex("TC_MouthShiftLeft")<0)mesh.AddBlendShapeFrame("TC_MouthShiftLeft",100,shift,null,null);
+                    if(mesh.GetBlendShapeIndex("TC_MouthShiftRight")<0)mesh.AddBlendShapeFrame("TC_MouthShiftRight",100,opposite,null,null);
                     renderer.sharedMesh=null;renderer.sharedMesh=mesh;
                     Debug.Log("TANAKACAP_MOUTH_ISOLATED: "+renderer.name+" vertices="+moved+" centerY="+centerY+" band=14mm");
                     if(Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-check")>=0)
@@ -1085,6 +1089,8 @@ namespace TanakaCap
                 }
                 foreach(bool up in new[]{true,false})foreach(bool isLeft in new[]{true,false})
                 {
+                    string existingCorner="TC_"+(isLeft?"Left":"Right")+"Corner"+(up?"Up":"Down");
+                    if(mesh.GetBlendShapeIndex(existingCorner)>=0)continue;
                     int source=original.GetBlendShapeIndex(up?"口角上げ":"口角下げ");
                     if(source<0)continue;
                     var delta=new Vector3[vertices.Length];var normals=new Vector3[vertices.Length];var tangents=new Vector3[vertices.Length];

@@ -58,3 +58,18 @@ def test_status_expires_instead_of_showing_old_speed():
         session.last={'inference':0}
         assert session.poll()=={}
     finally:session.sock.close()
+
+
+@pytest.mark.parametrize('part',['brow','eye','eyelid','mouth'])
+def test_independent_exaggeration_arguments_and_validation(part):
+    config=dict(ui.DEFAULT,**{part+'_exaggeration':.65})
+    player,_=ui.commands(config,40001,40002)
+    for key in ('brow','eye','eyelid','mouth'):
+        assert float(player[player.index('--'+key+'-exaggeration')+1])==(.65 if key==part else 0.)
+    for bad in (-.1,1.1,float('nan'),float('inf')):
+        with pytest.raises(ValueError):ui.validate(dict(config,**{part+'_exaggeration':bad}))
+
+
+def test_demo_avatar_uses_demo_runtime():
+    player,_=ui.commands(dict(ui.DEFAULT,avatar=str(ui.ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')),40001,40002)
+    assert '--use-demo-shape-keys' in player
