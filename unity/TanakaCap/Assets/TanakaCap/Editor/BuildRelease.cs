@@ -8,7 +8,7 @@ namespace TanakaCap.Editor {
   public static void BuildExporter(){
    SecondaryConstraintChecks.Run();
    Directory.CreateDirectory("../../builds/release-player");
-   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/AvatarShaderCompatibility.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
    Debug.Log("TANAKACAP_EXPORTER_BUILD_OK");
   }
   public static void Build(){

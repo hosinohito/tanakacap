@@ -49,8 +49,9 @@ namespace TanakaCap.Editor {
      } else throw new Exception("Unsupported component: "+type+" on "+component.name);
     }
     foreach(var a in copy.GetComponentsInChildren<Animator>(true)){a.runtimeAnimatorController=null;a.applyRootMotion=false;}
+    AvatarShaderCompatibility.Prepare(copy,scratch,warnings);
     foreach(var r in copy.GetComponentsInChildren<Renderer>(true))foreach(var m in r.sharedMaterials)
-     if(!m||!m.shader||m.shader.name=="Hidden/InternalErrorShader")throw new Exception("Missing material/shader: "+r.name);
+     if(!m||!m.shader||m.shader.name=="Hidden/InternalErrorShader")warnings.Add("Missing material/shader: "+r.name+". Export continues; unsupported renderer will be disabled by the Player.");
     string prefab=scratch+"/avatar.prefab";
     PrefabUtility.SaveAsPrefabAsset(copy,prefab);AssetDatabase.SaveAssets();
     var result=BuildPipeline.BuildAssetBundles(build,new[]{new AssetBundleBuild{assetBundleName="avatar.bundle",assetNames=new[]{prefab},addressableNames=new[]{"avatar"}}},BuildAssetBundleOptions.ChunkBasedCompression|BuildAssetBundleOptions.StrictMode,BuildTarget.StandaloneWindows64);
