@@ -101,6 +101,14 @@ namespace TanakaCap.Editor {
     Require(demo.BrowValue(0)==0&&demo.MouthValue(0)==0&&demo.LidValue(0)==0,"Neutral must not move under exaggeration");
     Require(demo.BrowValue(1)==1&&demo.LidValue(1)==1&&demo.MouthValue(-1)==-1,"Exaggeration must respect shape range");
     Debug.Log("TANAKACAP_EXAGGERATION_CHECK_OK");
+    var equalGaze=FacialExaggeration.GazeTarget(new Vector2(8,6),6);
+    Require(Mathf.Abs(equalGaze.x/20-equalGaze.y/12)<.00001f,"Equal iris displacement must give equal normalized gaze response");
+    var furtherGaze=FacialExaggeration.GazeTarget(new Vector2(12,9),6);
+    Require(furtherGaze.x>equalGaze.x&&furtherGaze.y>equalGaze.y&&furtherGaze.x<20&&furtherGaze.y<12,"Gaze must retain motion past old saturation without exceeding bounds");
+    Require(FacialExaggeration.GazeTarget(Vector2.zero,6)==Vector2.zero,"Gaze neutral unchanged");
+    Require(FacialExaggeration.GazeTarget(new Vector2(8,6),6,true)==new Vector2(20,12),"Legacy gaze response is reversible");
+    Require((FacialExaggeration.GazeTarget(new Vector2(-8,-6),6)+equalGaze).sqrMagnitude<.000001f,"Gaze signs symmetric");
+    Debug.Log("TANAKACAP_GAZE_RESPONSE_CHECK_OK");
     Debug.Log("TANAKACAP_EXPRESSION_CHECKS_OK priority/empty/descriptor/grouping/gaze/no-generated-keys");
    }finally{UnityEngine.Object.DestroyImmediate(root);UnityEngine.Object.DestroyImmediate(mesh);}
   }

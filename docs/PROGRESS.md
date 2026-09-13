@@ -1072,3 +1072,8 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 269 Python tests、Tk入力/保存/適用、Unityの独立性/中立/上限/デモ強制の検査とビルド成功。初回の新クラスimport途中に一時CS0246が出たが最終ビルドは成功。口角入力にも強調倍率を加える最終修正で再ビルド・再動画化。途中版はresults/avatar-videos/facial-exaggeration-before-corner-gainへ保存。
 
 最終比較はresults/avatar-videos/facial-exaggeration。左normal=全追加強調0、右exaggerated=全1。同じ最新版・補完済みデモ・853packet・PnP・眉gain2・可変眉を固定。各901frame/30.033秒、単体2本/横並び/顔アップ、全デコード成功。入力/アバターハッシュ一致、実Playerログ0/1を確認。比較用の例外フラグはoffline render-replay限定。実カメラ/実写表示/エージェント目視なし。README/SPEC/HANDOFF/AGENTS/CONTROL_PANEL/FACIAL_EXAGGERATIONへ記録。
+
+
+## 2026-09-13 — 上下目線の表示飽和
+
+上下が弱い申告へ録画589有効packetを数値監査。全強調デモの旧目標クリップ率は横33.6%/縦74.2%。眼幅変位に対する両軸感度を統一し共通soft boundへ変更。最大変形量と検出は維持、--legacy-gaze-responseで復帰。個人別中立校正等は提案のみ。詳細docs/GAZE_RESPONSE.md。Unity応答検査/ビルド成功。全強調デモで同853packetを新旧比較し各901描画frame/30.033秒、全デコード成功。results/avatar-videos/gaze-response/face-closeup.mp4は左旧/右新。実カメラ・実写表示・目視評価なし。見た目改善は未確認。
