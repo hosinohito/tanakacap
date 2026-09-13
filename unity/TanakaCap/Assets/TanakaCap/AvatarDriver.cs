@@ -80,6 +80,7 @@ namespace TanakaCap
         bool gazeEnabled=true;
         bool gazeIrisMode=true;
         float gazeGain=4f;
+        bool legacyGazeResponse;
         SkinnedMeshRenderer gazeMesh;
         Transform leftEye,rightEye;
         Quaternion leftEyeRest,rightEyeRest;
@@ -290,6 +291,7 @@ namespace TanakaCap
             framedDistance=seatedDistance && Array.IndexOf(args,"--face-distance-seated")<0;
             gazeIrisMode=Array.IndexOf(args,"--gaze-bones")<0;
             int gazeGainArg=Array.IndexOf(args,"--gaze-gain");
+            legacyGazeResponse=Array.IndexOf(args,"--legacy-gaze-response")>=0;
             if(gazeGainArg>=0 && gazeGainArg+1<args.Length && float.TryParse(args[gazeGainArg+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var requestedGazeGain) && !float.IsNaN(requestedGazeGain))
                 gazeGain=Mathf.Clamp(requestedGazeGain,.5f,6f);
             if(Array.IndexOf(args,"--obs")>=0)SetObsMode(true);
@@ -690,7 +692,7 @@ namespace TanakaCap
         void DriveGaze(TrackingPacket packet,bool live,float dt)
         {
             bool valid=gazeEnabled && live && packet!=null && packet.faceTracked && packet.gazeTracked;
-            var target=valid?new Vector2(Mathf.Clamp(packet.gazeYaw*gazeGain*exaggeration.EyeGain,-20,20),Mathf.Clamp(packet.gazePitch*gazeGain*exaggeration.EyeGain,-12,12)):(gazeEnabled?CameraGazeTarget():Vector2.zero);
+            var target=valid?FacialExaggeration.GazeTarget(new Vector2(packet.gazeYaw,packet.gazePitch),gazeGain*exaggeration.EyeGain,legacyGazeResponse):(gazeEnabled?CameraGazeTarget():Vector2.zero);
             gazeAngles=Vector2.Lerp(gazeAngles,target,1-Mathf.Exp(-Mathf.Max(0,dt)*(valid?22f:2f)));
             if(gazeAngles.sqrMagnitude<.0001f)gazeAngles=Vector2.zero;
             for(int eyeIndex=0;eyeIndex<2;eyeIndex++)
