@@ -1162,3 +1162,5 @@ build-release.batを追加し、build-release.ps1を日時版名・原本検査�
 ユーザーから最新版ビルド・GitHub公開を明示指定。公開用0.1.0をUnityソースから作成、最新利用説明書の同梱を確認。publication_approvedをtrueへ更新。remote未登録、GitHub未認証のため公開先とデバイス認証をユーザーへ依頼。認証情報は記録しない。
 
 公開用0.1.0ビルド完了。part01=2,084,961,325 bytes、part02=162,029,922 bytes、12,918ファイル。CRC/ライセンス監査合格、SHA256SUMS.txt作成。最新の非破壊エクスポート手順を同梱。GitHub公開は公開先指定・認証待ちで未完了。実カメラ試験なし。
+
+GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ、対象個人リポジトリ限定のfine-grained PATへ変更。トークン作成済み申告、非表示入力・Windows DPAPI保存用tools/set-release-token.ps1を用意。秘密値の受領/認証/公開はまだ未完了。
