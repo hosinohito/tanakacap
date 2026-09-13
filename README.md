@@ -436,3 +436,5 @@ Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書�
 
 
 エラーが出た場合は、起動用 `TanakaCap.bat` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。
+
+旧AudioLink includeが欠落し、VPM版AudioLinkが存在する場合は、書き出し用のshader/materialコピーだけ参照先を移行します。元の素材は変更しません。AudioLinkへの音声供給は未実装です。修正プラグインのみ対応、公開v0.1.0 ZIP未反映。

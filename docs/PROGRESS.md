@@ -1194,3 +1194,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 2026-09-13：ユーザー提供ログでMSL/Ring Particles Shaderのsupported=False/Direct3D11を確認。前回のログ未生成申告はログが無かったと確定せず、既存パスがbuilds/lab/logsだった点を案内。通常UIは--error-logで起動bat隣のlogs/player-errors.logを指定、起動時にファイル作成、ロード例外はコールバックを介さず直接保存。プレビューへログの絶対パス/保存失敗理由を表示。shader本体は手元になくプロジェクトパスを質問中、原因未確定・置換なし。UIのアバター選択を最上段、入力名をモーション入力へ変更。Tk実検査とPlayerの指定先直接ログ検証成功。0.1.1-fixes3をビルド中。
 
 0.1.1-fixes3ビルド完了。ZIP2本CRC/ライセンス/ランタイム検査成功、SHA256SUMS.txt作成。新しい保存経路とUI修正を同梱。shader問題は未解決、原本パスの回答待ち。GitHubは未更新。
+
+
+2026-09-13：ユーザー提供の外部プロジェクトを読み取り、MSL/Ring Particles Shaderの旧include Assets/AudioLink/Shaders/AudioLink.cgincが欠落、AudioLink 1.4.0はPackages/com.llealloo.audiolink/Runtime/Shaders/AudioLink.cgincにあると確認。隔離コピーでincludeだけ補正しDirect3D11 shader.isSupported/Material.SetPass(0)/コンパイルエラー0を確認。AvatarShaderCompatibilityをExporterへ追加：旧include欠落かつ新include実在時のみ書出しscratch内へshader/materialを複製し参照補正。原本変更なし、警告へ記録、音声AudioLink入力の実装ではない。builds/fixes/parent-constraint/TanakaCapExporter.unitypackageを更新、第三者shader/includeは同梱していない。外部shaderのバイト不変を確認。results/unity-shader-compat.log（初回import順の一時CS0103は再importで解消、最終executeMethod/検査/export成功）。実アバターの再書出し/見た目は未確認。Playerの再ビルド不要、公開ZIPは未更新。
