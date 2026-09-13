@@ -1126,3 +1126,11 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 ## 2026-09-13 — 初回モデル取得と頭・顔の候補
 
 MODEL_DOWNLOAD_OPTIONSに自動取得案と代替調査を記録。現行頭専用の作者重み一覧にMITの追加根拠、Face Landmarker/Face MeshのONNX移植にモデル由来を含むApache説明を確認。HF APIのミラーSHA照合はTLS認証エラーで未完。初回取得は再配布を減らすが使用制限を解除しない。既存fetchは事後SHA記録なので製品には期待SHA固定と初回UIが必要。候補のGPU実測・導入・モデル交換なし。仕様決定ではなく提案、既存公開ゲート維持。
+
+## 2026-09-13 — 3モードのモデル許諾判定を確定
+
+前回見落としていた作者Tau-J/RTMPoseのHF保管庫で、HumanArt版YOLOX-M/RTMW-Lの対象ZIPとApache-2.0を確認。固定版cd4d709のLFS SHAが既存receiptのZIP SHAと一致、現行ONNXもlock/receiptに一致。頭MobileNetV3 smallも作者yakhyoの重み別MIT表記と原本SHA一致を確認。6資料取得・3モデル照合成功。最初のHF接続/一部固定版取得はTLS切断で失敗、通常権限とカード同版固定で最終成功。公開条件に基づき3件とも商用利用・再配布可へ更新し、モデル移行をライセンス上の必須とした前回提案を撤回。モデル・学習データの配布権、ライブラリ配布条件は別。issue3271はコメント0件で、回答を得たという扱いではない。
+
+MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.jsonに固定した根拠、原文はresults/model-license-evidence。再取得tools/collect_model_license_evidence.py。モデル通知/既存監査/HEAD_ONLY/README/引継ぎを更新。release/config.jsonのモデル2項目を閉じるがNVIDIA/FFmpeg/Unityの3残件で公開ゲートを維持。モデル本体・通常起動・初回取得方式・ZIPは変更せず、外部問い合わせ/公開/実カメラ検証なし。
+
+既存review6の機械監査を再実行し、通知14件・NVIDIA20 DLL・全194バイナリ・モデルlock照合でerrors=[]、publication_approved=false。results/model-license-evidence/review6-audit.json。古いZIP内の説明文を更新した検証ではない。新しい表・条件は次回ビルドから反映する。

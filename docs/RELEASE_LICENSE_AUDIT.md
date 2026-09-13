@@ -1,6 +1,8 @@
 # 実配布物のライセンス監査（2026-09-13）
 
-## 代替候補の確認（2026-09-13、未採用）
+最新再監査：モデルについて残していたHumanArt版YOLOX-M、RTMW-L、頭専用MobileNetV3 smallは、作者のモデル保管庫の公開ライセンスと現行原本の同一性を確認し、商用利用・再配布可へ更新。[3モードの表と固定証拠](MODEL_LICENSE_DECISIONS.md)。以前の「モデル移行が必要」という提案は撤回し、代替は任意比較とする。製品全体にはNVIDIA、FFmpeg、Unityの3残件が残る。
+
+## 代替候補の確認（許諾確認前の提案、未採用）
 
 ユーザーから導入前の条件確認について指摘。PROGRESSの頭専用導入記録にはコードMITを確認した一方で、重み/学習元の一般配布監査は残すと明記されていた。使用許諾の確認と製品同梱の最終確認を完了したという説明を混同しない。
 
@@ -18,9 +20,9 @@
 | Python / Tk / NumPy / ORT / ONNX等 | 配布wheelのLICENSE/ThirdPartyNotices、Pythonの本文、Tkのlicense.termsを同梱 | 親ライセンスだけでなく内部通知を保持。版変更時は再照合 |
 | 虹彩 / YuNet / 顔固定テンプレート | 個別Apache-2.0 / MIT / MediaPipe由来Apache-2.0の本文あり | 原本SHA、出所、FP16・batch2・座標抽出等の変更通知を保持 |
 | RTMW3D-X | [配布者のモデルカード](https://huggingface.co/Soykaf/RTMW3D-x/blob/main/README.md)にApache-2.0の明示 | 再配布の根拠あり。学習素材の全権利の保証ではない。MMPose本文を追加 |
-| RTMW-L | [MMPose](https://github.com/open-mmlab/mmpose/blob/main/LICENSE)はApache-2.0。[一般的なモデル商用利用の回答](https://github.com/open-mmlab/mmpose/issues/2106)あり | 今回のcocktail14/DW重みまで特定した説明は未確認。全学習データの条件をコード許諾で上書きしない |
-| HumanArt版YOLOX-M | [HumanArt公式](https://github.com/IDEA-Research/HumanArt#dataset-download)はデータ利用申請を非商用目的と説明 | **重みの商用再配布は保留**。データの条件が重みに当然適用されるとも、適用されないとも断定しない |
-| 頭専用MobileNet V3 small | [配布作者](https://github.com/yakhyo/head-pose-estimation)のMIT、300W-LP学習の記載あり | 重み・学習由来の範囲確認が残る。学習元公式サイトは今回タイムアウト。別モデルの禁止条項をこの重みに流用しない |
+| RTMW-L | [作者のモデル保管庫](https://huggingface.co/Tau-J/RTMPose)のApache-2.0、使用ZIPと作者公開ZIPのSHA一致 | **公開ライセンスに基づき商用利用・再配布可**。コードLICENSEだけだった前回の根拠を更新 |
+| HumanArt版YOLOX-M | 同保管庫のApache-2.0、使用ZIPと作者公開ZIPのSHA一致 | **公開ライセンスに基づき商用利用・再配布可**。データ自体の非商用条件と重みの公開条件を区別 |
+| 頭専用MobileNet V3 small | [作者の重み別MIT一覧](https://huggingface.co/yakhyo/uniface-weights)、現行原本SHA一致 | **MITで商用利用・再配布可**。作者の重み宣言を追加確認、顔認証用の別MobileNetとは区別 |
 | CUDA関連 | 実wheelのAttachment Aにcudart/cuBLAS/cuFFT/cuRAND/NVRTC/NVBLASの系列名あり | 20 DLLをSHA付きで列挙。不要な122 .h、14 .hpp、5 .libは今後のZIPから除外。開発環境は維持 |
 | cuDNN9 / nvJitLink | 下記の契約と実DLL不一致 | **対応する実配布版の契約確認が必要**。Web本文でwheel本文を黙って置換しない |
 | OpenCV内部FFmpeg | wheel自身がLGPL-2.1本文を添付。動的DLLとして同梱 | **正確な対応ソース・ビルド手順の提供が未完了**。TanakaCap全体をGPLにする要求とは区別 |
@@ -38,9 +40,9 @@ CUDA関連wheelにも2018年の本文が入っており、`nvidia-nvjitlink 13.4
 
 ## 人物検出モデル
 
-今回と**同じ** `yolox_m_8xb8-300e_humanart-c2c7a14a` の商用デスクトップアプリへの再配布について、[MMPose issue #3271](https://github.com/open-mmlab/mmpose/issues/3271)が2026-08-19に作成され、今回閲覧時には回答がなかった。この質問自体は権利者の禁止宣言ではない。一般COCOモデルへの許可回答だけでこの重みの確認を終えない。
+今回と**同じ** `yolox_m_8xb8-300e_humanart-c2c7a14a` の商用デスクトップアプリへの再配布について、[MMPose issue #3271](https://github.com/open-mmlab/mmpose/issues/3271)はAPIでもコメント0件。しかし別に存在する作者のHugging Faceモデル保管庫へApache-2.0が明示されており、対象ZIPの同一性も確認できた。未回答の質問自体を配布停止の根拠にはしない。今回の判断は一般COCOモデルへの回答を流用したものではない。
 
-解決方法は、権限ある提供者からこの重みの利用・再配布条件を得るか、明示条件が揃う人物検出重みに交換して性能/精度を再検証すること。現在の検出方式をこの監査だけで勝手に交換しない。無料配布ならすべて解決する、別ダウンロードにすれば商用利用の不明点が消える、という説明はしない。
+重みの再配布条件を確認するためにモデルを交換する必要はなくなった。根拠の固定版とSHAはMODEL_LICENSE_DECISIONS.mdおよびrelease/model-license-evidence.json。学習データの全権利や第三者権利の無侵害を保証する意味ではない。自動取得方式は容量・導入方法の任意選択として扱う。実行モデルの変更はしていない。
 
 ## OpenCVとFFmpeg
 
@@ -54,6 +56,6 @@ CUDA関連wheelにも2018年の本文が入っており、`nvidia-nvjitlink 13.4
 
 `tools/audit_release_licenses.py <展開フォルダー> --output <結果JSON>` は本文ハッシュ・必要通知・モデルSHA・NVIDIA実行ファイル限定・全ネイティブファイルのSHAを検査。ビルドへ接続した。機械検査合格と再配布許諾確定を別にし、未確定なら `-Publishable` は引き続き停止する。
 
-配布者の契約プラン、第三者への問い合わせ回答はローカルコードから推定しない。次回は上記5残件を個別に閉じる。具体的に問い合わせる場合は、NVIDIAへ採用wheel版・20 DLL名と古い本文の対応、MMPoseへ#3271の対象重み、頭モデル作者へ重みのMIT適用範囲を提示する。外部連絡は未実施。
+配布者の契約プラン、第三者への問い合わせ回答はローカルコードから推定しない。次回は残ったNVIDIA/FFmpeg/Unityの3件を個別に閉じる。モデルは公開された作者資料で確認できたため問い合わせは不要。外部連絡は未実施。
 
 検証：review5で本文14件、NVIDIA DLL20件、モデル原本と本文のSHA照合に合格。不要なSDKファイルを除いた同梱Pythonから、合成虹彩入力でCUDA 381ノード・CPU 0ノードを確認（results/release-license-gpu）。モデル全体の新規PC試験や法的許諾確定ではない。ZIPは2,085,247,898 bytes、CRC全件成功。
