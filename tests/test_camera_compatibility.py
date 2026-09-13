@@ -1,10 +1,32 @@
 import json
+import ctypes
+import os
+import subprocess
+from pathlib import Path
 import pytest
 from tanakacap.camera_devices import resolve_camera
 from tanakacap.camera_compatibility import choose_format, fourcc_name, hints
 from tanakacap.camera_settings import PowerlineSession
 from tanakacap.windows_camera_controls import identity_key
 from tanakacap import camera_settings, control_panel as ui
+
+
+def test_ks_property_layout_matches_windows_sdk():
+    from tanakacap.windows_camera_controls import Property, ProcAmp
+    actual=dict(property_size=ctypes.sizeof(Property),
+                property_alignment=ctypes.alignment(Property),
+                procamp_size=ctypes.sizeof(ProcAmp),
+                value_offset=ProcAmp.value.offset, flags_offset=ProcAmp.flags.offset,
+                capabilities_offset=ProcAmp.capabilities.offset)
+    expected=dict(property_size=24,property_alignment=8,procamp_size=40,
+                  value_offset=24,flags_offset=28,capabilities_offset=32)
+    assert actual==expected
+    helper=Path(__file__).resolve().parents[1]/'builds/diagnostics/camera_native.exe'
+    if os.name=='nt' and helper.exists():
+        # --abi exits before COM/device initialization; never opens a camera.
+        native=subprocess.run([str(helper),'--abi'],capture_output=True,text=True,
+                              check=True,timeout=5)
+        assert json.loads(native.stdout)==actual
 
 
 def mode(fmt):

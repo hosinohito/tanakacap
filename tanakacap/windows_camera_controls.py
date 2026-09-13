@@ -93,12 +93,19 @@ def identity_key(device_id):
                   '#{video-interface}', device_id.casefold())
 
 
-class Property(c.Structure):
-    _fields_=[('set',c.c_ubyte*16),('id',c.c_ulong),('flags',c.c_ulong)]
+class PropertyFields(c.Structure):
+    _fields_=[('set',c.c_ubyte*16),('id',c.c_uint32),('flags',c.c_uint32)]
+
+
+class Property(c.Union):
+    # KSPROPERTY includes LONGLONG Alignment. Its 8-byte alignment also
+    # supplies the trailing padding in KSPROPERTY_VIDEOPROCAMP_S (40 bytes).
+    _anonymous_=('fields',)
+    _fields_=[('fields',PropertyFields),('alignment',c.c_int64)]
 
 
 class ProcAmp(c.Structure):
-    _fields_=[('property',Property),('value',c.c_long),('flags',c.c_ulong),('capabilities',c.c_ulong)]
+    _fields_=[('property',Property),('value',c.c_int32),('flags',c.c_uint32),('capabilities',c.c_uint32)]
 
 
 @contextmanager
