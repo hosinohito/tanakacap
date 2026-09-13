@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+最新：2026-09-13：通常Playerにエラー専用ログを追加（TanakaCap.exeと同じフォルダーのlogs/player-errors.log、1 MiB超で.previousへ世代交代、通常の追跡ログは増やさない）。RuntimeInitializeOnLoadMethodでアバター読込前から描画上限を適用、読込失敗時も指定60/30/自由入力を維持。推論同期の起動失敗時は60上限。マテリアルエラーにrenderer/material/shader/supported/GPU APIと例外詳細を記録。デモモーション中は推論モード/部位選択を隠す。0.1.1-fixes2ビルド完了、CRC/ライセンス/ランタイム検査成功。builds/releases/0.1.1-fixes2のpart01/part02が配布対象、同TanakaCapフォルダーは展開済み。実Player欠損.tcapでエラーログと60/30fps上限、Tk実ウィジェット表示切替を確認（results/startup-error-check、results/ui-validation）。GitHub未公開。マテリアル自体の互換性問題は未解決、次に新エラーログのshader名から調査。
+
 最新：2026-09-13：雪ぱーちくるのUnsupported component: UnityEngine.ParticleSystemに対応。ParticleSystem/ParticleSystemRendererを削除せず標準コンポーネントとして書き出し許可。既存の全Rendererのマテリアル/シェーダー検査は維持。playOnAwake設定を保持し、Animator/VRChatメニュー/スクリプト起動は再現しない旨をreportへ記録。Unityコンパイル/既存回帰検査/梱包ソース照合成功、既存Player内ParticleSystemModule DLLを確認。実エフェクトの描画・透過・起動は未検証。修正プラグインはbuilds/fixes/parent-constraint/TanakaCapExporter.unitypackage（過去2修正も含む）。Player/公開ZIPは変更なし。results/unity-exporter-particles-fix.log。
 
 最新：2026-09-13：続くOverlapping PhysBone chains（イヤリングBone）に対応。全有効PhysBoneルートを事前収集し、親からの走査は別の子ルートで停止。子の専用設定を優先し、親のtailは子ルート位置を参照する。親→子の順でデータを作成、同一rootの既存first-wins警告は維持。二重登録の最終検査は残す。元のPhysBone/ignore設定は変更せず、境界変更をreport警告へ記録。Unityで実際のCollectSegmentsの親/子領域、子PBなし、ignoreを回帰検査し成功。results/unity-exporter-nested-physbone-fix.log。builds/fixes/parent-constraint/TanakaCapExporter.unitypackageを両修正入りに更新。PlayerとGitHub公開ZIPは未変更、実アバター再書出しは未確認。

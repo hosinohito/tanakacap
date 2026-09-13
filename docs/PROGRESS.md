@@ -1180,3 +1180,12 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：雪ぱーちくるのUnsupported component: UnityEngine.ParticleSystemに対応。ParticleSystem/ParticleSystemRendererを削除せず標準コンポーネントとして書き出し許可。既存の全Rendererのマテリアル/シェーダー検査は維持。playOnAwake設定を保持し、Animator/VRChatメニュー/スクリプト起動は再現しない旨をreportへ記録。Unityコンパイル/既存回帰検査/梱包ソース照合成功、既存Player内ParticleSystemModule DLLを確認。実エフェクトの描画・透過・起動は未検証。修正プラグインはbuilds/fixes/parent-constraint/TanakaCapExporter.unitypackage（過去2修正も含む）。Player/公開ZIPは変更なし。results/unity-exporter-particles-fix.log。
+
+
+2026-09-13：通常Playerにエラー専用ログを追加（%LOCALAPPDATA%/TanakaCap/logs/player-errors.log、1 MiB超で.previousへ世代交代、通常の追跡ログは増やさない）。RuntimeInitializeOnLoadMethodでアバター読込前から描画上限を適用、読込失敗時も指定60/30/自由入力を維持。推論同期の起動失敗時は60上限。マテリアルエラーにrenderer/material/shader/supported/GPU APIと例外詳細を記録。デモモーション中は推論モード/部位選択を隠す。0.1.1-fixesをビルド予定、未検証。
+
+ユーザー追加指定でログ保存先をLocalAppDataから本体実行ファイル隣のlogs/player-errors.logへ変更。圧縮中ビルドを中断し、0.1.1-fixes2として再ビルドする。先のLocalAppData記述を訂正。
+
+ビルド状況訂正：0.1.1-fixesは中断要求時点ですでに完了していた。LocalAppData版なので今回の提供対象にせず、本体隣ログ版0.1.1-fixes2を別途作成中。UI実ウィジェットのデモ→録画表示復帰検査成功。欠損.tcapで実Playerを起動（実カメラなし）、60/30指定のloopHz最大60.003/30.002を確認。保存先変更後も60上限とbuilds/release-player/logs/player-errors.logのエラー記録成功。結果results/startup-error-check/{report,nearby-report}.json。
+
+0.1.1-fixes2完了：part01=2,084,962,845 bytes、part02=162,030,033 bytes、12,918ファイル。CRC/ライセンス/ランタイム検査成功。SHA256SUMS.txt作成。展開済み本体はbuilds/releases/0.1.1-fixes2/TanakaCap。通常UI起動で実行ファイル隣builds/lab/logs/player-errors.logへ描画エラーを保存。GitHub公開は行っていない。

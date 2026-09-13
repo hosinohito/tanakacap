@@ -43,7 +43,7 @@ namespace TanakaCap {
      avatar=Instantiate(prefab);avatar.name=m.displayName;
      var animator=avatar.GetComponent<Animator>();if(!animator||!animator.isHuman)throw new Exception("Humanoid avatar missing.");
      foreach(var r in avatar.GetComponentsInChildren<Renderer>(true))foreach(var mat in r.sharedMaterials)
-      if(!mat||!mat.shader||!mat.shader.isSupported||mat.shader.name=="Hidden/InternalErrorShader")throw new Exception("Unsupported avatar material: "+r.name);
+      if(!mat||!mat.shader||!mat.shader.isSupported||mat.shader.name=="Hidden/InternalErrorShader")throw new Exception("Unsupported avatar material: renderer="+r.name+", material="+(mat?mat.name:"<missing>")+", shader="+(mat&&mat.shader?mat.shader.name:"<missing>")+", supported="+(mat&&mat.shader&&mat.shader.isSupported)+", graphics="+SystemInfo.graphicsDeviceType);
      animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
      var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;driver.faceProfile=m.faceProfile;
      if(m.secondaryPhysics!=null && m.secondaryPhysics.bones.Length>0)avatar.AddComponent<SecondaryMotion>().Initialize(m.secondaryPhysics,animator);
@@ -52,7 +52,7 @@ namespace TanakaCap {
      foreach(var warning in m.warnings??new string[0])Debug.LogWarning("Avatar package: "+warning);
     }
    }catch(Exception e){
-    error=e.Message;Debug.LogError("TANAKACAP_PACKAGE_ERROR "+error);
+    error=e.Message;Debug.LogError("TANAKACAP_PACKAGE_ERROR "+e);
     if(avatar)Destroy(avatar);if(bundle){bundle.Unload(true);bundle=null;}
     show=true;if(Application.isBatchMode){var output=FindObjectOfType<AlphaOutput>();if(output)output.exitCode=2;Application.Quit(2);}
    }
