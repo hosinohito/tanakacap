@@ -1,5 +1,9 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — 口寄せ8mmとフェーズ整理
+
+ユーザーが目線の改善を確認。生成口寄せキーを4→8mmへ倍増、入力1.7倍/唇14mm帯は維持。--legacy-mouth-shift-rangeで生成を4mmへ。デモ/auto-customの不足キーが対象で既存キーと凍結原本は維持。比較results/avatar-videos/mouth-shift-range-final/face-closeup.mp4、左4mm/右8mm、全強調/校正済み目線/同853packet。両方向のBakeで4mm/8mmと唇外・顎首不変を確認。初回mouth-shift-rangeはフラグ適用順の誤りで両側8mmになった無効比較。適用を生成前へ修正し、比較ツールに期待ログ検査を追加。口寄せの見た目は未評価。フェーズ一覧をdocs/IMPLEMENTATION_PHASES先頭で更新。
+
 最新比較（2026-09-13）：results/avatar-videos/gaze-range/face-closeup.mp4、左range-off（範囲校正なし）/右range-on（あり）。同853虹彩観測・PnPゲート・強調最大デモ・soft応答を固定し、校正だけ比較。保存診断から再構成した校正ありpacketが前回推論と完全一致。各901描画frame/30.033秒、全デコード成功、目視未実施。tools/prepare_gaze_range_comparison.pyで再現。口寄せが弱いという追加質問へ、直近の変更なし・入力強調1.7倍/最大4mm維持と説明。今回は口の変更なし。
 
 ## 2026-09-13 — 目線範囲中心の常時校正

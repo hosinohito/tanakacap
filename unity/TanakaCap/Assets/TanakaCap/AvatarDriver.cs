@@ -80,6 +80,7 @@ namespace TanakaCap
         bool gazeEnabled=true;
         bool gazeIrisMode=true;
         float gazeGain=4f;
+        float mouthShiftDistance=.008f;
         bool legacyGazeResponse;
         SkinnedMeshRenderer gazeMesh;
         Transform leftEye,rightEye;
@@ -266,6 +267,7 @@ namespace TanakaCap
             bool demoShapes=Array.IndexOf(renderArgs,"--use-demo-shape-keys")>=0;
             exaggeration=FacialExaggeration.Parse(renderArgs,demoShapes);
             autoExpressions=expressionMode=="auto-custom" || demoShapes;
+            mouthShiftDistance=Array.IndexOf(Environment.GetCommandLineArgs(),"--legacy-mouth-shift-range")>=0?.004f:.008f;
             if(autoExpressions){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
             if(autoExpressions)BrowShapeSplit.Generate(meshes,leftEye,rightEye,ExpressionClone);
             expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
@@ -1073,7 +1075,7 @@ namespace TanakaCap
                         float y=transform.InverseTransformPoint(renderer.transform.TransformPoint(vertices[i])).y;
                         float vertical=Mathf.Abs(transform.InverseTransformVector(renderer.transform.TransformVector(authored[i])).y);
                         float support=vertical/Mathf.Max(maximum,1e-8f)*MouthLipMask(y-centerY);
-                        shift[i]=renderer.transform.InverseTransformVector(transform.TransformVector(Vector3.left*.004f))*support;
+                        shift[i]=renderer.transform.InverseTransformVector(transform.TransformVector(Vector3.left*mouthShiftDistance))*support;
                         if(shift[i].sqrMagnitude>1e-12f)moved++;
                         if(Mathf.Abs(y-centerY)>=.014f && shift[i].sqrMagnitude>1e-12f)throw new Exception("Mouth shift escaped lip band");
                     }
@@ -1085,7 +1087,7 @@ namespace TanakaCap
                     if(mesh.GetBlendShapeIndex("TC_MouthShiftRight")<0)mesh.AddBlendShapeFrame("TC_MouthShiftRight",100,opposite,null,null);
                     renderer.sharedMesh=null;renderer.sharedMesh=mesh;
                     Debug.Log("TANAKACAP_MOUTH_ISOLATED: "+renderer.name+" vertices="+moved+" centerY="+centerY+" band=14mm");
-                    if(Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-check")>=0)
+                    if(Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-check")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(),"--check-mouth-shift-isolation")>=0)
                         CheckMouthShiftIsolation(renderer,vertices,authored,centerY);
                     }
                 }
@@ -1156,7 +1158,7 @@ namespace TanakaCap
                         throw new Exception("Baked mouth shift moved chin/neck or unauthored vertex");
                     maximum=Mathf.Max(maximum,movement);
                 }
-                if(maximum<.0038f || maximum>.0042f)throw new Exception("Isolated mouth shift did not reach the 4mm limit: "+sign+" / "+maximum);
+                if(Mathf.Abs(maximum-mouthShiftDistance)>.0002f)throw new Exception("Isolated mouth shift did not reach requested limit: "+sign+" / "+maximum+" expected="+mouthShiftDistance);
                 Debug.Log("TANAKACAP_BAKED_LIP_ONLY_OK: sign="+sign+" max="+maximum);
             }
             renderer.SetBlendShapeWeight(leftIndex,savedLeft);renderer.SetBlendShapeWeight(rightIndex,savedRight);Destroy(baseline);Destroy(changed);

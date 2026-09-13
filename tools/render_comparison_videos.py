@@ -37,6 +37,8 @@ def run(output,comparison=None):
   extra=variant.get('player_args',[])
   if not isinstance(extra,list) or any(not isinstance(a,str) for a in extra):raise ValueError('player_args must be a string list')
   subprocess.run([str(selected),'-batchmode',*extra,'--render-replay',str(source),'--video-output',str(video),'--ffmpeg',str(ff),'-logFile',str(log)],cwd=ROOT,check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
+  for marker in variant.get('expected_log',[]):
+   if marker not in log.read_text(encoding='utf-8',errors='replace'):raise ValueError('Missing Player verification: '+marker)
   meta=json.loads(Path(str(video)+'.json').read_text());assert meta['status']=='complete' and meta['packets']==expected
   meta['player']=str(selected);meta['player_args']=extra
   meta['assembly_sha256']=sha(selected.parent/'TanakaCap_Data/Managed/Assembly-CSharp.dll')
@@ -50,7 +52,7 @@ def run(output,comparison=None):
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  rendered=videos+[combined]
- if list(inputs) in (['range-off','range-on'], ['gaze-legacy','gaze-soft'], ['normal','exaggerated'], ['brow-direct','brow-adaptive'], ['brow-1x','brow-2x'], ['fixed','adaptive'], ['pnp','size2d'], ['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16'],['custom-demo','existing','auto-custom']):
+ if list(inputs) in (['shift-4mm','shift-8mm'], ['range-off','range-on'], ['gaze-legacy','gaze-soft'], ['normal','exaggerated'], ['brow-direct','brow-adaptive'], ['brow-1x','brow-2x'], ['fixed','adaptive'], ['pnp','size2d'], ['separate','body3d'], ['body3d','depth3d'], ['mouth-z','mouth-no-z'], ['CUDA-FP32','CUDA-FP16'],['custom-demo','existing','auto-custom']):
   closeup=output/'face-closeup.mp4'
   close_labels=[label.replace('pad=iw:', 'crop=640:480:320:0,scale=960:720,pad=iw:') for label in labels]
   close_filter=';'.join(close_labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
