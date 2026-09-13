@@ -271,8 +271,16 @@ def main(test_hook=None):
     for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物検出')]:
         ttk.Checkbutton(parts,text=text+' 負荷'+str(costs[key]['tenths'])+'割',variable=variables[key]).pack(anchor='w',pady=4)
     def parts_state(*args):
-        if variables['mode'].get()=='full':parts.grid()
+        motion=variables['source'].get()=='motion'
+        for widget in f_input.winfo_children():
+            info=widget.grid_info() or getattr(widget,'_saved_grid',{})
+            if int(info.get('row',-1))==6:
+                widget._saved_grid=info
+                if motion:widget.grid_remove()
+                else:widget.grid()
+        if not motion and variables['mode'].get()=='full':parts.grid()
         else:parts.grid_remove()
+    variables['source'].trace_add('write',parts_state)
     variables['mode'].trace_add('write',parts_state);parts_state()
     for index,(key,(label,_,choices)) in enumerate(OPTIONS.items()):row(frames['実験'],index,label,key,list(choices))
     f=frames['描画・OBS']

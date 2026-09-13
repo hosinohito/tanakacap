@@ -433,3 +433,6 @@ PhysBoneとUnity Constraintが同じボーンを制御する場合、そのボ�
 入れ子のPhysBoneは子の専用設定を優先し、親の走査を子ルートで止めます。二重駆動を避ける変換方針で、境界変更は書き出しレポートに記録します。
 
 Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書き出します。自動再生は元のplayOnAwakeに従い、VRChatメニュー等による起動は再現しません。この対応は修正版プラグインに含まれ、公開v0.1.0 ZIPには未反映です。
+
+
+エラーが出た場合は、本体の実行ファイル `TanakaCap.exe` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。

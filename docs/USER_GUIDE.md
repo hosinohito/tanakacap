@@ -87,3 +87,6 @@ TanakaCapで使う表情やボーンが、最適化で取り除かれること�
 OBSにSpout2プラグインを追加し、Spoutソースで **TanakaCap** を選択します。背景が透けた状態で重ねられます。
 
 OBS用プラグイン： https://github.com/Off-World-Live/obs-spout2-plugin/releases
+
+
+エラーが出た場合は、本体の実行ファイル `TanakaCap.exe` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。
