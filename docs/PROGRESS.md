@@ -1170,3 +1170,7 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 ## 2026-09-13 GitHub初回公開完了
 
 ユーザーの公開先指定とWorkflows権限追加を受け、hosinohito/tanakacapへmaster:mainとv0.1.0（0217817）をpush。Gitのsandbox TLS認証失敗は通常権限で解消。下書きにZIP2本とSHA256SUMS.txtをアップロード、全3件のGitHub digest/sizeをローカルと照合後公開。APIでdraft=false・published_at=2026-09-13T04:39:40Zを確認。https://github.com/hosinohito/tanakacap/releases/tag/v0.1.0 。実写/アバター原本/秘密トークンはコミット・アップロードしていない。ビルド済み品質の新たな実カメラ評価は実施していない。
+
+## 2026-09-13 Parent Constraint重複の書出し修正
+
+2026-09-13：公開版の書出しエラーPhysBone/Constraint overlap（FakeBonePositionsForOrnamentsPB/Fake_Furry_Hair_R.001、ユーザー確認Parent Constraint）を修正。競合するボーンはUnity Constraintに任せ、PhysBoneの回転対象だけから外す。子の走査は継続、競合しない子は揺れ対象として維持。末端でtail=0の偽重複は報告しない。原本とConstraintを削除・無効化しない。失う揺れはパス/型とともにreport警告へ明記。ソルバー/本体は変更なし。修正プラグイン：builds/fixes/parent-constraint/TanakaCapExporter.unitypackage。公開v0.1.0 ZIPは未更新。Unityコンパイル、親/位置/回転Constraintの除外・末端判定・子の適格性・複製内参照と原本維持の検査、梱包ソース確認成功。results/unity-exporter-constraint-fix.log。実アバターの書出し/見た目は未確認。

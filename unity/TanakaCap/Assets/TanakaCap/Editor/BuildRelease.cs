@@ -5,6 +5,12 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 namespace TanakaCap.Editor {
  public static class BuildRelease {
+  public static void BuildExporter(){
+   SecondaryConstraintChecks.Run();
+   Directory.CreateDirectory("../../builds/release-player");
+   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+   Debug.Log("TANAKACAP_EXPORTER_BUILD_OK");
+  }
   public static void Build(){
    FaceExpressionChecks.Run();
    var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
@@ -26,7 +32,7 @@ namespace TanakaCap.Editor {
    Directory.CreateDirectory("Assets/TanakaCap/Scenes");
    const string scenePath="Assets/TanakaCap/Scenes/Release.unity";EditorSceneManager.SaveScene(scene,scenePath);
    Directory.CreateDirectory("../../builds/release-player");
-   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+   BuildExporter();
    var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scenePath},locationPathName="../../builds/release-player/TanakaCap.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
    if(result.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)throw new Exception("Release Player build failed");
    Debug.Log("TANAKACAP_RELEASE_BUILD_OK no embedded avatar");
