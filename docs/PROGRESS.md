@@ -1077,3 +1077,8 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 ## 2026-09-13 — 上下目線の表示飽和
 
 上下が弱い申告へ録画589有効packetを数値監査。全強調デモの旧目標クリップ率は横33.6%/縦74.2%。眼幅変位に対する両軸感度を統一し共通soft boundへ変更。最大変形量と検出は維持、--legacy-gaze-responseで復帰。個人別中立校正等は提案のみ。詳細docs/GAZE_RESPONSE.md。Unity応答検査/ビルド成功。全強調デモで同853packetを新旧比較し各901描画frame/30.033秒、全デコード成功。results/avatar-videos/gaze-response/face-closeup.mp4は左旧/右新。実カメラ・実写表示・目視評価なし。見た目改善は未確認。
+
+
+## 2026-09-13 — 目線の可動範囲中点校正
+
+ユーザー指定の、かつて腕長へ使った5秒10支持方式を目線へ適用。横縦の観測下限/上限を拡張のみ、中点を角度化/4フレーム前に差し引く。両目有効のみ学習、片目は保存中心で駆動、欠測保持、起動単位。範囲で割る感度変更はなし。Python --no-gaze-range-calibrationで復帰。272 tests成功。tools/audit_gaze_range.pyで最新録画853frameをiris CUDA FP16再推論、595目線有効・840frame校正済み。最終中心眼幅比[.00399,-.04548]。results/gaze-range。最初の監査起動はtoolsのimportパス不足で失敗し修正後成功。実写表示/実カメラなし、今回のアバター動画/見た目評価は未実施。詳細docs/GAZE_RESPONSE.md。
