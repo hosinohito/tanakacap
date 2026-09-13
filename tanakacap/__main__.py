@@ -489,7 +489,7 @@ def main(argv=None, *, inference_mode=None):
         sub.add_argument('--camera', type=int, default=0)
         sub.add_argument('--width', type=int, default=1280)
         sub.add_argument('--height', type=int, default=720)
-        sub.add_argument('--fps', type=int, default=30)
+        sub.add_argument('--fps', type=float, default=30)
         sub.add_argument('--backend', choices=['dshow', 'msmf'], default='msmf')
         sub.add_argument('--frames', type=int, default=180)
         sub.add_argument('--pixel-format',choices=['auto','native','MJPG','YUY2','NV12'],default='auto')
