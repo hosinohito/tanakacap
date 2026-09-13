@@ -276,7 +276,7 @@ def main(test_hook=None):
     row(f,6,'推論モード','mode',list(MODES))
     parts=ttk.Frame(f);parts.grid(row=8,column=0,columnspan=2,sticky='w',pady=12)
     costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))
-    for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物範囲の自動検出')]:
+    for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物切り出し')]:
         reference=costs['parts'][key].get('reference_tenths')
         load_text=('参考負荷 約'+str(reference)+'割') if reference is not None else '負荷未計測'
         ttk.Checkbutton(parts,text=text+'（'+load_text+'）',variable=variables[key]).pack(anchor='w',pady=4)
