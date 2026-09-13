@@ -1,3 +1,5 @@
+最新配置ルール（2026-09-13）：一時検証用ファイルはデスクトップのtanakacap-toolsへ。継続利用する診断はtools/diagnosticsへまとめ、プロジェクト直下に検証用ファイルを増やさない。
+
 # 作業開始時の指示
 
 最新（2026-09-13）：モデル許諾再監査で現行HumanArt YOLOX-M/RTMW-Lは作者Tau-Jのモデル保管庫Apache-2.0とZIP SHA一致、頭MobileNetV3 smallは作者の重みMIT宣言とSHA一致を確認。公開条件に基づく商用利用・再配布可。MODEL_LICENSE_DECISIONS.mdとrelease/model-license-evidence.jsonを参照。ライセンス理由のモデル移行は不要、旧モデル保留の記述より本項を優先。NVIDIA/FFmpeg/Unityの3残件は継続し公開可ゲートは解除しない。モデル/カメラ/配布方式は未変更。
