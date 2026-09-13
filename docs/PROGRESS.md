@@ -1262,3 +1262,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：新カメラUIで推論約17Hz/処理約30ms、照明ONで25Hzに戻ったとユーザー報告。development-1789289497322799800/1789289457600641600では取得約16.7Hz、MJPG一致、powerline60HzはHRESULT0x8007007Aで未適用。暗所の自動露出が速度低下へ関与する可能性が高いが、因果全体は未確定。KS ctypes構造体にKSPROPERTYの8byteアラインメントが欠け、要求36byte（SDK40byte）だった不具合を修正。native helper --abiを追加、COM/カメラを開かずSDKのsize/align/offset一致を確認。UI子Pythonの出力をUTF-8へ固定し日本語警告文字化けも修正。297 testsと実Tk偽プロセス検査成功。実カメラでの設定適用/30Hz復帰は未検証、ユーザー再起動待ち。照明を維持し保存済み60Hzで再確認する。コピーはtanakacap/windows_camera_controls.pyとtanakacap/control_panel.py、診断更新が必要ならtools/diagnostics/camera_native.cppとbuilds/diagnostics/camera_native.exe。ZIPなし。
+
+
+2026-09-13：ユーザーが修正後の実カメラ推論30Hz・処理約19msを確認。CMSの30fps入力に追従。プロジェクト整理・GitHub Release公開を指定。初期録画固定の単発検査9本（audit_latest_width/width_subbin/latest_controls/yaw_palm_mouth/face_clearance/elbow_face_failures、check_motion_revision、summarize_axis_revision/distance_revision）と新診断に置換済みcamera_modes.cpp/build-camera-probe.cmd、その生成exe/objを削除。現行コード/テスト/ランチャーの参照なしを確認。実験UI、再利用比較/検証、録画・モデル・デモ原本は維持。全297 tests成功。v0.1.1の最新ビルドと公開を進行中。
