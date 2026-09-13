@@ -1,5 +1,7 @@
 # 配布ライセンスの棚卸し
 
+最新再監査（2026-09-13）：HumanArt版YOLOX-M、RTMW-L、頭専用MobileNetV3 smallも公開条件に基づき商用利用・再配布可と判定。[3モード別の表・根拠](MODEL_LICENSE_DECISIONS.md)。モデルの同梱許諾残件は解消、NVIDIA/FFmpeg/Unityの製品監査は継続。下記導入時の「モデル重み未完了」より本項を優先。
+
 最新（2026-09-13）：ユーザーが独自コードをMITに決定。ルートLICENSEとExporter用LICENSE.txtを追加。外部部品は各許諾を維持。build-release.ps1/RELEASE_BUILD.mdで必要部品・通知・モデルを選んでZIP化する環境を追加したが、NVIDIA DLL照合/モデル重み/Unity・Spout内部通知の最終監査は未完了。release/config.jsonで公開可のビルドを止め、ローカルレビュー用梱包は継続可能。旧「独自コード未決定」は本決定で更新。
 
 2026-09-13。対象は現在のWindows開発版と、将来のPlayer＋Unity変換プラグイン配布。**棚卸しであり、現在のbuildsフォルダーをそのまま公開できるという判定ではない。** ソースの許諾、モデル重みの許諾、同梱DLLの許諾を分ける。無料配布でも再配布条件は必要になる。
@@ -18,10 +20,11 @@
 | protobuf、packaging、typing_extensions等 | インストール済みメタデータ・ライセンス実体を収集 | 正確な版は下記inventory。pytest等の検証専用依存は製品から除外 |
 | CUDA/cuBLAS/cuDNN等 | NVIDIA独自契約。実wheel内の契約本文を収集 | 補足の再配布対象リストと実DLL名を照合し、必要なDLLだけにする。EULA条件・第三者通知を製品配布へ反映する作業は未完了 |
 | RTMW3D-XのONNX | [取得先モデルカード](https://huggingface.co/Soykaf/RTMW3D-x/blob/main/README.md)はApache-2.0、[元プロジェクト](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose3d)はMMPose | 配布可能な候補。コミュニティ変換物なので元重み・変換物のSHAと通知を維持。学習データの条件が重みへどう及ぶかをコードのApacheだけで解決済みとしない |
-| YOLOX-M HumanArt / tiny、RTMW-L/X、DWPose比較用 | [MMPose](https://github.com/open-mmlab/mmpose/blob/main/LICENSE)・[YOLOX](https://github.com/Megvii-BaseDetection/YOLOX/blob/main/LICENSE)コードはApache-2.0 | 取得アーカイブ別の重み許諾・通知の確定が残る。YOLOXをUltralyticsのYOLO/AGPLと混同しない。通常使わない比較重みは除外 |
+| YOLOX-M HumanArt、RTMW-L | [作者のモデル保管庫](https://huggingface.co/Tau-J/RTMPose)はApache-2.0。使用ZIPのSHA一致を確認 | 商用利用・再配布可。MMPose/YOLOXの本文、著作権、派生の変更通知を保持。詳細MODEL_LICENSE_DECISIONS.md |
+| YOLOX-tiny、RTMW-X、DWPose比較用 | MMPose/YOLOX系、使用アーカイブごとの照合は今回の3モデルに含めない | 通常製品に入れない。将来追加する時に版・SHA・許諾を照合 |
 | 虹彩ONNX | [PINTO 049の個別LICENSE](https://github.com/PINTO0309/PINTO_model_zoo/blob/main/049_iris_landmark/LICENSE)はApache-2.0、TensorFlow Authors通知。ローカル`models/iris-landmark.LICENSE` | 原本とbatch2派生の出所・SHA・変更内容を記録して通知を同梱。モデル集全体のライセンスから推測しない |
 | 顔の固定テンプレート | MediaPipe canonical_face_modelからの対応点抽出。`capture_lab/data/face_template.json`に元URL/SHA、同ディレクトリにApache本文 | 対応点抽出・座標変更を派生物として通知。今回の口Zなしでも使用する |
-| 頭専用MobileNet V3 small | [作者リポジトリ](https://github.com/yakhyo/head-pose-estimation)はMIT。作者は300W-LP学習と記載 | 重みと学習元の配布条件を未確定として保持。コードMITだけで重みの商用配布可と結論しない。製品同梱の確定対象から外す |
+| 頭専用MobileNet V3 small | [作者のモデル別一覧](https://huggingface.co/yakhyo/uniface-weights)が重みをMITと明示、現行原本SHA一致 | MITで商用利用・再配布可、著作権と本文を同梱。データ自体の配布権ではない |
 | 頭領域YuNet 2023mar | [公式モデルディレクトリ](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet)のMIT、`YUNET_LICENSE.txt` | 通知とモデルSHAを維持 |
 | Unity Player / Editor | [Unity Editor Software Terms](https://unity.com/legal/editor-terms-of-service/software)による条件付きのランタイム配布 | 使用した2022.3.22f1に適用する契約、契約プラン、第三者通知を出荷時に固定。Editorや認証済み環境を丸ごと同梱しない。最新版Web契約を過去版へ無条件に遡及させない |
 | lilToon 2.3.4 | [版指定MIT](https://github.com/lilxyzw/lilToon/blob/2.3.4/LICENSE) | 著作権・MIT本文を保持。アバターと一緒に書き出すシェーダーにも通知を添える |

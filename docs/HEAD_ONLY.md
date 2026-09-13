@@ -35,7 +35,7 @@ Invoke-WebRequest -Uri 'https://media.githubusercontent.com/media/opencv/opencv_
 - 頭姿勢：e8ae4d932b3d13221638fc72e171603e020c6da28b770753f76146867f40e190
 - 頭領域：8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4
 
-頭姿勢の作者 https://github.com/yakhyo/head-pose-estimation 。コードMIT（HEAD_MODEL_LICENSE.txt）、学習300W-LP。重み・学習元の一般配布条件は監査未完了のためローカル評価用とし、Player/Exporter/Gitへ同梱しない。
+頭姿勢の作者 https://github.com/yakhyo/head-pose-estimation 。コードMIT（HEAD_MODEL_LICENSE.txt）、学習300W-LP。2026-09-13再監査で作者の重み別MIT表記と現行ファイルSHA一致を確認し、モデルの商用利用・再配布可へ更新。[根拠と条件](MODEL_LICENSE_DECISIONS.md)。製品ZIPへの同梱は可能、Gitへモデル原本を入れない方針は維持。学習データ自体を配布する許諾ではない。
 
 YuNet公式 https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet 。モデルを含む同ディレクトリはMIT、原文YUNET_LICENSE.txtを保持。2026may版も確認したが、これは入力形状を動的にする再export。今回は既存ORTで固定640の明確な入出力を検証できる2023mar版を選んだ。古い依存を新規導入したわけではない。デコード仕様の参考は https://github.com/opencv/opencv/blob/4.x/modules/objdetect/src/face_detect.cpp 。GPU必須、CPU-onlyへの代替なし。ネットワークの重みは全てGit除外。
 

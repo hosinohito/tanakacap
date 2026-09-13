@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+2026-09-13最新：モデル3残件を解消。HumanArt版YOLOX-MとRTMW-LはRTMW作者Tau-JのHugging Face保管庫でApache-2.0、ZIPのSHAがOpenMMLab取得receiptと一致。頭MobileNetV3 smallは作者の重み別MIT宣言と原本SHA一致。公開条件に基づき商用利用・再配布可へ更新、ライセンス理由のモデル移行は不要。docs/MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.jsonに固定版/原文SHA/モデル対応、results/model-license-evidenceに原文。collectorで6資料/3モデル照合成功。release/config.jsonのモデル2項目を閉じ、NVIDIA/FFmpeg/Unityの3残件とpublication_approved=falseは維持。実行モデル・配布方式・ZIPは変更なし。次はモデル比較の必須化でなく、残るランタイム監査。外部問い合わせ/公開なし。
+
 2026-09-13：自動取得方式と頭・顔の代替を調査、docs/MODEL_DOWNLOAD_OPTIONS.md。初回に提供元から版/SHA固定で取得する案は未採用・未実装。利用制限は別取得でも残る。現行頭専用は作者の重み一覧にMITの追加根拠を発見（現行実物とのSHA照合は未完）。Face Landmarker/Face MeshのApache表記付きONNX移植が顔専用RTMW-L代替候補。全部ONのRTMW3D顔点共有とは区別し、別推論追加で軽くなるとは扱わない。モデル交換・公開判定変更なし。
 
 2026-09-13：モデル条件の導入前確認と代替候補を調査。頭専用は当初から重みの配布監査未完と記録されていた。人物検出代替はモデル許諾を明示するRT-DETR R18（PekingU）とRF-DETR Nano/Small（Apache指定版）。詳細RELEASE_LICENSE_AUDIT冒頭。提案のみで未取得・未比較・未採用、既存推論は変更なし。
