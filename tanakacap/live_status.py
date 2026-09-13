@@ -13,7 +13,7 @@ class LiveStatus:
             raise ValueError('status port must be 1..65535')
         self.period=1/limit if limit else 0
         self.port=port; self.clock=clock; self.sleep=sleep
-        self.next_start=0; self.since=clock(); self.count=0; self.busy=0
+        self.next_start=0; self.since=clock(); self.count=0; self.busy=0; self.details={}
         self.sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM) if port else None
 
     def wait(self):
@@ -22,16 +22,20 @@ class LiveStatus:
             self.sleep(self.next_start-now)
         self.next_start=self.clock()+self.period
 
-    def complete(self, milliseconds, tracked=False):
+    def complete(self, milliseconds, tracked=False, details=None):
         if not self.sock:return
         self.count+=1; self.busy+=max(0,milliseconds)
+        for key,value in (details or {}).items():
+            if isinstance(value,(int,float)) and math.isfinite(value):
+                total,count=self.details.get(key,(0.,0));self.details[key]=(total+value,count+1)
         now=self.clock();elapsed=now-self.since
         if elapsed<.5:return
         packet=dict(kind='inference', hz=self.count/elapsed, busyMs=self.busy/self.count,
-                    tracked=bool(tracked), limit=1/self.period if self.period else 0)
+                    tracked=bool(tracked), limit=1/self.period if self.period else 0,
+                    timings={key:total/count for key,(total,count) in self.details.items()})
         try:self.sock.sendto(json.dumps(packet).encode(),('127.0.0.1',self.port))
         except OSError:pass
-        self.count=0;self.busy=0;self.since=now
+        self.count=0;self.busy=0;self.since=now;self.details={}
 
     def close(self):
         if self.sock:self.sock.close()

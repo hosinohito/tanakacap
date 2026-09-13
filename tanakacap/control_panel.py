@@ -11,6 +11,7 @@ import threading
 import time
 from .ui_experiments import OPTIONS
 from .player_diagnostics import PlayerDiagnostics
+from .development_log import DevelopmentLog
 
 ROOT=Path(__file__).resolve().parents[1]
 def player_path():
@@ -137,6 +138,7 @@ class Session:
     def __init__(self):
         self.player=None;self.infer=None;self.status={};self.last={};self.messages=queue.Queue();self.stopping=False
         self.diagnostics=PlayerDiagnostics(ROOT/'logs/player-errors.log')
+        self.development_log=None
         self.sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);self.sock.bind(('127.0.0.1',0));self.sock.setblocking(False)
     @property
     def running(self):return any(p is not None and p.poll() is None for p in (self.player,self.infer))
@@ -148,6 +150,10 @@ class Session:
         exe=player_path()
         if not exe.is_file():raise ValueError('Playerをビルドしてください（build-player.ps1）')
         self.poll();self.status={};self.last={}
+        self.development_log=DevelopmentLog(ROOT) if not (ROOT/'runtime/python.exe').is_file() else None
+        if self.development_log:
+            self.development_log.write('settings',c)
+            self.messages.put('開発ログ：'+str(self.development_log.path))
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
             probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
         player,_=commands(c,port,self.sock.getsockname()[1])
@@ -162,10 +168,12 @@ class Session:
                 self.infer=subprocess.Popen(infer,cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
                     text=True,encoding='utf-8',errors='replace',creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
                 process=self.infer
+                development_log=self.development_log
                 def read():
                     for line in process.stdout:
                         clean=re.sub(r'\x1b\[[0-9;]*m','',line.replace('\x00','')).rstrip()
                         self.messages.put(clean[:1200])
+                        if development_log:development_log.write('console',clean)
                     process.stdout.close()
                 threading.Thread(target=read,daemon=True).start()
         except Exception:
@@ -194,6 +202,7 @@ class Session:
                 data=json.loads(raw);kind=data['kind']
                 if kind in ('inference','player'):
                     self.status[kind]=data;self.last[kind]=time.monotonic()
+                    if self.development_log:self.development_log.write('status',data)
             except (ValueError,KeyError,TypeError):continue
         now=time.monotonic()
         return {k:v for k,v in self.status.items() if now-self.last[k]<2 and self.running}

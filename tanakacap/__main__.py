@@ -119,7 +119,7 @@ def benchmark(args):
         raise ValueError('depth3d requires --face-source body3d')
     face_name = 'rtmw3d-x-384' if args.face_source == 'body3d' else args.model
     output = None if args.no_log else output_folder(face_name)
-    print(f'Results: {output}', flush=True)
+    if output is not None: print(f'Results: {output}', flush=True)
     report = {'status': 'running', 'environment': environment(), 'arguments': vars(args),
               'scope': '2D face diagnostic with optional learned 3D body (--body3d). Single person; no identity tracking. Approximate retargeting.',
               'latency_note': 'Inference call includes tensor upload/output readback. Camera age starts AFTER capture read, not exposure. No end-to-end/display latency claim.',
@@ -178,6 +178,7 @@ def benchmark(args):
             camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
             camera.__enter__()
             report['camera'] = camera.metadata
+            print('Camera: '+json.dumps(camera.metadata),flush=True)
         elif args.source == 'video':
             if not args.video:
                 raise ValueError('--video is required for source=video')
@@ -336,7 +337,8 @@ def benchmark(args):
                 if index >= args.warmup:
                     rows.append(row)
 
-                live_status.complete((done-read_done)*1000, packet.get('tracked',False) if sender else pose_executed)
+                live_status.complete((done-read_done)*1000, packet.get('tracked',False) if sender else pose_executed,
+                    {key:row.get(key) for key in ('input_wait_read_ms','detector_ms','body3d_ms','face_model_ms','gaze_ms','head_pose_ms','retarget_ms','capture_interval_per_sequence_ms','skipped_camera_frames')})
                 previous_points, previous_scores, previous_time = points, scores, done
                 if camera:
                     last_acquired = last_sequence, acquired
@@ -451,7 +453,7 @@ def benchmark(args):
 
 def probe(args):
     output = output_folder('camera')
-    with Camera(args.camera, args.width, args.height, args.fps, args.backend) as camera:
+    with Camera(args.camera, args.width, args.height, args.fps, args.backend, getattr(args,'pixel_format',None)) as camera:
         frames = []
         previous = -1
         for _ in range(args.frames):
@@ -490,6 +492,8 @@ def main(argv=None, *, inference_mode=None):
         sub.add_argument('--fps', type=int, default=30)
         sub.add_argument('--backend', choices=['dshow', 'msmf'], default='msmf')
         sub.add_argument('--frames', type=int, default=180)
+        if command == 'probe-camera':
+            sub.add_argument('--pixel-format',choices=['MJPG','YUY2'])
         if command == 'benchmark':
             sub.add_argument('--no-log',action='store_true',help='No result files, snapshots or ORT profiling; bounded in-memory history')
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
