@@ -1,6 +1,14 @@
 # 引き継ぎ：現在の状態
 
-最新：ユーザーが最新版のビルドとGitHub公開を明示指示。release/config.jsonのpublication_approved=trueへ変更、0.1.0のUnityソース再ビルド・公開用梱包が完了。builds/releases/0.1.0のpart01/part02 ZIPとSHA256SUMS.txtがアップロード対象。12,918ファイル、各ZIPは2 GiB未満、CRC/ライセンス監査合格。最新USER_GUIDEの同梱一致確認。公開先はhosinohito/tanakacap（public、初期状態size 0）。fine-grained PATでAPI認証/書込権限を確認済み。ビルドworkflow登録用のWorkflows write権限を追加依頼中。ユーザーがOrganization accessを希望しないため通常OAuth認証を中止する方針。個人tanakacapだけのfine-grained PAT（Contents write/Metadata read）作成済み申告。tools/set-release-token.ps1でユーザーが非表示入力し、results/github-auth/token.dpapiへWindows DPAPI暗号化保存する手順を案内中。保存後は同じWindowsユーザーで復号しGH_TOKENを子プロセスにのみ渡す。トークンを出力・コミットしない。リポジトリURLはhttps://github.com/hosinohito/tanakacap。まだ公開成功と扱わない。公式GitHub CLI v2.100.0をtools/bin/github-cliへチェックサム照合して準備、実写動画/Git履歴の50MiB超blobなし。release/RELEASE_NOTES_0.1.0.mdが公開説明。
+最新（2026-09-13）：TanakaCap v0.1.0をGitHubへ公開完了。
+- リリース：https://github.com/hosinohito/tanakacap/releases/tag/v0.1.0
+- origin=https://github.com/hosinohito/tanakacap.git、ローカルmasterをremote mainへpush、v0.1.0タグ=0217817。以後の公開記録は文書のみの追加コミット。
+- Unityソースから再ビルド、最新USER_GUIDEを同梱。builds/releases/0.1.0のpart01/part02とSHA256SUMS.txtを公開。全3資産のGitHub size/digest照合成功、draft=falseをAPIで確認。
+- part01=2,084,961,325 bytes / part02=162,029,922 bytes。12,918ファイル、双方2 GiB未満、CRC/ライセンス監査合格。大きいoversize-local-only.zipは公開していない。
+- publication_approved=true、ライセンス残件は解消済み。GitHub公開のユーザー許可あり。実カメラ未使用、新規PC/全アバターの品質合格を意味しない。
+- 認証は個人tanakacap限定fine-grained PAT（Contents/Workflows write、Metadata read）。results/github-auth/token.dpapiはWindows DPAPI暗号化・Git除外。同一Windowsユーザーで復号しGH_TOKENを実行プロセスだけへ渡す。秘密を出力しない。通常OAuth/Organization accessは使用しない。
+- Git pushはsandbox schannel SEC_E_NO_CREDENTIALSで失敗したが、通常権限で成功。gh.exeはtools/bin/github-cli。公開説明はrelease/RELEASE_NOTES_0.1.0.md。
+- 次の変更時は既存タグ/ZIPを上書きせず新バージョンでビルド・公開する。
 
 
 2026-09-13：使い方にMA/VRCFury/キセテネ/AvatarTools別の書き出し準備とAAO併用設定を追加。ユーザー指定で全手順を複製プロジェクト内の処理とし、生成コピーを選択、原本へApplyしない。VRCFuryのSDK前処理/Test Copy置換、AAOの表情除去を公式資料・作者ソースで確認。EXPORT_TOOL_RESEARCH.mdに根拠と未検証を分離。実改変アバターの組合せ試験は未実施。review8は作成途中に追加されたこの説明書変更を含まず、次の.batビルドから自動同梱。
