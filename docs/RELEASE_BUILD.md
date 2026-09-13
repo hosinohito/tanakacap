@@ -45,10 +45,10 @@ GitHub Actionsは `.github/workflows/release-build.yml` の手動起動のみ。
 
 独自コードはユーザー指定のMIT。実物の監査結果とNVIDIA/FFmpeg/Unity Personalの確定条件は[RUNTIME_LICENSE_DECISIONS.md](RUNTIME_LICENSE_DECISIONS.md)。モデル条件は[MODEL_LICENSE_DECISIONS.md](MODEL_LICENSE_DECISIONS.md)で商用利用・再配布可と判定済み。通知20件をrelease/noticesへ出所/SHA付きで固定し、ビルド時にlicense-audit.jsonへ本文・モデル・全ネイティブファイルの照合結果を記録します。NVIDIAのヘッダー/インポートライブラリは製品から除外。本文の追加取得はtools/collect_release_notices.pyで行い、更新後の差分を確認してコミットしてください。モデル同一性の再照合はtools/collect_model_license_evidence.py。通常ビルドはネット取得せず固定本文を使います。
 
-生成物は引き続きローカルレビュー用。`release/config.json`に残件を管理し、未解決のまま `-Publishable` を指定すると停止する。公開/アップロードはこのスクリプトでは行わない。機械検査成功は新規PC導入成功や全モデルの配布許諾確定を意味しない。
+`-Publishable` 指定時の生成物は公開用です。`release/config.json`に残件を管理し、未解決のまま `-Publishable` を指定すると停止する。公開/アップロードはこのスクリプトでは行わない。機械検査成功は新規PC導入成功や全モデルの配布許諾確定を意味しない。
 
 ## 対応ソースと最新の配布判定
 
 ビルド前に `.\.venv\Scripts\python.exe tools/prepare_ffmpeg_sources.py` を実行する。固定ソースから約161 MBの `assets-source/licenses/opencv-ffmpeg-sources.zip` を作り、製品の `ライセンス/sources` へ同梱する。CIも同じ準備を行う。再取得時はsource lockと照合する。サイズ上限超過時は既存の連番ZIP分割を使う。通知やソースが欠ける、DLLが監査版と違う場合はビルドを失敗させる。
 
-NVIDIA/FFmpeg/Unityの旧3残件は[解消済み](RUNTIME_LICENSE_DECISIONS.md)。`publication_approved=false` は最終出荷のゲートで、未確定ライセンスが残っている意味ではない。Personalの財務上限とUnityロゴ維持を守る。ビルドのバッチ起動は通常Editorであり、別商品Unity Build Server契約は使っていない。
+NVIDIA/FFmpeg/Unityの旧3残件は[解消済み](RUNTIME_LICENSE_DECISIONS.md)。`publication_approved` は最終出荷のゲートです。現在は `true`、ライセンス残件は空で、公開用ビルドが可能です。Personalの財務上限とUnityロゴ維持を守る。ビルドのバッチ起動は通常Editorであり、別商品Unity Build Server契約は使っていない。

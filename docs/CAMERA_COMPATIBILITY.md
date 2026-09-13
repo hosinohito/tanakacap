@@ -49,3 +49,6 @@ CMSの25→30fpsは前のネイティブ診断で確認した結果で、新経�
 ## Windows制御ABIの検証（2026-09-13）
 
 KSPROPERTYはLONGLONGを含むunionで8byte境界。KSPROPERTY_VIDEOPROCAMP_Sは40byteであり、36byteの要求は実機で0x8007007Aとなった。ctypesへ同じunionを実装し、診断helperの `--abi`（カメラを起動しない）とsizeof/offsetを照合する回帰検査を追加。60Hz適用成功と実速度の確認はユーザー再試験待ち。照明ONで17→25Hzという報告は暗所露出の影響を示唆する。
+
+
+修正後、ユーザーが同カメラで推論30Hz・処理約19msを確認。暗所時の速度維持や他機種の実測を保証する結果ではない。
