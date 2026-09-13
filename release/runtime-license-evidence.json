@@ -152,15 +152,15 @@
   "unity_splash": true,
   "unity_runtime": [
     {
-      "path": "builds/lab/UnityPlayer.dll",
+      "path": "app/UnityPlayer.dll",
       "sha256": "c2871ee449bef29e658380bf47f1a23839abde7d1e4dcb9bc1ada7a93ae08da6"
     },
     {
-      "path": "builds/lab/MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll",
+      "path": "app/MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll",
       "sha256": "c35a508da949fc3ed0cfa2cc9882043ed52e9fef007a00d3e228419e104cf5e7"
     },
     {
-      "path": "builds/lab/MonoBleedingEdge/EmbedRuntime/MonoPosixHelper.dll",
+      "path": "app/MonoBleedingEdge/EmbedRuntime/MonoPosixHelper.dll",
       "sha256": "e9886e9e5dfdbdb13367431aca8c879b2573f8f1dafae4cd2107d35b42f45679"
     }
   ]

@@ -45,7 +45,7 @@ namespace TanakaCap {
      DisableUnsupportedRenderers(avatar);
      animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
      var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;driver.faceProfile=m.faceProfile;
-     if(m.secondaryPhysics!=null && m.secondaryPhysics.bones.Length>0)avatar.AddComponent<SecondaryMotion>().Initialize(m.secondaryPhysics,animator);
+     if(m.secondaryPhysics!=null && m.secondaryPhysics.bones!=null && m.secondaryPhysics.bones.Length>0)TryInitializeSecondary(avatar,m.secondaryPhysics,animator);
      if(Array.IndexOf(Environment.GetCommandLineArgs(),"--secondary-check")>=0)avatar.AddComponent<SecondaryMotionProbe>();
      Debug.Log("TANAKACAP_PACKAGE_LOADED "+Path.GetFullPath(path)+" sha256="+hash);
      foreach(var warning in m.warnings??new string[0])Debug.LogWarning("Avatar package: "+warning);
@@ -61,6 +61,16 @@ namespace TanakaCap {
    loading=false;
   }
   void Update(){if(Input.GetKeyDown(KeyCode.F5))show=!show;}
+  public static bool TryInitializeSecondary(GameObject root,SecondaryPhysicsData data,Animator animator){
+   var secondary=root.AddComponent<SecondaryMotion>();
+   try {secondary.Initialize(data,animator);return true;}
+   catch(Exception e){
+    secondary.enabled=false;
+    if(Application.isPlaying)Destroy(secondary);else DestroyImmediate(secondary);
+    string message="Secondary motion disabled; loading continues: "+e.Message;
+    RuntimeStartup.RecordError(new Exception(message,e));Debug.LogWarning(message);return false;
+   }
+  }
   public static int DisableUnsupportedRenderers(GameObject root){
    int skipped=0;
    foreach(var renderer in root.GetComponentsInChildren<Renderer>(true)){

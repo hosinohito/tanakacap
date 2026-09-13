@@ -13,6 +13,10 @@ from .ui_experiments import OPTIONS
 from .player_diagnostics import PlayerDiagnostics
 
 ROOT=Path(__file__).resolve().parents[1]
+def player_path():
+    packaged=ROOT/'app/TanakaCap.exe'
+    return packaged if packaged.is_file() else ROOT/'builds/lab/TanakaCap.exe'
+
 SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON（顔・頭・体・腕・指・目線）','face_head':'顔・頭（表情あり・目線なし）','head_only':'頭のみ（軽量・表情なし）'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/lab/avatars/haolan.tcap'),
@@ -64,7 +68,7 @@ def save_settings(values):
 def commands(config, port, status_port, player_pid=0):
     c=validate(config);tracking=json.loads((ROOT/'tracking-settings.json').read_text(encoding='utf-8'))
     cap=0 if c['rate']=='sync' else c['fps'] if c['rate']=='custom' else int(c['rate'])
-    player=[str(ROOT/'builds/lab/TanakaCap.exe'),'-nolog','--error-log',str(ROOT/'logs/player-errors.log'),'--port',str(port),'--ui-status-port',str(status_port),
+    player=[str(player_path()),'-nolog','--error-log',str(ROOT/'logs/player-errors.log'),'--port',str(port),'--ui-status-port',str(status_port),
             '--avatar',str(Path(c['avatar']).resolve()),'--output-width',str(c['width']),
             '--output-height',str(c['height']),'--expression-mode',c['expression'],'--mouth-corner-emphasis',str(c['emphasis']),
             '--gaze-gain',str(c['gaze_gain'])]
@@ -141,7 +145,7 @@ class Session:
         c=validate(config)
         if not Path(c['avatar']).is_file():raise ValueError('アバターファイルが見つかりません')
         if c['source']=='video' and not Path(c['video']).is_file():raise ValueError('録画ファイルが見つかりません')
-        exe=ROOT/'builds/lab/TanakaCap.exe'
+        exe=player_path()
         if not exe.is_file():raise ValueError('Playerをビルドしてください（build-unity-lab.ps1）')
         self.poll();self.status={};self.last={}
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:

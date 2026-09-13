@@ -23,28 +23,45 @@ namespace TanakaCap {
   public float LastStepMilliseconds {get;private set;}
   public string Diagnostics(){return string.Join("\n",nodes.Select(n=>n.settings.path+" angle="+Quaternion.Angle(n.rest,n.bone.localRotation)+" radius="+(n.radius*Scale(n.bone))+" tip="+n.tip+" colliders="+string.Join(";",n.chain.colliders.Select(i=>colliders[i].settings.path+" center="+colliders[i].transform.TransformPoint(colliders[i].settings.position)+" radius="+(colliders[i].settings.radius*Scale(colliders[i].transform))))));}
   static float Curve(float value,SecondaryCurve curve,float t)=>value*(curve==null||curve.keys.Length==0?1:curve.Build().Evaluate(t));
+  // Clamp the evaluated physical parameter, not the curve keys: tangents may overshoot.
+  public static float SampleParameter(float basis,SecondaryCurve curve,float depth,float min,float max,string context) {
+   float raw=Curve(basis,curve,depth);
+   if(!Finite(raw)||!Finite(basis)||basis<min||basis>max)return raw;
+   float bounded=Mathf.Clamp(raw,min,max);
+   if(raw!=bounded){
+    string message="Secondary parameter bounded; loading continues: "+context+", depth="+depth+", evaluated="+raw+", applied="+bounded;
+    RuntimeStartup.RecordError(new Exception(message));Debug.LogWarning(message);
+   }
+   return bounded;
+  }
   public void Initialize(SecondaryPhysicsData data,Animator animator) {
    if(data.version!=1||data.bones.Length>4096||data.chains.Length>512||data.colliders.Length>1024)throw new Exception("Unsupported secondary physics data");
    var human=new HashSet<Transform>();for(int i=0;i<(int)HumanBodyBones.LastBone;i++){var b=animator.GetBoneTransform((HumanBodyBones)i);if(b)human.Add(b);}
    roots=new RootState[data.chains.Length];for(int i=0;i<roots.Length;i++){var t=Find(data.chains[i].root);roots[i]=new RootState{parent=t.parent?t.parent:transform};}
    foreach(var c in data.colliders){if(!Finite(c.radius)||c.radius<0||!Finite(c.height)||c.height<0||!Finite(c.position)||!Finite(c.rotation)||c.shapeType<0||c.shapeType>2)throw new Exception("Invalid secondary collider");colliders.Add(new Collider{transform=Find(c.path),settings=c});}
-   var seen=new HashSet<Transform>();
+   var seen=new HashSet<Transform>();var rejectedChains=new HashSet<int>();
    foreach(var s in data.bones) {
+    if(rejectedChains.Contains(s.chain))continue;
     var b=Find(s.path);
     if(human.Contains(b)||!seen.Add(b)||b.GetComponents<Component>().Any(c=>c is UnityEngine.Animations.IConstraint)||!Finite(s.tail)||s.tail.sqrMagnitude<1e-10f||s.chain<0||s.chain>=data.chains.Length||!Finite(s.depth)||s.depth<0||s.depth>1)throw new Exception("Invalid secondary bone: "+s.path);
     var c=data.chains[s.chain];
     if(c.version<0||c.version>1||c.integrationType<0||c.integrationType>1||c.limitType<0||c.limitType>3||c.immobileType<0||c.immobileType>1||c.colliders.Any(i=>i<0||i>=colliders.Count))throw new Exception("Invalid secondary chain");
     Func<float,SecondaryCurve,float> value=(v,curve)=>Curve(v,curve,s.depth);
     var n=new Node{bone=b,settings=s,chain=c,rest=b.localRotation,previousRest=b.localRotation,
-     pull=value(c.pull,c.pullCurve),spring=value(c.spring,c.springCurve),stiffness=value(c.stiffness,c.stiffnessCurve),
-     gravity=value(c.gravity,c.gravityCurve),falloff=value(c.gravityFalloff,c.gravityFalloffCurve),immobile=value(c.immobile,c.immobileCurve),radius=value(c.radius,c.radiusCurve),
-     maxX=value(c.maxAngleX,c.maxAngleXCurve),maxZ=value(c.maxAngleZ,c.maxAngleZCurve),
+     pull=SampleParameter(c.pull,c.pullCurve,s.depth,0,1,"chain="+c.root+", bone="+s.path+", parameter=pull"),spring=SampleParameter(c.spring,c.springCurve,s.depth,0,1,"chain="+c.root+", bone="+s.path+", parameter=spring"),stiffness=SampleParameter(c.stiffness,c.stiffnessCurve,s.depth,0,1,"chain="+c.root+", bone="+s.path+", parameter=stiffness"),
+     gravity=SampleParameter(c.gravity,c.gravityCurve,s.depth,-1,1,"chain="+c.root+", bone="+s.path+", parameter=gravity"),falloff=SampleParameter(c.gravityFalloff,c.gravityFalloffCurve,s.depth,0,1,"chain="+c.root+", bone="+s.path+", parameter=gravityFalloff"),immobile=SampleParameter(c.immobile,c.immobileCurve,s.depth,0,1,"chain="+c.root+", bone="+s.path+", parameter=immobile"),radius=SampleParameter(c.radius,c.radiusCurve,s.depth,0,float.MaxValue,"chain="+c.root+", bone="+s.path+", parameter=radius"),
+     maxX=SampleParameter(c.maxAngleX,c.maxAngleXCurve,s.depth,0,180,"chain="+c.root+", bone="+s.path+", parameter=maxAngleX"),maxZ=SampleParameter(c.maxAngleZ,c.maxAngleZCurve,s.depth,0,180,"chain="+c.root+", bone="+s.path+", parameter=maxAngleZ"),
      initialGravityLocal=Quaternion.Inverse(b.rotation)*Vector3.down,
      limitRotation=Quaternion.Euler(value(c.limitRotation.x,c.limitRotationXCurve),value(c.limitRotation.y,c.limitRotationYCurve),value(c.limitRotation.z,c.limitRotationZCurve))};
     foreach(float f in new[]{n.pull,n.spring,n.stiffness,n.gravity,n.falloff,n.immobile,n.radius,n.maxX,n.maxZ})if(!Finite(f))throw new Exception("Non-finite secondary parameter");
-    if(n.pull<0||n.pull>1||n.spring<0||n.spring>1||n.stiffness<0||n.stiffness>1||Mathf.Abs(n.gravity)>1||n.falloff<0||n.falloff>1||n.immobile<0||n.immobile>1||n.radius<0||n.maxX<0||n.maxX>180||n.maxZ<0||n.maxZ>180||!Finite(n.limitRotation))throw new Exception("Secondary parameter outside supported range");
+    if(n.pull<0||n.pull>1||n.spring<0||n.spring>1||n.stiffness<0||n.stiffness>1||Mathf.Abs(n.gravity)>1||n.falloff<0||n.falloff>1||n.immobile<0||n.immobile>1||n.radius<0||n.maxX<0||n.maxX>180||n.maxZ<0||n.maxZ>180||!Finite(n.limitRotation)){
+     rejectedChains.Add(s.chain);
+     string reason="Secondary chain skipped; loading continues: chain="+c.root+", bone="+s.path+", depth="+s.depth+", pull="+n.pull+", spring="+n.spring+", stiffness="+n.stiffness+", gravity="+n.gravity+", gravityFalloff="+n.falloff+", immobile="+n.immobile+", radius="+n.radius+", maxAngleX="+n.maxX+", maxAngleZ="+n.maxZ+". Evaluated values include curves; supported unit factors 0..1, gravity -1..1, radius >=0, angles 0..180.";
+     RuntimeStartup.RecordError(new Exception(reason));Debug.LogWarning(reason);continue;
+    }
     nodes.Add(n);
    }
+   nodes.RemoveAll(n=>rejectedChains.Contains(n.settings.chain));
    nodes.Sort((a,b)=>Depth(a.bone).CompareTo(Depth(b.bone)));ResetState();
    motionEnabled=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-secondary-motion")<0;
    referenceDamping=Array.IndexOf(Environment.GetCommandLineArgs(),"--legacy-secondary-response")<0;
