@@ -449,3 +449,7 @@ Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書�
 配布Pythonパッケージは `tanakacap/`。ビルド時に開発ソース `tanakacap/` を同名で配置し、配布batは `-m tanakacap.control_panel` を起動する。
 
 公開用UI設定ひな形は `ui-settings.example.json`。個人の `ui-settings.json` はGit管理せず、配布ビルドはひな形から生成する。`tracking-settings.json` と `docs/ui-part-costs.json` は共通設定として管理する。
+
+開発UI（`run-ui.ps1`）は `logs/development-*.jsonl` に設定・コンソール・入力待ち/推論/描画の数値を記録する。8MiBでローテーション、詳細ORTトレース・実写画像・音声は保存しない。配布環境（`runtime/python.exe`あり）はエラーログのみ。
+
+CMS-V43BKの取得診断は `diagnose-camera.bat`（デスクトップの `tanakacap-tools/tanakacap-diagnose-camera.bat` も同じ）。カメラ利用を停止してユーザー自身で実行する。30fps要求で720p/640×480・MJPEG/YUY2を比較し、`results/camera-diagnostic-*/summary.json` に保存する。映像表示/保存や推論は行わない。仕様は[メーカー製品ページ](https://www.sanwa.co.jp/product/syohin?code=CMS-V43BK-3)。

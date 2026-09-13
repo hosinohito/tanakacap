@@ -169,3 +169,7 @@ $taskAutoMotion = Join-Path $taskDesktop 'tanakacap-motion-auto-expressions.bat'
 $taskMotionScript = Join-Path $taskRoot 'run-motion.ps1'
 [IO.File]::WriteAllText($taskAutoMotion,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskMotionScript`" -ExpressionMode auto-custom`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskAutoMotion
+$taskCameraDiagnostic=Join-Path $taskDesktop 'tanakacap-diagnose-camera.bat'
+$taskDiagnosticScript=Join-Path $taskRoot 'diagnose-camera.bat'
+[IO.File]::WriteAllText($taskCameraDiagnostic,"@echo off`r`ncall `"$taskDiagnosticScript`"`r`n",[Text.Encoding]::Default)
+Write-Output $taskCameraDiagnostic

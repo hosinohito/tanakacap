@@ -1244,3 +1244,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：ユーザーは録画40Hz超/実カメラ約11Hzを申告し検証手段を要求。現行UIはDSHOW/MJPG要求、入力1280x720/30fps（描画解像度とは別）、録画は実時間待機なし。既存UIのbusyMsは入力・上限待機を除き、probe-cameraは推論なしで実取得fps/設定受理/実解像度/FourCCを数値記録する。まずUI処理msと推論なし取得を比較し、取得側ならDSHOW/MSMF・解像度・照明条件、推論側なら同じ実写内容の録画と数値内訳で切り分ける案。CUDA plugin EP警告だけではCPU切替と断定しない（CUDA先頭provider必須・fallback禁止のコードあり、実ノード実行は別確認）。Results Noneは--no-logによる正常表示、半径補正警告はロード時の記録で連続推論計測ではない。今回カメラ起動/再測定/コード変更なし。
+
+
+2026-09-13：カメラ約11Hz/処理20〜40ms申告。実デバイス名HD webcam-CMS-V43BK（DirectShow index1、Microsoft usbvideo OK）を読み取り照合。公式https://www.sanwa.co.jp/product/syohin?code=CMS-V43BK-3 は最大1280x720/30fps、YUY2/MJPEG。先の60fps試行案を撤回。diagnose-camera.bat→tools/diagnose_camera.pyは実機名で一意選択、DSHOWで720p/640x480×MJPG/YUY2を各120観測、各45秒タイムアウト、results/camera-diagnostic-*/summary.jsonと個別ログを生成。ユーザー自身の起動用で、エージェントはカメラを起動していない。開発UIはruntime/python.exeなしの場合logs/development-*.jsonlへ設定/コンソール/約0.5秒ごとの数値ステータス（入力待ち・各推論段・描画）を既定記録、8MiBローテーション。配布版はエラーログのみ。詳細ORTトレースや実写/音声は記録しない。既存273テスト+新規2ログ検査/Tk検査成功。今件このPC試験なのでコピー不要、別PCならtanakacap全体、診断も必要ならtools/diagnose_camera.pyとdiagnose-camera.bat（開発venv前提）。

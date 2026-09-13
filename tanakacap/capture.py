@@ -43,22 +43,22 @@ class LatestFrame:
 
 
 class Camera:
-    def __init__(self, index=0, width=1280, height=720, fps=30, backend='msmf'):
+    def __init__(self, index=0, width=1280, height=720, fps=30, backend='msmf', pixel_format=None):
         self.mailbox = LatestFrame()
         self.stop = threading.Event()
         self.metadata = {}
-        self.args = index, width, height, fps, backend
+        self.args = index, width, height, fps, backend, pixel_format
         self.thread = threading.Thread(target=self._read, daemon=True)
 
     def _read(self):
-        index, width, height, fps, backend = self.args
+        index, width, height, fps, backend, pixel_format = self.args
         cap = None
         try:
             cap = cv2.VideoCapture(index, cv2.CAP_DSHOW if backend == 'dshow' else cv2.CAP_MSMF)
             if not cap.isOpened():
                 raise RuntimeError(f'Cannot open camera {index} with {backend}')
-            if backend == 'dshow':
-                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+            requested_format=pixel_format or ('MJPG' if backend=='dshow' else None)
+            format_accepted=cap.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*requested_format)) if requested_format else None
             accepted = {'width': cap.set(cv2.CAP_PROP_FRAME_WIDTH, width),
                         'height': cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height),
                         'fps': cap.set(cv2.CAP_PROP_FPS, fps)}
@@ -66,7 +66,9 @@ class Camera:
                              'requested': [width, height, fps],
                              'reported': [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT),
                                           cap.get(cv2.CAP_PROP_FPS)],
-                             'fourcc': int(cap.get(cv2.CAP_PROP_FOURCC)), 'settings_accepted': accepted}
+                             'fourcc': int(cap.get(cv2.CAP_PROP_FOURCC)), 'requested_format':requested_format,
+                             'format_accepted':format_accepted, 'exposure':cap.get(cv2.CAP_PROP_EXPOSURE),
+                             'auto_exposure':cap.get(cv2.CAP_PROP_AUTO_EXPOSURE), 'settings_accepted': accepted}
             if self.metadata['reported'][:2] != [width, height]:
                 print(f'WARNING: requested {width}x{height}, received {self.metadata["reported"][:2]}. Check camera index.', flush=True)
             sequence = 0
