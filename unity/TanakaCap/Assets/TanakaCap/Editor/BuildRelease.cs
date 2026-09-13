@@ -13,6 +13,7 @@ namespace TanakaCap.Editor {
   }
   public static void Build(){
    FaceExpressionChecks.Run();
+   AvatarMaterialChecks.Run();
    var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
    var camera=new GameObject("Output Camera").AddComponent<Camera>();camera.tag="MainCamera";
    camera.transform.position=new Vector3(0,1.05f,1.55f);camera.transform.LookAt(new Vector3(0,1.05f,0));

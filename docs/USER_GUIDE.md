@@ -90,3 +90,13 @@ OBS用プラグイン： https://github.com/Off-World-Live/obs-spout2-plugin/rel
 
 
 エラーが出た場合は、起動用 `TanakaCap.bat` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。
+
+
+使えないシェーダーがある場合、その描画オブジェクトだけを非表示にして起動を続けます。省略した箇所はエラーログで確認できます。
+
+## 警告・エラーを確認する
+
+- 書き出し完了時に確認事項があれば、プラグインの「レポートの場所を開く」から確認できます。レポートはアバターと同じ場所の `名前.tcap.report.json` です。
+- 書き出しに失敗した場合は、表示された理由とUnityのConsoleを確認してください。
+- 起動後は操作画面下部に警告・エラーを表示します。「警告・継続中」は、一部を省略して動作を続けている状態です。
+- 本体の詳細ログは `TanakaCap.bat` と同じ場所の `logs/player-errors.log` です。古いログは `player-errors.log.previous` に残ります。

@@ -10,6 +10,7 @@ import subprocess
 import threading
 import time
 from .ui_experiments import OPTIONS
+from .player_diagnostics import PlayerDiagnostics
 
 ROOT=Path(__file__).resolve().parents[1]
 SETTINGS=ROOT/'ui-settings.json'
@@ -131,6 +132,7 @@ def close_player(process):
 class Session:
     def __init__(self):
         self.player=None;self.infer=None;self.status={};self.last={};self.messages=queue.Queue();self.stopping=False
+        self.diagnostics=PlayerDiagnostics(ROOT/'logs/player-errors.log')
         self.sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);self.sock.bind(('127.0.0.1',0));self.sock.setblocking(False)
     @property
     def running(self):return any(p is not None and p.poll() is None for p in (self.player,self.infer))
@@ -145,6 +147,7 @@ class Session:
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
             probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
         player,_=commands(c,port,self.sock.getsockname()[1])
+        self.diagnostics.reset()
         self.player=subprocess.Popen(player,cwd=ROOT)
         try:
             _,infer=commands(c,port,self.sock.getsockname()[1],self.player.pid)
@@ -179,6 +182,7 @@ class Session:
             finally:self.stopping=False
         threading.Thread(target=worker,daemon=True).start()
     def poll(self):
+        for message in self.diagnostics.poll():self.messages.put(message)
         for _ in range(200):
             try:raw,_=self.sock.recvfrom(16384)
             except BlockingIOError:break
@@ -339,6 +343,8 @@ def main(test_hook=None):
             entry.configure(state='disabled' if is_demo else 'normal');scale.configure(state='disabled' if is_demo else 'normal')
     variables['avatar'].trace_add('write',demo_strength_state);demo_strength_state()
     messages=tk.Text(outer,height=3,font=('Yu Gothic UI',9),state='disabled');messages.pack(fill='x')
+    messages.tag_configure('warning',foreground='#9a5700')
+    messages.tag_configure('error',foreground='#b00020')
     buttons=ttk.Frame(outer);buttons.pack(fill='x',pady=(12,0))
     def config():return validate({k:(None if k in ('gamma','suppression') and v.get()=='' else v.get()) for k,v in variables.items()})
     def start():
@@ -398,7 +404,8 @@ def main(test_hook=None):
             try:lines.append(session.messages.get_nowait())
             except queue.Empty:break
         if lines:
-            messages.configure(state='normal');messages.insert('end','\n'.join(lines)+'\n')
+            messages.configure(state='normal')
+            for line in lines:messages.insert('end',line+'\n','warning' if line.startswith('【警告') else 'error' if line.startswith('【エラー') else '')
             if int(messages.index('end-1c').split('.')[0])>100:messages.delete('1.0','end-80l')
             messages.see('end');messages.configure(state='disabled')
         if closing and not running and not session.stopping:session.sock.close();window.destroy();return

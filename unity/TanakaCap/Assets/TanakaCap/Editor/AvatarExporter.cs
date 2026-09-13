@@ -13,7 +13,17 @@ namespace TanakaCap.Editor {
    var source=Selection.activeGameObject;
    if(!source)throw new Exception("Select the avatar root first.");
    var path=EditorUtility.SaveFilePanel("Export local avatar","","avatar","tcap");
-   if(!string.IsNullOrEmpty(path))Export(source,path);
+   if(!string.IsNullOrEmpty(path)){
+    try {
+     Export(source,path);
+     var report=JsonUtility.FromJson<AvatarPackageManifest>(File.ReadAllText(path+".report.json"));
+     int count=report.warnings==null?0:report.warnings.Length;
+     if(EditorUtility.DisplayDialog("TanakaCap 書き出し完了","書き出しました。確認事項："+count+"件\n補正・省略した機能などはレポートで確認できます。\n\n"+path+".report.json","レポートの場所を開く","閉じる"))EditorUtility.RevealInFinder(path+".report.json");
+    }catch(Exception e){
+     Debug.LogException(e);
+     EditorUtility.DisplayDialog("TanakaCap 書き出し失敗",e.Message+"\n\nUnity Consoleで詳細を確認してください。","閉じる");
+    }
+   }
   }
   public static void Export(GameObject source,string destination) {
    if(File.Exists(destination))throw new Exception("Choose a new file name; existing package is preserved.");
