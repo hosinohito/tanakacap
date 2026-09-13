@@ -26,7 +26,7 @@ def dump(path,value):Path(path).write_text(json.dumps(clean(value),ensure_ascii=
 def line(stream,value):stream.write(json.dumps(clean(value),ensure_ascii=False,allow_nan=False)+'\n')
 
 def fingerprint(settings):
-    files=list((ROOT/'capture_lab').glob('*.py'))+list((ROOT/'capture_lab/data').glob('*'))+list((ROOT/'unity/TanakaCap/Assets/TanakaCap').rglob('*.cs'))
+    files=list(Path(__file__).parent.glob('*.py'))+list((Path(__file__).parent/'data').glob('*'))+list((ROOT/'unity/TanakaCap/Assets/TanakaCap').rglob('*.cs'))
     files += [ROOT/'builds/lab/TanakaCap.exe',ROOT/'builds/lab/TanakaCap_Data/Managed/Assembly-CSharp.dll']
     hashes={str(p.relative_to(ROOT)):sha256(p) for p in sorted(files) if p.is_file()}
     payload={'settings':settings,'files':hashes}

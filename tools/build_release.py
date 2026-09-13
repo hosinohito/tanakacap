@@ -41,7 +41,7 @@ def run(version,publishable=False):
     for name in ('TanakaCap.exe','UnityPlayer.dll','UnityCrashHandler64.exe'):copy(player/name,Path('app')/name)
     for name in ('TanakaCap_Data','MonoBleedingEdge'):tree(player/name,Path('app')/name)
     copy(player/'TanakaCapExporter.unitypackage','プラグイン/TanakaCapExporter.unitypackage')
-    tree(ROOT/'capture_lab','capture_lab',('__pycache__',))
+    tree(ROOT/'capture_lab','tanakacap',('__pycache__',))
     for name in ('tracking-settings.json','models/catalog.json','docs/ui-part-costs.json'):copy(ROOT/name,name)
     copy(ROOT/'docs/USER_GUIDE.md','使い方.md')
     copy(ROOT/'release/THIRD_PARTY.md','ライセンス/README.md')
@@ -91,10 +91,10 @@ def run(version,publishable=False):
     (stage/'avatars').mkdir()
     ui=dict(avatar=str(Path('avatars/avatar.tcap')),camera=0)
     (stage/'ui-settings.json').write_text(json.dumps(ui),encoding='utf-8')
-    (stage/'TanakaCap.bat').write_text('@echo off\ncd /d "%~dp0"\nset PYTHONNOUSERSITE=1\nset PYTHONPATH=%~dp0\nstart "" "%~dp0runtime\\pythonw.exe" -m capture_lab.control_panel\n',encoding='ascii')
+    (stage/'TanakaCap.bat').write_text('@echo off\ncd /d "%~dp0"\nset PYTHONNOUSERSITE=1\nset PYTHONPATH=%~dp0\nstart "" "%~dp0runtime\\pythonw.exe" -m tanakacap.control_panel\n',encoding='ascii')
     (stage/'release-status.json').write_text(json.dumps(dict(version=version,publishable=publishable,open_license_items=config['open_license_items'],packages=packages),ensure_ascii=False,indent=2),encoding='utf-8')
     # Probe the relocated interpreter, including Tk and CUDA runtime availability, without opening a camera.
-    code="import sys,tkinter,numpy,cv2,onnx,onnxruntime as o; o.preload_dlls(directory=''); print(sys.prefix); print(o.get_available_providers()); from capture_lab.control_panel import load_settings; load_settings()"
+    code="import sys,tkinter,numpy,cv2,onnx,onnxruntime as o; o.preload_dlls(directory=''); print(sys.prefix); print(o.get_available_providers()); from tanakacap.control_panel import load_settings, commands; c=load_settings(); c['source']='camera'; assert commands(c,39500,39501)[1][2]=='tanakacap'"
     result=subprocess.run([str(stage/'runtime/python.exe'),'-s','-c',code],cwd=stage,text=True,capture_output=True,encoding='utf-8',errors='replace')
     (output/'runtime-check.txt').write_text(result.stdout+result.stderr,encoding='utf-8')
     if result.returncode:raise RuntimeError('Portable runtime failed: '+result.stderr[-2000:])

@@ -88,7 +88,7 @@ def commands(config, port, status_port, player_pid=0):
         if c[key] is not None:player += [flag,str(c[key])]
     if c['source']=='motion':return player+['--motion-demo'],None
     python=ROOT/'runtime/python.exe' if (ROOT/'runtime/python.exe').exists() else ROOT/'.venv/Scripts/python.exe'
-    infer=[str(python),'-m','capture_lab','benchmark','--source',c['source'],'--no-log',
+    infer=[str(python),'-m',__package__,'benchmark','--source',c['source'],'--no-log',
            '--frames','0','--warmup','0','--unity-port',str(port),'--parent-pid',str(player_pid),
            '--status-port',str(status_port),'--inference-limit',str(cap)]
     if c['source']=='video':infer+=['--video',str(Path(c['video']).resolve()),'--loop-video']

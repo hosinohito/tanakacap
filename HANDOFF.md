@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+2026-09-13：配布名のlab撤去不足を訂正。配布Pythonパッケージをtanakacapへ変更し、bat・UIからの推論子プロセス起動も同名に統一。開発ソース名capture_labは維持し、パッケージ名を固定せず起動できるようにする。配布フォルダーはappとtanakacap。fixes9を再梱包して検査する。
+
 2026-09-13：0.1.1-fixes8完成。Unity検査/配布ランタイム/ライセンス/ZIP CRC検査成功。成果物 builds/releases/0.1.1-fixes8、展開済み TanakaCap/TanakaCap.bat。今回の範囲補正はPlayer側なので既存tcapを再書出しせず利用可能。部分更新はapp全体とcapture_lab全体を配置（旧builds/labはUIが参照しない）。GitHub未更新。実改変アバターの表示品質はユーザー確認待ち。
 
 2026-09-13 検証追記：Unity AnimationCurveで提供カーブのradius=-1.483838E-05を再現。半径の補正値0、正常なdepth=2/3の値保持、NaNを隠さないことを検査成功。初期化失敗のアバター継続、既存Renderer隔離、Tk操作、ログ通知を検査成功。results/unity-release-0.1.1-fixes7.log。fixes7はUnityビルド成功後、app移行に伴う監査パス不一致で梱包失敗。監査対象のDLLハッシュを変えずパスだけ更新し、同じPlayerでfixes8を梱包。配布UIがapp/TanakaCap.exeを選択することも確認。
