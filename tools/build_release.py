@@ -26,7 +26,7 @@ def run(version,publishable=False):
     for relative,expected in model_lock.items():
         if sha(ROOT/relative)!=expected:raise RuntimeError('Model differs from release lock: '+relative)
     if publishable and (not config['publication_approved'] or config['open_license_items']):
-        raise RuntimeError('Publication license audit pending: '+', '.join(config['open_license_items']))
+        raise RuntimeError('Final release review pending. Open license items: '+str(config['open_license_items']))
     output=ROOT/'builds/releases'/version
     output.mkdir(parents=True,exist_ok=False)
     stage=output/'TanakaCap';stage.mkdir()
@@ -47,6 +47,10 @@ def run(version,publishable=False):
     copy(ROOT/'release/THIRD_PARTY.md','ライセンス/README.md')
     copy(ROOT/'release/THIRD_PARTY_TERMS.md','ライセンス/第三者部品の利用条件.md')
     tree(ROOT/'release/notices','ライセンス/notices')
+    source_bundle=ROOT/'assets-source/licenses/opencv-ffmpeg-sources.zip'
+    if not source_bundle.is_file():
+        raise RuntimeError('Run tools/prepare_ffmpeg_sources.py before building')
+    copy(source_bundle,'ライセンス/sources/opencv-ffmpeg-sources.zip')
     base=Path(sys.base_prefix)
     for name in ('python.exe','pythonw.exe','python3.dll','python311.dll','vcruntime140.dll','vcruntime140_1.dll','LICENSE.txt'):copy(base/name,Path('runtime')/name)
     for name in ('Lib','DLLs','tcl'):tree(base/name,Path('runtime')/name,('site-packages','test','tests','idlelib','ensurepip','__pycache__'))

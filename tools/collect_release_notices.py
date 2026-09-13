@@ -57,6 +57,10 @@ def main():
                 comment = data.decode('utf-8').split('*/', 1)[0] + '*/\n'
                 assert 'Redistribution' in comment and 'Copyright' in comment
                 save('KlakSpout-' + path + '-NOTICE.txt', comment.encode('utf-8'), url)
+    for item in json.loads((ROOT / 'release/runtime-notice-sources.json').read_text(encoding='utf-8')):
+        data = (OUT / item['file']).read_bytes()
+        assert hashlib.sha256(data).hexdigest() == item['sha256'], item['file']
+        records.append(item)
     (OUT / 'sources.json').write_text(json.dumps(records, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f'Collected {len(records)} notices')
 

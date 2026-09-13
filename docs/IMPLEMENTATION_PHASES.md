@@ -1,5 +1,8 @@
 # 実装フェーズ
 
+2026-09-13最新：現行モデルとNVIDIA/FFmpeg/Unity Personalの公開配布条件を確認済み。RUNTIME_LICENSE_DECISIONS.md参照。対応ソース・通知同梱とSHA検査をビルドに追加。以下の旧『モデル条件未確定』『ランタイム3残件』は解消。最終出荷品質・新規PC・他アバター確認は別に残る。
+
+
 2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
 
 

@@ -1,5 +1,7 @@
 # 配布ライセンスの棚卸し
 
+最新：NVIDIA・FFmpeg・Unity Personalの3残件も解消。現在の条件は[RUNTIME_LICENSE_DECISIONS.md](RUNTIME_LICENSE_DECISIONS.md)。以下の未確定という過去記述よりこちらを優先。
+
 最新再監査（2026-09-13）：HumanArt版YOLOX-M、RTMW-L、頭専用MobileNetV3 smallも公開条件に基づき商用利用・再配布可と判定。[3モード別の表・根拠](MODEL_LICENSE_DECISIONS.md)。モデルの同梱許諾残件は解消、NVIDIA/FFmpeg/Unityの製品監査は継続。下記導入時の「モデル重み未完了」より本項を優先。
 
 最新（2026-09-13）：ユーザーが独自コードをMITに決定。ルートLICENSEとExporter用LICENSE.txtを追加。外部部品は各許諾を維持。build-release.ps1/RELEASE_BUILD.mdで必要部品・通知・モデルを選んでZIP化する環境を追加したが、NVIDIA DLL照合/モデル重み/Unity・Spout内部通知の最終監査は未完了。release/config.jsonで公開可のビルドを止め、ローカルレビュー用梱包は継続可能。旧「独自コード未決定」は本決定で更新。

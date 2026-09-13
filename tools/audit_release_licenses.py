@@ -24,6 +24,19 @@ def audit(stage):
         if not (stage / required).is_file():
             errors.append('Missing: ' + required)
     site = stage / 'runtime/Lib/site-packages'
+    evidence = json.loads((ROOT / 'release/runtime-license-evidence.json').read_text(encoding='utf-8'))
+    for item in evidence['unity_runtime']:
+        p = stage / item['path']
+        if not p.is_file() or sha(p) != item['sha256']:
+            errors.append('Unity runtime differs from audited version: ' + item['path'])
+    nvidia_lock = {r['path']: r['sha256'] for r in evidence['nvidia_runtime']}
+    bundle = stage / 'ライセンス/sources/opencv-ffmpeg-sources.zip'
+    if not bundle.is_file() or sha(bundle) != evidence['ffmpeg_source_bundle_sha256']:
+        errors.append('Missing or changed corresponding FFmpeg source bundle')
+    source_lock = json.loads((ROOT / 'release/ffmpeg-source-lock.json').read_text(encoding='utf-8'))
+    ffmpeg = site / 'cv2/opencv_videoio_ffmpeg500_64.dll'
+    if not ffmpeg.is_file() or sha(ffmpeg) != source_lock['dll_sha256']:
+        errors.append('FFmpeg binary no longer matches audited source')
     libraries = []
     for p in sorted((site / 'nvidia').rglob('*')):
         if not p.is_file():
@@ -32,13 +45,13 @@ def audit(stage):
             errors.append('Non-runtime NVIDIA file: ' + str(p.relative_to(stage)))
             continue
         family = re.sub(r'(64)?_[0-9_]+(?=\.dll$)', '', p.name)
-        if p.name.startswith('cudnn'):
-            status = 'blocked: wheel supplement names cudnn64_7.dll, not shipped cuDNN9 DLLs'
-        elif p.name.lower().startswith('nvjitlink'):
-            status = 'blocked: wheel attachment does not list nvJitLink'
-        else:
-            status = 'CUDA attachment family match; exact-version license reconciliation required'
+        if nvidia_lock.get(p.relative_to(site).as_posix()) != sha(p):
+            errors.append('NVIDIA runtime differs from audited version: ' + p.name)
+        status = 'Redistributable runtime under official matching-version SDK agreement; notices required'
         libraries.append(dict(path=p.relative_to(stage).as_posix(), family=family, sha256=sha(p), assessment=status))
+    for relative in nvidia_lock:
+        if not (site / relative).is_file():
+            errors.append('Missing audited NVIDIA DLL: ' + relative)
     models = []
     for relative, expected in json.loads((ROOT / 'release/models.lock.json').read_text(encoding='utf-8')).items():
         p = stage / relative
