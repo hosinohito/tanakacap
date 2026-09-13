@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.arm_width import measure_arm_widths
+from tanakacap.arm_width import measure_arm_widths
 
 def main():
     source=ROOT/'results/20260911T180020-133848Z-rtmw-l-384/frames.jsonl'

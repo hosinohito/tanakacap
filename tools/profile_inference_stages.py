@@ -19,7 +19,7 @@ def main():
            "head-only-auto":["--head-only"]}
     reports={}
     for name,extra in modes.items():
-        command=[sys.executable,"-m","capture_lab","benchmark","--source","video","--video",str(args.video),
+        command=[sys.executable,"-m","tanakacap","benchmark","--source","video","--video",str(args.video),
                  "--frames",str(args.frames),"--warmup","30","--unity-port","39549","--no-ort-profile",
                  "--arm-depth-mode","front_projection","--shoulder-yaw-mode","face_ratio",*extra]
         with (output/(name+".log")).open("wb") as stream:

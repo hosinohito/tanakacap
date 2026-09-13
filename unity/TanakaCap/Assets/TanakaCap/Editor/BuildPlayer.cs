@@ -9,7 +9,7 @@ using UnityEditor.Build.Reporting;
 
 namespace TanakaCap.Editor
 {
-    public static class BuildLab
+    public static class BuildPlayer
     {
         [MenuItem("TanakaCap/Create haolan lab scene")]
         public static void Prepare()
@@ -124,7 +124,7 @@ namespace TanakaCap.Editor
             Application.targetFrameRate = 60;
             PlayerSettings.enableFrameTimingStats=true; // GPU recorder activated only by explicit diagnostics.
             PlayerSettings.companyName = "tanakacap";
-            PlayerSettings.productName = "tanakacap lab";
+            PlayerSettings.productName = "TanakaCap";
             PlayerSettings.defaultScreenWidth = 1280;
             PlayerSettings.defaultScreenHeight = 720;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -142,8 +142,8 @@ namespace TanakaCap.Editor
             FaceExpressionChecks.Run();
             CheckArmSolver();
             Prepare();
-            Directory.CreateDirectory("../../builds/lab/avatars");
-            string package="../../builds/lab/avatars/haolan.tcap";
+            Directory.CreateDirectory("../../builds/player/avatars");
+            string package="../../builds/player/avatars/haolan.tcap";
             // This generated output is replaceable; original BOOTH assets remain untouched.
             string pending=package+"."+DateTime.UtcNow.Ticks+".new";
             var original=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/HAOLAN/Phys_Haolan.prefab");
@@ -160,16 +160,16 @@ namespace TanakaCap.Editor
             UnityEngine.Object.DestroyImmediate(embedded.gameObject);
             new GameObject("Avatar Loader").AddComponent<AvatarPackageLoader>();
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(),"Assets/TanakaCap/Scenes/HaolanLab.unity");
-            File.Copy("../../docs/PROCEDURAL_MOTION_LICENSE.txt","../../builds/lab/PROCEDURAL_MOTION_LICENSE.txt",true);
-            AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/lab/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
-            Directory.CreateDirectory("../../builds/lab");
+            File.Copy("../../docs/PROCEDURAL_MOTION_LICENSE.txt","../../builds/player/PROCEDURAL_MOTION_LICENSE.txt",true);
+            AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+            Directory.CreateDirectory("../../builds/player");
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { "Assets/TanakaCap/Scenes/HaolanLab.unity" },
-                locationPathName = "../../builds/lab/TanakaCap.exe",
+                locationPathName = "../../builds/player/TanakaCap.exe",
                 target = BuildTarget.StandaloneWindows64, options = BuildOptions.None });
             if (result.summary.result != BuildResult.Succeeded) throw new Exception("Player build failed");
-            File.Copy("../../docs/THIRD_PARTY.md","../../builds/lab/THIRD_PARTY.md",true);
-            File.Copy("../../assets-source/haolan-license-ja.pdf","../../builds/lab/haolan-license-ja.pdf",true);
+            File.Copy("../../docs/THIRD_PARTY.md","../../builds/player/THIRD_PARTY.md",true);
+            File.Copy("../../assets-source/haolan-license-ja.pdf","../../builds/player/haolan-license-ja.pdf",true);
             Debug.Log("TANAKACAP_BUILD_OK");
         }
 

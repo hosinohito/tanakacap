@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.hand_orientation import palm_basis,add_hands
+from tanakacap.hand_orientation import palm_basis,add_hands
 
 
 def hand():
@@ -41,7 +41,7 @@ def test_small_depth_response_preserves_palm_orientation():
 
 
 def test_confirmed_palm_turn_reaches_ninety_percent_without_extra_wait():
-    from capture_lab.hand_orientation import PalmFilter
+    from tanakacap.hand_orientation import PalmFilter
     filter= PalmFilter()
     def packet(degrees):
         angle=np.radians(degrees)

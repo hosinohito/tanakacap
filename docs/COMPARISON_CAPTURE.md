@@ -16,7 +16,7 @@
 
 ## 解析と実装済み範囲
 
-- **tanakacap-compare-analyze.bat** は最新の完了した撮影を選び、既存モデルの比較を実行する。別テイク指定はrun-comparison-lab.ps1 -Mode analyze -Take パス。
+- **tanakacap-compare-analyze.bat** は最新の完了した撮影を選び、既存モデルの比較を実行する。別テイク指定はrun-comparison.ps1 -Mode analyze -Take パス。
 - baseline=RTMW-l顔＋RTMW3D身体/手。顔・目線・口・距離の結果、人物領域、元の時刻を共通キャッシュへ保存し、DWPose-l/RTMW-Xの2D対照でも固定する。
 - 2D対照は生の点と身体整合検査用の参照を交換する。3D入力は同じ。指や肘の3Dモデルを替えた試験とは呼ばない。
 - 推論はCUDA限定、終了時の実行イベントで主要計算のCPUフォールバックがないことを検査。撮影中は推論しない。

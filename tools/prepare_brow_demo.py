@@ -3,9 +3,9 @@ import json,sys
 from pathlib import Path
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
-from capture_lab.head_pose import HeadPose
-from capture_lab.retarget import FaceFilter,packet_from_landmarks
-from capture_lab.comparison import line,dump
+from tanakacap.head_pose import HeadPose
+from tanakacap.retarget import FaceFilter,packet_from_landmarks
+from tanakacap.comparison import line,dump
 
 def main():
     source=ROOT/'results/comparisons/head-follow-input/source/frames.jsonl'

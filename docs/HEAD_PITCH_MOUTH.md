@@ -34,7 +34,7 @@
 ## 一次資料・形状データ
 
 - [OpenCV PnP公式資料](https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html)：3D/2D対応とカメラ行列から回転/並進を求める。
-- [Google公式標準顔形状](https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj)：必要な29点だけcapture_lab/data/face_template.jsonへ抽出。68点とFaceMeshの意味対応はこの実装の近似。元ファイルSHA256と出典をJSONへ記録。
+- [Google公式標準顔形状](https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj)：必要な29点だけtanakacap/data/face_template.jsonへ抽出。68点とFaceMeshの意味対応はこの実装の近似。元ファイルSHA256と出典をJSONへ記録。
 - Apache-2.0ライセンスをface_template.LICENSEに同梱。新しい学習モデル/依存ライブラリの追加はない。
 
 

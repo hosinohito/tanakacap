@@ -5,9 +5,9 @@ import time
 import numpy as np
 import pytest
 
-from capture_lab.capture import Frame, LatestFrame
-from capture_lab.inference import DetectionGate, PersonDetector, decode_simcc, preprocess, provider_summary
-from capture_lab.__main__ import roi_for
+from tanakacap.capture import Frame, LatestFrame
+from tanakacap.inference import DetectionGate, PersonDetector, decode_simcc, preprocess, provider_summary
+from tanakacap.__main__ import roi_for
 
 
 def test_latest_frame_drops_backlog_and_waits_for_new_frame():

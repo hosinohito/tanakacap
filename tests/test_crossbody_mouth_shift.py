@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from capture_lab.body_geometry import cross_body_amount
-from capture_lab.mouth_detail import contour_controls
-from capture_lab.retarget import FaceFilter
+from tanakacap.body_geometry import cross_body_amount
+from tanakacap.mouth_detail import contour_controls
+from tanakacap.retarget import FaceFilter
 from test_mouth_detail import detailed_face
 
 

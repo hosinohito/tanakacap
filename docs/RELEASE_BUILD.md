@@ -12,11 +12,11 @@
 
 | 場所 | 内容・保管上の注意 |
 | --- | --- |
-| capture_lab / unity/TanakaCap/Assets/TanakaCap / ProjectSettings | Python UI・推論・Unity・Exporterのソース。Git管理 |
+| tanakacap / unity/TanakaCap/Assets/TanakaCap / ProjectSettings | Python UI・推論・Unity・Exporterのソース。Git管理 |
 | unity/TanakaCap/Packages | 使用中のlilToon/KlakSpout等の原本。Git管理外の埋め込みパッケージも含めて保管 |
 | models | 学習済み原本と取得記録。大容量のためGit管理外。release/models.lock.jsonと照合 |
 | assets-source/licenses/opencv-ffmpeg-sources.zip | 配布に添付する対応ソース。Git管理外、固定版から再作成可能 |
-| release / docs / tracking-settings.json / requirements-lab.lock.txt | 通知原文・ライセンス・設定・手順・依存版。Git管理 |
+| release / docs / tracking-settings.json / requirements.lock.txt | 通知原文・ライセンス・設定・手順・依存版。Git管理 |
 
 この作業フォルダーには上記が揃っている。**Git cloneだけではモデルや埋め込みパッケージは復元されない**。移行・バックアップ時はそれらも保管する。アバター原本や過去の比較動画・既存Playerは、通常の配布ビルドの入力ではない。
 
@@ -27,8 +27,8 @@
 ## ZIPの内容
 
 - `プラグイン/TanakaCapExporter.unitypackage`：利用者のVRCSDK環境にインポート。
-- `builds/lab`：製品Player。開発時の相対パス互換を維持した内部配置で、アバターは埋め込まない。
-- `capture_lab`：推論/制御/UI、`runtime`：再配置可能なPython・標準Tk・lockから選んだ実行ライブラリ。
+- `builds/player`：製品Player。開発時の相対パス互換を維持した内部配置で、アバターは埋め込まない。
+- `tanakacap`：推論/制御/UI、`runtime`：再配置可能なPython・標準Tk・lockから選んだ実行ライブラリ。
 - `models`：通常全身/顔専用/頭専用/虹彩/人物検出の必要モデル。SAM/HaMeR/MANO等の比較専用モデルは除外。
 - `TanakaCap.bat`：UI起動。利用者によるPythonやpipの操作は不要。
 - `使い方.md`、`ライセンス`、全ファイルSHA256の `manifest.json`、公開準備状態 `release-status.json`。

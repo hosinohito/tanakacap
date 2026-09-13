@@ -6,8 +6,8 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.arm_filter import filter_arm
-from capture_lab.motion_gate import DirectionGate
+from tanakacap.arm_filter import filter_arm
+from tanakacap.motion_gate import DirectionGate
 
 
 def old_filter(previous,target,dt):

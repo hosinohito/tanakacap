@@ -1,6 +1,6 @@
 import numpy as np
-from capture_lab.arm_constraints import ArmCalibration,constrain_arm,smooth_fixed_bones
-from capture_lab.hand_orientation import PalmFilter
+from tanakacap.arm_constraints import ArmCalibration,constrain_arm,smooth_fixed_bones
+from tanakacap.hand_orientation import PalmFilter
 
 
 def test_calibration_requires_stable_straight_visible_arms():

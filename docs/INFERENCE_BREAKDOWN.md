@@ -49,7 +49,7 @@
 
 ## 起動・既定
 
-同じrun-avatar-lab.ps1 / 同じPlayerを使い、-TrackingMode full / face_head / head_onlyで切り替える。tracking-settings.jsonのtracking_modeにも対応。既定full。個別-NoBody/-NoGaze/-NoPersonDetectorも利用可能。body_enabled/person_detector_enabled/gaze_enabledの既定はtrue。切替は起動時、実行中の再ロードUIは未実装。
+同じrun-avatar.ps1 / 同じPlayerを使い、-TrackingMode full / face_head / head_onlyで切り替える。tracking-settings.jsonのtracking_modeにも対応。既定full。個別-NoBody/-NoGaze/-NoPersonDetectorも利用可能。body_enabled/person_detector_enabled/gaze_enabledの既定はtrue。切替は起動時、実行中の再ロードUIは未実装。
 
 将来UI追加指定（2026-09-13）：この推論切替の場所に描画レート60/推論同期/30/自由入力を置く。指定数値より推論が速い場合は推論開始前に同じ上限まで抑えて省資源化する予定。倍率「約N倍」はこの制限の有無も測定条件として扱う。UI・推論上限はまだ実装しない。[詳細](SHARED_PREVIEW.md)。
 

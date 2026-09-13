@@ -11,11 +11,11 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from capture_lab.comparison import dump, line, fingerprint
-from capture_lab.models import sha256
-from capture_lab.retarget import packet_from_landmarks, FaceFilter
-from capture_lab.head_pose import HeadPose
-from capture_lab.head_pose3d import PnPPitchDepthMouth
+from tanakacap.comparison import dump, line, fingerprint
+from tanakacap.models import sha256
+from tanakacap.retarget import packet_from_landmarks, FaceFilter
+from tanakacap.head_pose import HeadPose
+from tanakacap.head_pose3d import PnPPitchDepthMouth
 
 MOUTH = ('mouthLeftCorner', 'mouthRightCorner', 'mouthBow', 'mouthShift', 'mouthContourTracked')
 

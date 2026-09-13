@@ -10,7 +10,7 @@
 
 - EdgeAntialiasing.cs / EdgeAntialiasing.shader：フィルター。
 - AlphaOutput.cs：カメラ接続、F7切替、--no-edge-aa、同一姿勢比較用--aa-check。
-- BuildLab：shaderをシーンへ明示参照し、Playerビルドでの除去を防ぐ。
+- BuildPlayer：shaderをシーンへ明示参照し、Playerビルドでの除去を防ぐ。
 - --output-height 720/1080：Spout出力の高さ。横は16:9。既定720。
 
 F7または-NoEdgeAAで追加分だけOFFにする。従来MSAAまでOFFにする機能ではない。髪の細線や微小な模様はわずかに柔らかくなる可能性がある。MSAA/画像AAはモデル誤検出や関節の震えを直さない。

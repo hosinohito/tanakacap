@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
-from capture_lab.body_geometry import visible_hand_inward
-from capture_lab.torso_yaw import ShoulderWidthReference
-from capture_lab.body3d import BodyRetarget
-from capture_lab.retarget import FaceFilter
+from tanakacap.body_geometry import visible_hand_inward
+from tanakacap.torso_yaw import ShoulderWidthReference
+from tanakacap.body3d import BodyRetarget
+from tanakacap.retarget import FaceFilter
 from test_body3d import body,packet
-from capture_lab.hand_orientation import palm_basis
+from tanakacap.hand_orientation import palm_basis
 
 
 def test_observed_front_shoulder_width_is_neutral_not_nominal_width():

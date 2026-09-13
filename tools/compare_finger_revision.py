@@ -3,12 +3,12 @@ import json,sys,zipfile
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.fingers import FingerTracker
-from capture_lab.retarget import FaceFilter,packet_from_landmarks
+from tanakacap.fingers import FingerTracker
+from tanakacap.retarget import FaceFilter,packet_from_landmarks
 
 with zipfile.ZipFile('results/checkpoints/before-elbow-face-research-20260912.zip') as z:
-    source=z.read('capture_lab/fingers.py').decode('utf-8-sig')
-scope={'__name__':'capture_lab.baseline_fingers','__package__':'capture_lab'}
+    source=z.read('tanakacap/fingers.py').decode('utf-8-sig')
+scope={'__name__':'tanakacap.baseline_fingers','__package__':'tanakacap'}
 exec(compile(source,'baseline_fingers.py','exec'),scope)
 reports=[]
 for name in ('20260911T185608-545920Z-rtmw-l-384','20260911T191301-012493Z-rtmw-l-384'):

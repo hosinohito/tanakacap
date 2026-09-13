@@ -61,14 +61,14 @@
 |---|---|---|
 | 1. キャプチャ技術の比較 | 実カメラ、主要モデルのGPU実行確認、同一録画でRTMW/SAM DINO/SAM ViT-H比較、手のHaMeR比較、弱点/処理負荷の記録 | カメラの歪み・画素数・露光由来の限界の定量分離は不十分。採用構成全体のライブ遅延/負荷評価は4へ継続。SAM比較動画の品質とライブ実用性は別 |
 | 2. haolanを実際に動かす | 頭・目口・体・腕・掌・指の反映、追加視線/表情、ユーザー反復評価。肩/腕の新補正を今回採用 | 静止時の肩ヨー、大きな腕跳び、左指の追従や遮蔽・復帰の最終品質は残る。頭ピッチ/口角問題の解消、目線・口・掌のおおむね良好というユーザー評価は維持。全身自然さの一括合格にはしない |
-| 3. OBSまでの一連動作 | haolanを組み込んだUnity Player、RGBA描画、Spout送信元登録/透明画素の検証 | 最小Unity変換プラグイン、バージョン付き外部アバターファイル、Runtime読み込みが未実装。OBS側受信・透過輪郭・実合成は未確認。現在のBuildLabは検証シーン生成であり汎用Exporterではない |
+| 3. OBSまでの一連動作 | haolanを組み込んだUnity Player、RGBA描画、Spout送信元登録/透明画素の検証 | 最小Unity変換プラグイン、バージョン付き外部アバターファイル、Runtime読み込みが未実装。OBS側受信・透過輪郭・実合成は未確認。現在のBuildPlayerは検証シーン生成であり汎用Exporterではない |
 | 4. 4090での品質確立 | 各部位補正/保持/復帰を実装し合成・録画・実人物で反復評価。一部GPU/CPU単体計測 | 髪/服の自然な揺れ、衝突と更新順序、最終設定での遮蔽復帰品質。専用アプリ＋OBS併用の描画/認識fps、実動作から表示までの遅延、30分安定性、メモリ増加の最終評価。1080p60/認識30Hz/100ms中央値150ms p95は暫定目標で未保証 |
 | 5. 配布できる形に整える | 開発用起動bat、設定JSON、診断ログ、部分的な依存/ライセンス記録 | 一般向けアバター/カメラ選択UI、導入・更新・環境同梱、失敗理由の整理、汎用非破壊変換と中断時保護、Modular Avatar等のビルド処理、表情対応/手動指定、パッケージ互換性と第三者導入試験、配布物全体のライセンス確認 |
 | 6. 拡張を個別に追加 | 指・口形状・視線を一部先行実装。指の基本追跡は現在の対象へ繰り上げ済み | 仮想カメラ、コラボ映像送信、軽量設定、全身、パーフェクトシンク相当の表情精度は未完了/後日。舌はユーザー指定で削除済み、未達成要件として復活させない |
 
 次はフェーズ3の書き出し→外部読み込み→ローカルOBS実受信を完成させる。次いで4の揺れ物とOBS併用の品質/性能、5の配布体験へ進む。追跡の残件は記録を保ち、全てを直してから3へ進む停止条件を追加しない。
 
-根拠：docs/SHOULDER_FACE_RATIO_TRIAL.md、docs/ARM_FRONT_PROJECTION_TRIAL.md、docs/BODY_MODEL_COMPARISON.md、docs/OBS_LAB.md、docs/SAM_PERFORMANCE.md、unity/TanakaCap/Assets/TanakaCap/Editor/BuildLab.cs。OBS送信元登録の成功はOBS実受信の成功ではない。実写録画はGit管理対象外のまま利用する。
+根拠：docs/SHOULDER_FACE_RATIO_TRIAL.md、docs/ARM_FRONT_PROJECTION_TRIAL.md、docs/BODY_MODEL_COMPARISON.md、docs/OBS.md、docs/SAM_PERFORMANCE.md、unity/TanakaCap/Assets/TanakaCap/Editor/BuildPlayer.cs。OBS送信元登録の成功はOBS実受信の成功ではない。実写録画はGit管理対象外のまま利用する。
 
 重いゲームとの同時実行保証、Discord仮想カメラ、遠隔コラボ、全身は初期版の完了条件へ追加しない。
 

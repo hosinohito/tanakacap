@@ -6,8 +6,8 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.gaze_range import GazeRange
-from capture_lab.motion_gate import DirectionGate
+from tanakacap.gaze_range import GazeRange
+from tanakacap.motion_gate import DirectionGate
 
 
 def read(path):

@@ -568,7 +568,7 @@
 2026-09-13：通常Playerにエラー専用ログを追加（TanakaCap.exeと同じフォルダーのlogs/player-errors.log、1 MiB超で.previousへ世代交代、通常の追跡ログは増やさない）。RuntimeInitializeOnLoadMethodでアバター読込前から描画上限を適用、読込失敗時も指定60/30/自由入力を維持。推論同期の起動失敗時は60上限。マテリアルエラーにrenderer/material/shader/supported/GPU APIと例外詳細を記録。デモモーション中は推論モード/部位選択を隠す。0.1.1-fixes2をビルド予定、未検証。
 
 
-2026-09-13：ユーザー提供ログでMSL/Ring Particles Shaderのsupported=False/Direct3D11を確認。前回のログ未生成申告はログが無かったと確定せず、既存パスがbuilds/lab/logsだった点を案内。通常UIは--error-logで起動bat隣のlogs/player-errors.logを指定、起動時にファイル作成、ロード例外はコールバックを介さず直接保存。プレビューへログの絶対パス/保存失敗理由を表示。shader本体は手元になくプロジェクトパスを質問中、原因未確定・置換なし。UIのアバター選択を最上段、入力名をモーション入力へ変更。Tk実検査とPlayerの指定先直接ログ検証成功。0.1.1-fixes3をビルド中。
+2026-09-13：ユーザー提供ログでMSL/Ring Particles Shaderのsupported=False/Direct3D11を確認。前回のログ未生成申告はログが無かったと確定せず、既存パスがbuilds/player/logsだった点を案内。通常UIは--error-logで起動bat隣のlogs/player-errors.logを指定、起動時にファイル作成、ロード例外はコールバックを介さず直接保存。プレビューへログの絶対パス/保存失敗理由を表示。shader本体は手元になくプロジェクトパスを質問中、原因未確定・置換なし。UIのアバター選択を最上段、入力名をモーション入力へ変更。Tk実検査とPlayerの指定先直接ログ検証成功。0.1.1-fixes3をビルド中。
 
 
 2026-09-13：ユーザーがVRC相当の緩い継続動作を希望。マテリアル/シェーダーが非対応なら該当Rendererだけを無効化し、アバターのロード/追従は継続。粒子はそのParticleSystemのみ停止、子は停止しない。省略をエラーログへ保存。Exporterも欠落マテリアルを警告に変更、AudioLink補正コンパイル失敗時は元shaderを保持して継続。破損/形式違い/必須Humanoid不備は引き続き停止。すべてのVRCギミックや任意スクリプトの互換を意味しない。0.1.1-fixes4ビルド予定。
@@ -577,7 +577,16 @@
 2026-09-13：ユーザー指定でプラグイン完了ダイアログに確認事項件数とreport場所を開くボタン、失敗時に理由とUnity Console案内を追加。Python UIは起動bat隣のplayer-errors.logの新規レコードを読み取り、警告・継続中/エラーを色分けし対象とログパスを表示。スタック全文をUIへ重複表示しない。旧ログは起動時に飛ばし、分割書込・切詰め/ローテーションを扱う。使い方に書出しreport/Unity Console/本体ログの確認手順を追加。実Tk検査とログ追記/分割行/重複防止/切詰め検査成功。fixes5の検証済みPlayerに新UI/Exporterを合わせたfixes6を梱包中。
 
 
-2026-09-13：提供されたPhys_Haolanレポートの胸radiusCurveがdepth=1/3で負に補間され、radius約-0.0000148で全体停止する原因を特定。有効な基準値のカーブ評価後に物理パラメーター範囲を適用する汎用処理へ変更。通常値と原本カーブは不変、補正を対象/深度/評価値/適用値付きでログとUIへ表示。範囲外の残件はチェーン単位で停止、初期化例外は揺れ物だけ無効化してアバター読込を継続。VRChat実装との完全一致は未確認。配布Playerはappへ整理、開発用builds/labは維持しUIは両方に対応。fixes6梱包済み、fixes7を検査・ビルド中。実アバターの見た目は未確認。
+2026-09-13：提供されたPhys_Haolanレポートの胸radiusCurveがdepth=1/3で負に補間され、radius約-0.0000148で全体停止する原因を特定。有効な基準値のカーブ評価後に物理パラメーター範囲を適用する汎用処理へ変更。通常値と原本カーブは不変、補正を対象/深度/評価値/適用値付きでログとUIへ表示。範囲外の残件はチェーン単位で停止、初期化例外は揺れ物だけ無効化してアバター読込を継続。VRChat実装との完全一致は未確認。配布Playerはappへ整理、開発用builds/playerは維持しUIは両方に対応。fixes6梱包済み、fixes7を検査・ビルド中。実アバターの見た目は未確認。
 
 
-2026-09-13：配布名のlab撤去不足を訂正。配布Pythonパッケージをtanakacapへ変更し、bat・UIからの推論子プロセス起動も同名に統一。開発ソース名capture_labは維持し、パッケージ名を固定せず起動できるようにする。配布フォルダーはappとtanakacap。fixes9を再梱包して検査する。
+2026-09-13：配布名のlab撤去不足を訂正。配布Pythonパッケージをtanakacapへ変更し、bat・UIからの推論子プロセス起動も同名に統一。開発ソース名tanakacapは維持し、パッケージ名を固定せず起動できるようにする。配布フォルダーはappとtanakacap。fixes9を再梱包して検査する。
+
+
+2026-09-13：配布だけでなく公開ソース全体を整理する指定へ対応。Pythonソースtanakacap、requirements.txt/requirements.lock.txt、setup.ps1、build-player.ps1、run-capture/run-avatar/run-motion/run-comparison.ps1へ統一。Unity BuildPlayerクラスとmetaを一緒に改名、開発出力はbuilds/playerへ移動。実写/モデル/アバターは変更なし。ツール・テスト・CI・現行文書参照を更新。個人ui-settings.jsonは引き続き非公開、公開ひな形ui-settings.example.jsonから配布設定を生成。過去PROGRESSは履歴として旧名を残す。273テスト成功、fixes10でUnity/配布の再検査を行う。
+
+
+2026-09-13：追加指定でカメラ寄り上限を-0.6→-1.4へ拡大。ウインドウはProcess.MainWindowHandleへの一度だけの適用をやめ、同一プロセスのUnityWndClassを探して枠とクライアント寸法を定期確認する。起動時の非同期SetResolutionが枠を再設定した場合も修復し、クライアント寸法を描画解像度へ揃える。検証はカメラを使わずデモモーションで行う。
+
+
+2026-09-13：ウインドウ修正は実Player＋保存デモで960x540/1920x1080双方のクライアント寸法と外寸の一致、タイトルバーなし、外部から枠/800x450を再設定した後の自動復旧を確認（results/window-sizing/report.json）。実カメラ未使用。操作UIログ欄は3→10行へ拡大し、その分タブ領域を縮小。Tk検査成功。fixes11はUnityビルド成功、UI追加を含めるため梱包中断、同Playerでfixes12を梱包する。開発用builds/playerも最新Playerへ更新。

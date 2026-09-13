@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.retarget import LocalSender
+from tanakacap.retarget import LocalSender
 
 
 def main():
@@ -41,7 +41,7 @@ def main():
     output.parent.mkdir(parents=True,exist_ok=True)
     if output.exists():
         output = output.with_name(f'transport-{time.time_ns()}.png')
-    player = ROOT / 'builds' / 'lab' / 'TanakaCap.exe'
+    player = ROOT / 'builds' / 'player' / 'TanakaCap.exe'
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as probe:
         probe.bind(('127.0.0.1',0))
         test_port=probe.getsockname()[1]

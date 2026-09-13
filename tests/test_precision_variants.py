@@ -1,9 +1,9 @@
 import onnx
 import pytest
 from onnx import helper, TensorProto
-from capture_lab.onnx_variants import fp16_model
-from capture_lab.gpu_runner import provider_options
-from capture_lab.gpu_runner import require_provider
+from tanakacap.onnx_variants import fp16_model
+from tanakacap.gpu_runner import provider_options
+from tanakacap.gpu_runner import require_provider
 
 
 def test_fp16_preserves_original_io_and_sensitive_ops(tmp_path):
@@ -44,13 +44,13 @@ def test_reject_silent_provider_fallback():
 
 
 def test_reject_removed_mode():
-    from capture_lab.gpu_runner import GpuRunner
+    from tanakacap.gpu_runner import GpuRunner
     with pytest.raises(ValueError, match='Unknown inference mode'):
         GpuRunner(None,'trt-fp16')
 
 
 def test_startup_fp16_default_and_internal_fp32_hook(monkeypatch):
-    from capture_lab import __main__ as app
+    from tanakacap import __main__ as app
     modes=[]
     monkeypatch.setattr(app,'benchmark',lambda args: modes.append(args.inference_mode))
     app.main(['benchmark'])
@@ -59,7 +59,7 @@ def test_startup_fp16_default_and_internal_fp32_hook(monkeypatch):
 
 
 def test_startup_precision_switch_removed():
-    from capture_lab import __main__ as app
+    from tanakacap import __main__ as app
     with pytest.raises(SystemExit) as error:
         app.main(['benchmark','--inference-mode','graph'])
     assert error.value.code == 2

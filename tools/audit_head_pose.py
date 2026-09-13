@@ -3,8 +3,8 @@ import sys,json,time
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.head_pose import HeadPose
-from capture_lab.retarget import packet_from_landmarks,FaceFilter
+from tanakacap.head_pose import HeadPose
+from tanakacap.retarget import packet_from_landmarks,FaceFilter
 source=Path(sys.argv[1]);output=Path(sys.argv[2]);output.parent.mkdir(parents=True,exist_ok=True)
 tracker=HeadPose();filter=FaceFilter(3,1);legacy_filter=FaceFilter(3,1);rows=[];now=0.
 for i,line in enumerate(source.read_text().splitlines()):

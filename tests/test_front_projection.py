@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.front_projection import FrontProjection
+from tanakacap.front_projection import FrontProjection
 
 
 def test_short_outward_forearm_gets_depth_without_moving_image_points():

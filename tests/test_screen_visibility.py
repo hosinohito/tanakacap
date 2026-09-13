@@ -1,6 +1,6 @@
 import numpy as np
-from capture_lab.visibility import screen_visibility
-from capture_lab.body3d import BodyRetarget
+from tanakacap.visibility import screen_visibility
+from tanakacap.body3d import BodyRetarget
 from test_body3d import body,packet
 
 

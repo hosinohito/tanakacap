@@ -29,13 +29,13 @@ foreach ($taskName in $taskAuxiliaryNames) {
 $taskUiTarget=Join-Path $taskMainDesktop 'tanakacap.bat'
 [IO.File]::WriteAllText($taskUiTarget,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`"`r`n",[Text.Encoding]::Default)
 $taskTarget = Join-Path $taskMainDesktop 'tanakacap-test.bat'
-$taskScript = Join-Path $taskRoot 'run-avatar-lab.ps1'
+$taskScript = Join-Path $taskRoot 'run-avatar.ps1'
 $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskScript`" -Camera 1 -TrackingMode full -FaceSource body3d -HeadPoseMode pnp -DemoAvatar -Diagnose -Frames 1800`r`npause`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget
 
-$taskComparisonScript = Join-Path $taskRoot 'run-comparison-lab.ps1'
+$taskComparisonScript = Join-Path $taskRoot 'run-comparison.ps1'
 $taskFaceCapture = Join-Path $taskMainDesktop 'tanakacap-face-capture.bat'
 [IO.File]::WriteAllText($taskFaceCapture,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode capture -Profile face-head`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskFaceCapture
@@ -79,7 +79,7 @@ $taskShoulderTestContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPo
 Write-Output $taskShoulderTest
 
 $taskPackageTarget = Join-Path $taskDesktop 'tanakacap-avatar-files.bat'
-$taskPackageFolder = Join-Path $taskRoot 'builds/lab'
+$taskPackageFolder = Join-Path $taskRoot 'builds/player'
 $taskPackageContents = "@echo off`r`nexplorer.exe `"$taskPackageFolder`"`r`n"
 [IO.File]::WriteAllText($taskPackageTarget,$taskPackageContents,[Text.Encoding]::Default)
 Write-Output $taskPackageTarget
@@ -90,7 +90,7 @@ $taskLiveContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Byp
 [IO.File]::WriteAllText($taskLiveTarget,$taskLiveContents,[Text.Encoding]::Default)
 Write-Output $taskLiveTarget
 $taskDemoTarget = Join-Path $taskMainDesktop 'tanakacap-motion.bat'
-$taskDemoScript = Join-Path $taskRoot 'run-motion-lab.ps1'
+$taskDemoScript = Join-Path $taskRoot 'run-motion.ps1'
 $taskDemoContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskDemoScript`"`r`nif errorlevel 1 pause`r`n"
 [IO.File]::WriteAllText($taskDemoTarget,$taskDemoContents,[Text.Encoding]::Default)
 Write-Output $taskDemoTarget
@@ -161,11 +161,11 @@ $taskAutoTest = Join-Path $taskDesktop 'tanakacap-test-auto-expressions.bat'
 [IO.File]::WriteAllText($taskAutoTest,$taskContents.Replace(' -Diagnose',' -ExpressionMode auto-custom -Diagnose'),[Text.Encoding]::Default)
 Write-Output $taskAutoTest
 $taskSavedDemo = Join-Path $taskDesktop 'tanakacap-demo-custom-brows.bat'
-$taskSavedExe = Join-Path $taskRoot 'builds/lab/TanakaCap.exe'
+$taskSavedExe = Join-Path $taskRoot 'builds/player/TanakaCap.exe'
 $taskSavedAvatar = Join-Path $taskRoot 'builds/demos/haolan-custom-brows/avatars/haolan.tcap'
 [IO.File]::WriteAllText($taskSavedDemo,"@echo off`r`nstart `"`" `"$taskSavedExe`" --avatar `"$taskSavedAvatar`" --use-demo-shape-keys --motion-demo -nolog`r`n",[Text.Encoding]::Default)
 Write-Output $taskSavedDemo
 $taskAutoMotion = Join-Path $taskDesktop 'tanakacap-motion-auto-expressions.bat'
-$taskMotionScript = Join-Path $taskRoot 'run-motion-lab.ps1'
+$taskMotionScript = Join-Path $taskRoot 'run-motion.ps1'
 [IO.File]::WriteAllText($taskAutoMotion,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskMotionScript`" -ExpressionMode auto-custom`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskAutoMotion

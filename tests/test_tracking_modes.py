@@ -1,4 +1,4 @@
-from capture_lab.tracking_modes import suppress_body
+from tanakacap.tracking_modes import suppress_body
 def test_disabled_body_cannot_drive_fallback_arms_fingers_or_distance():
     packet = dict(faceTracked=True, headYaw=23, mouth=.8, torsoTracked=True,
                   leftArmTracked=True, rightArmTracked=True, body3d=True,

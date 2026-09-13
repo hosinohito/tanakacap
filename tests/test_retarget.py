@@ -1,7 +1,7 @@
 import json
 import socket
 import numpy as np
-from capture_lab.retarget import LocalSender, packet_from_landmarks
+from tanakacap.retarget import LocalSender, packet_from_landmarks
 
 
 def test_missing_landmarks_produce_safe_inactive_packet():

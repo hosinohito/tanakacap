@@ -1,7 +1,7 @@
 import numpy as np
-from capture_lab.retarget import FaceFilter
-from capture_lab.body_geometry import DepthAssist,visible_in_front_of_torso
-from capture_lab.motion_gate import DirectionGate,RotationGate
+from tanakacap.retarget import FaceFilter
+from tanakacap.body_geometry import DepthAssist,visible_in_front_of_torso
+from tanakacap.motion_gate import DirectionGate,RotationGate
 
 
 def face(value):

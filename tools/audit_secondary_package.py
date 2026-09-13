@@ -9,7 +9,7 @@ root = Path(__file__).resolve().parents[1]
 source = root / 'unity/TanakaCap/Assets/HAOLAN/Phys_Haolan.prefab'
 text = source.read_text(encoding='utf-8')
 docs = dict(re.findall(r'--- !u!\d+ &(-?\d+)\n(.*?)(?=\n--- !u!|\Z)', text, re.S))
-with zipfile.ZipFile(root / 'builds/lab/avatars/haolan.tcap') as archive:
+with zipfile.ZipFile(root / 'builds/player/avatars/haolan.tcap') as archive:
     physics = json.loads(archive.read('manifest.json'))['secondaryPhysics']
 checked = 0
 for chain in physics['chains']:

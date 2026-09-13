@@ -1,9 +1,9 @@
 import numpy as np
-from capture_lab.motion_gate import DirectionGate,RotationGate,ObservationMean
-from capture_lab.retarget import FaceFilter
-from capture_lab.fingers import FingerTracker
-from capture_lab.body3d import BodyRetarget
-from capture_lab.hand_orientation import PalmFilter
+from tanakacap.motion_gate import DirectionGate,RotationGate,ObservationMean
+from tanakacap.retarget import FaceFilter
+from tanakacap.fingers import FingerTracker
+from tanakacap.body3d import BodyRetarget
+from tanakacap.hand_orientation import PalmFilter
 
 
 def test_three_frame_blocks_require_six_new_frames_to_confirm():

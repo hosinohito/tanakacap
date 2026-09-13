@@ -6,7 +6,7 @@
 
 ## 切替と戻し方
 
-- `run-avatar-lab.ps1 -FaceSource body3d`：RTMW3D-XのXYを頭・顔・まばたき・口・虹彩crop・顔距離へ使用。全機能時は体の推論結果を再利用し、RTMW-Lをロードせず、体モデルの二重推論もしない。
+- `run-avatar.ps1 -FaceSource body3d`：RTMW3D-XのXYを頭・顔・まばたき・口・虹彩crop・顔距離へ使用。全機能時は体の推論結果を再利用し、RTMW-Lをロードせず、体モデルの二重推論もしない。
 - `-FaceSource separate`：元のRTMW-L顔＋RTMW3D-X体。Pythonは`--face-source body3d|separate`、tracking-settings.jsonは`face_source`。既定separateを維持。
 - 共有するのはXYと信頼度。顔のZを表情/PnPへ新規利用する変更ではない。体への2D参照も切り替わるため、別モデルの独立した整合確認ではなくなる。ライブのROI画像追跡用参照点も変わる。
 - 体OFFでbody3dを選ぶ場合、RTMW3D-Xを顔用に1回実行するため最軽量構成ではない。頭専用は既存の専用バックエンドを維持。

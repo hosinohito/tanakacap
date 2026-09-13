@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from capture_lab.body3d import BodyRetarget
-from capture_lab.inference import decode_simcc3d
+from tanakacap.body3d import BodyRetarget
+from tanakacap.inference import decode_simcc3d
 
 
 def body():

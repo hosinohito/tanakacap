@@ -104,3 +104,5 @@ OBS用プラグイン： https://github.com/Off-World-Live/obs-spout2-plugin/rel
 揺れ物のカーブを補正して継続した場合も、画面下の出力欄と `logs/player-errors.log` に対象が表示されます。
 
 部分更新時は `app` と `tanakacap` フォルダー、および `TanakaCap.bat` をコピーしてください。
+
+アバターのウインドウは描画解像度と同じ大きさで表示します。スクロールで寄り引き、Ctrlを押しながらスクロールで画角を調整できます。

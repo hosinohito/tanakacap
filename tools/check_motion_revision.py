@@ -6,8 +6,8 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.motion_gate import DirectionGate
-from capture_lab.body_geometry import visible_in_front_of_torso
+from tanakacap.motion_gate import DirectionGate
+from tanakacap.body_geometry import visible_in_front_of_torso
 
 
 def main():

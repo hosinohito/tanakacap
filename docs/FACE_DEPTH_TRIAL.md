@@ -6,7 +6,7 @@
 
 ## 切替
 
-- 新方式：`run-avatar-lab.ps1 -FaceSource body3d -HeadPoseMode depth3d`。
+- 新方式：`run-avatar.ps1 -FaceSource body3d -HeadPoseMode depth3d`。
 - 今回の対照：`-FaceSource body3d -HeadPoseMode pnp`。モデルを同一にして旧ピッチ/口角計算と比較。
 - 顔モデルごと以前へ：`-FaceSource separate -HeadPoseMode pnp`。
 - Python：`--face-source body3d --head-pose-mode depth3d|pnp`。設定ファイルはhead_pose_mode。depth3dにはbody3d顔が必須、不整合指定は起動前にエラー。通常設定separate/pnpを維持。

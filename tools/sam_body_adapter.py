@@ -5,7 +5,7 @@ The SAM coordinates remain metres; all native XYZ is passed to BodyRetarget.
 Face landmarks, gaze, expressions, source clock and correction settings stay fixed.
 """
 import numpy as np
-from capture_lab.visibility import screen_visibility
+from tanakacap.visibility import screen_visibility
 
 # COCO17 (two wrists precede hips), six foot landmarks, OpenPose21 hands.
 BODY_MAP=np.array([0,1,2,3,4,5,6,7,8,62,41,9,10,11,12,13,14,15,16,17,18,19,20])

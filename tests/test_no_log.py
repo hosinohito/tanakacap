@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from capture_lab import __main__ as app
+from tanakacap import __main__ as app
 
 
 class Model:
@@ -26,7 +26,7 @@ def setup(monkeypatch, extra):
         raise AssertionError('No-log mode must not create result folders or write reports')
     monkeypatch.setattr(app, 'output_folder', forbidden)
     monkeypatch.setattr(app, 'write_json', forbidden)
-    monkeypatch.setattr(sys, 'argv', ['capture_lab', 'benchmark', '--source', 'synthetic', '--no-log', '--warmup', '0'] + extra)
+    monkeypatch.setattr(sys, 'argv', ['tanakacap', 'benchmark', '--source', 'synthetic', '--no-log', '--warmup', '0'] + extra)
 
 
 def test_no_log_never_opens_results(monkeypatch):

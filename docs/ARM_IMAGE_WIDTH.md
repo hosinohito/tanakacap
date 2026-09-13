@@ -16,4 +16,4 @@
 
 検証はresults/width-subbin/summary.json、GPU実行はresults/20260911T180755-607527Z-rtmw-l-384。合成画像・分布での機能検証であり実人物品質の測定ではない。旧記録にはRGB画像や元のSimCC分布がなく、新デコードの旧記録への再適用はできない。以降はbody_decodeに対象Zの整数/補間binを両方記録する。
 
-戻す場合はrun-avatar-lab.ps1の-IntegerBodyPeaks、またはcapture_lab benchmarkの--integer-body-peaksを指定する。バックアップbefore-width-subbin-20260912.zipあり。
+戻す場合はrun-avatar.ps1の-IntegerBodyPeaks、またはtanakacap benchmarkの--integer-body-peaksを指定する。バックアップbefore-width-subbin-20260912.zipあり。

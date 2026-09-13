@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.head_region import HeadRegionTracker, crop_for
+from tanakacap.head_region import HeadRegionTracker, crop_for
 
 SHAPE = (720,1280,3)
 BOX = np.array([500.,200.,140.,160.])
@@ -41,8 +41,8 @@ def test_crop_preserves_square_near_frame_edge():
 
 
 def test_auto_loop_loss_packets_and_no_log(monkeypatch):
-    from capture_lab import head_only as app
-    from capture_lab import __main__ as cli
+    from tanakacap import head_only as app
+    from tanakacap import __main__ as cli
     import sys
     packets=[]
     class Model:
@@ -75,7 +75,7 @@ def test_auto_loop_loss_packets_and_no_log(monkeypatch):
     monkeypatch.setattr(app,'HeadRegionDetector',Detector)
     monkeypatch.setattr(app,'LocalSender',Sender)
     monkeypatch.setattr(app.cv2,'VideoCapture',lambda _:Video())
-    monkeypatch.setattr(sys,'argv',['capture_lab','benchmark','--source','video','--video','dummy',
+    monkeypatch.setattr(sys,'argv',['tanakacap','benchmark','--source','video','--video','dummy',
         '--head-only','--no-log','--frames','16','--warmup','0','--unity-port','39549'])
     cli.main()
     assert packets[5]['headTracked'] and packets[-1]['headTracked']

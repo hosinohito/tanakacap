@@ -4,10 +4,10 @@
 
 ## 使い方
 
-1. 通常はデスクトップtanakacap-test.batで起動。アプリは組込みアバターではなくbuilds/lab/avatars/haolan.tcapを読む。
-2. 別ファイルはアプリでF5→パス入力→Load avatar。起動時はrun-avatar-lab.ps1 -Avatar ファイル、Player単体は--avatar ファイルでも選択可能。
+1. 通常はデスクトップtanakacap-test.batで起動。アプリは組込みアバターではなくbuilds/player/avatars/haolan.tcapを読む。
+2. 別ファイルはアプリでF5→パス入力→Load avatar。起動時はrun-avatar.ps1 -Avatar ファイル、Player単体は--avatar ファイルでも選択可能。
 3. OBSを次回起動するとSpout2 Captureが使える。送信元TanakaCap、Composite modeはPremultiplied Alphaを選ぶ。背景ソースを下へ置く。必要ならソースを画面へ合わせる。
-4. Unity側はbuilds/lab/TanakaCapExporter.unitypackageを導入し、アバタールートを選択→TanakaCap/Export selected avatar (HAOLAN profile)。現行はHAOLAN用表情プロファイルのみ。出力先には新しいファイル名を選ぶ。出力と同名の.report.jsonに省略機能と対象を記録する。
+4. Unity側はbuilds/player/TanakaCapExporter.unitypackageを導入し、アバタールートを選択→TanakaCap/Export selected avatar (HAOLAN profile)。現行はHAOLAN用表情プロファイルのみ。出力先には新しいファイル名を選ぶ。出力と同名の.report.jsonに省略機能と対象を記録する。
 
 書き出しと再生のUnityは2022.3.22f1/Windows64/Built-inを一致させる。VRCプロジェクト一般への導入互換性は別途検証が必要。Modular Avatar等のビルド時処理は未対応で、ロードできる未知スクリプトはエラーにする。VRC/欠損スクリプトはパス付き警告で省略する。PhysBoneは後続実装で設定の互換変換を追加済み。本家の動作一致は未確認で、範囲は[揺れ物の現仕様](SECONDARY_MOTION.md)を参照。
 
@@ -17,7 +17,7 @@
 
 Exporterは元のコピーだけを加工し、元Prefabや共有メッシュ/マテリアルを書き換えない。メッシュ・材質・BlendShape・Humanoid・Unity標準Constraintを保持。標準Constraintの汎用精度は別評価。ビルド時は原本依存hashの前後一致を検査する。生成物は新しいファイルで成功してから既存出力を.bakへ退避して置換する。失敗で有効な旧パッケージを先に消さない。
 
-BuildLabは書き出し後にシーンのアバターを削除し、Loaderだけを置く。カメラ構図/照明はHAOLANで準備した値を保持。Playerのシーンにアバターを直接組み込まない。カメラ/表情の他アバターへの一般化、UI整備は残件。
+BuildPlayerは書き出し後にシーンのアバターを削除し、Loaderだけを置く。カメラ構図/照明はHAOLANで準備した値を保持。Playerのシーンにアバターを直接組み込まない。カメラ/表情の他アバターへの一般化、UI整備は残件。
 
 ## 検証結果
 

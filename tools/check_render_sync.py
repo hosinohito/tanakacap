@@ -15,7 +15,7 @@ def main():
         probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as status, socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as sender:
         status.bind(('127.0.0.1',0));status.setblocking(False)
-        process=subprocess.Popen([str(ROOT/'builds/lab/TanakaCap.exe'),'-batchmode','--render-sync',
+        process=subprocess.Popen([str(ROOT/'builds/player/TanakaCap.exe'),'-batchmode','--render-sync',
             '--port',str(port),'--ui-status-port',str(status.getsockname()[1]),
             '--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
             '--use-demo-shape-keys','-logFile',str(out/'player.log')],creationflags=subprocess.CREATE_NO_WINDOW)

@@ -21,7 +21,7 @@
 
 ## 推論系
 
-モデルURLとハッシュはmodels/catalog.jsonおよび各model.receipt.json、Python依存はrequirements-lab.lock.txtに記録。RTMW・DWPose・YOLOXは比較用であり、製品同梱時の重み・学習データ・ランタイムの条件確認は未完了。
+モデルURLとハッシュはmodels/catalog.jsonおよび各model.receipt.json、Python依存はrequirements.lock.txtに記録。RTMW・DWPose・YOLOXは比較用であり、製品同梱時の重み・学習データ・ランタイムの条件確認は未完了。
 
 規約の読み出しだけにpypdf 6.18.0を追加導入した。アプリ・キャプチャ実行には不要。
 
@@ -49,7 +49,7 @@
 
 ## 標準顔幾何点（2026-09-12）
 
-Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。capture_lab/data/face_template.jsonに出典URL/SHA256と近似対応の注記、face_template.LICENSEにライセンス全文。頭ピッチと口角投影補正の幾何テンプレートで学習済み推論モデルではない。詳細docs/HEAD_PITCH_MOUTH.md。
+Google MediaPipe canonical_face_model.objの29点を抽出、Apache-2.0。tanakacap/data/face_template.jsonに出典URL/SHA256と近似対応の注記、face_template.LICENSEにライセンス全文。頭ピッチと口角投影補正の幾何テンプレートで学習済み推論モデルではない。詳細docs/HEAD_PITCH_MOUTH.md。
 
 
 ## 2026-09-12 RTMW-X 2D比較候補

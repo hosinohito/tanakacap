@@ -5,7 +5,7 @@ from pathlib import Path
 from collections import Counter
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from capture_lab.arm_width import width_eligibility
+from tanakacap.arm_width import width_eligibility
 
 def audit(path):
     rows=[json.loads(s) for s in path.read_text(encoding='utf-8').splitlines()]

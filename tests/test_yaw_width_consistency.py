@@ -1,4 +1,4 @@
-from capture_lab.body3d import BodyRetarget
+from tanakacap.body3d import BodyRetarget
 from test_body3d import body,packet
 
 

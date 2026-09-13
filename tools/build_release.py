@@ -41,7 +41,7 @@ def run(version,publishable=False):
     for name in ('TanakaCap.exe','UnityPlayer.dll','UnityCrashHandler64.exe'):copy(player/name,Path('app')/name)
     for name in ('TanakaCap_Data','MonoBleedingEdge'):tree(player/name,Path('app')/name)
     copy(player/'TanakaCapExporter.unitypackage','プラグイン/TanakaCapExporter.unitypackage')
-    tree(ROOT/'capture_lab','tanakacap',('__pycache__',))
+    tree(ROOT/'tanakacap','tanakacap',('__pycache__',))
     for name in ('tracking-settings.json','models/catalog.json','docs/ui-part-costs.json'):copy(ROOT/name,name)
     copy(ROOT/'docs/USER_GUIDE.md','使い方.md')
     copy(ROOT/'release/THIRD_PARTY.md','ライセンス/README.md')
@@ -54,7 +54,7 @@ def run(version,publishable=False):
     base=Path(sys.base_prefix)
     for name in ('python.exe','pythonw.exe','python3.dll','python311.dll','vcruntime140.dll','vcruntime140_1.dll','LICENSE.txt'):copy(base/name,Path('runtime')/name)
     for name in ('Lib','DLLs','tcl'):tree(base/name,Path('runtime')/name,('site-packages','test','tests','idlelib','ensurepip','__pycache__'))
-    locked=dict(line.strip().split('==',1) for line in (ROOT/'requirements-lab.lock.txt').read_text(encoding='utf-8-sig').splitlines() if '==' in line)
+    locked=dict(line.strip().split('==',1) for line in (ROOT/'requirements.lock.txt').read_text(encoding='utf-8-sig').splitlines() if '==' in line)
     normalize=lambda name:re.sub(r'[-_.]+','-',name).lower()
     locked={normalize(k):v for k,v in locked.items()}
     packages=[]
@@ -81,15 +81,15 @@ def run(version,publishable=False):
             if p.suffix=='.json' or 'license' in p.name.lower():copy(p,Path('models')/name/p.name)
     for name in config['root_models']:copy(ROOT/'models'/name,Path('models')/name)
     for name in ('PROCEDURAL_MOTION_LICENSE.txt','THIRD_PARTY.md','HEAD_MODEL_LICENSE.txt'):
-        p=ROOT/'docs'/name if (ROOT/'docs'/name).exists() else ROOT/'builds/lab'/name
+        p=ROOT/'docs'/name if (ROOT/'docs'/name).exists() else ROOT/'builds/player'/name
         if p.exists():copy(p,Path('ライセンス')/name)
     copy(base/'LICENSE.txt','ライセンス/Python.txt')
     if (ROOT/'LICENSE').exists():copy(ROOT/'LICENSE','ライセンス/TanakaCap.txt')
-    for p in (ROOT/'capture_lab/data').glob('*LICENSE*'):copy(p,Path('ライセンス')/p.name)
+    for p in (ROOT/'tanakacap/data').glob('*LICENSE*'):copy(p,Path('ライセンス')/p.name)
     for name,path in [('lilToon','unity/TanakaCap/Packages/jp.lilxyzw.liltoon/LICENSE'),('KlakSpout','unity/TanakaCap/Packages/jp.keijiro.klak.spout/LICENSE')]:
         if (ROOT/path).exists():copy(ROOT/path,Path('ライセンス')/(name+'.txt'))
     (stage/'avatars').mkdir()
-    ui=dict(avatar=str(Path('avatars/avatar.tcap')),camera=0)
+    ui=json.loads((ROOT/'ui-settings.example.json').read_text(encoding='utf-8'))
     (stage/'ui-settings.json').write_text(json.dumps(ui),encoding='utf-8')
     (stage/'TanakaCap.bat').write_text('@echo off\ncd /d "%~dp0"\nset PYTHONNOUSERSITE=1\nset PYTHONPATH=%~dp0\nstart "" "%~dp0runtime\\pythonw.exe" -m tanakacap.control_panel\n',encoding='ascii')
     (stage/'release-status.json').write_text(json.dumps(dict(version=version,publishable=publishable,open_license_items=config['open_license_items'],packages=packages),ensure_ascii=False,indent=2),encoding='utf-8')

@@ -54,8 +54,8 @@ Write-Host "Observation block: $ObservationBlock (1=original, 3=three-frame aver
 Push-Location $PSScriptRoot
 $taskPlayer = $null
 try {
-    $taskExe = Join-Path $PSScriptRoot 'builds\lab\TanakaCap.exe'
-    if (-not (Test-Path -LiteralPath $taskExe)) { throw 'Run build-unity-lab.ps1 first.' }
+    $taskExe = Join-Path $PSScriptRoot 'builds\player\TanakaCap.exe'
+    if (-not (Test-Path -LiteralPath $taskExe)) { throw 'Run build-player.ps1 first.' }
     # This is the interactive avatar window requested by this launcher.
     $taskGazeSettings=Get-Content (Join-Path $PSScriptRoot 'tracking-settings.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     if (-not $TrackingMode) { $TrackingMode=$taskGazeSettings.tracking_mode }
@@ -155,7 +155,7 @@ try {
     elseif ($taskGazeSettings.shoulder_yaw_mode) { $taskExtra += @('--shoulder-yaw-mode',$taskGazeSettings.shoulder_yaw_mode) }
     if ($taskGazeSettings.arm_depth_mode) { $taskExtra += @('--arm-depth-mode',$taskGazeSettings.arm_depth_mode) }
     if ($taskGazeSettings.gaze_reference) { $taskExtra += @('--gaze-reference',$taskGazeSettings.gaze_reference) }
-    & '.venv\Scripts\python.exe' -m capture_lab benchmark --source camera --camera $Camera --model $Model --frames $Frames --unity-port 39540 --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
+    & '.venv\Scripts\python.exe' -m tanakacap benchmark --source camera --camera $Camera --model $Model --frames $Frames --unity-port 39540 --observation-block $ObservationBlock --observation-stride $ObservationStride @taskExtra
     if ($LASTEXITCODE -ne 0) { throw "Capture exited with code $LASTEXITCODE" }
 } finally {
     if ($taskPlayer -and -not $taskPlayer.HasExited) { $null = $taskPlayer.CloseMainWindow() }

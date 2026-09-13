@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from capture_lab.head_pose_size import SizeHeadPose
-from capture_lab.head_pose import HeadPose
+from tanakacap.head_pose_size import SizeHeadPose
+from tanakacap.head_pose import HeadPose
 from test_head_pose import projected
 
 
@@ -40,7 +40,7 @@ def test_signed_pitch_and_loss_hold():
 
 def test_pnp_failure_cannot_drive_size_angles(monkeypatch):
     model, packet = calibrated()
-    monkeypatch.setattr('capture_lab.head_pose.fit_pose', lambda *args: None)
+    monkeypatch.setattr('tanakacap.head_pose.fit_pose', lambda *args: None)
     p, s = projected(pitch=15)
     model.update(p, s, packet, (1280,720))
     assert packet['headPitch'] > 5
@@ -60,7 +60,7 @@ def test_expression_channels_equal_pnp():
 
 
 def test_ui_routes_trial_and_reversion():
-    from capture_lab.control_panel import DEFAULT, commands
+    from tanakacap.control_panel import DEFAULT, commands
     for mode in ('size2d','pnp'):
         _, infer = commands(dict(DEFAULT, head_pose_mode=mode), 39500, 39501)
         assert infer[infer.index('--head-pose-mode')+1] == mode

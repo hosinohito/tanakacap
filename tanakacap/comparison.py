@@ -27,7 +27,7 @@ def line(stream,value):stream.write(json.dumps(clean(value),ensure_ascii=False,a
 
 def fingerprint(settings):
     files=list(Path(__file__).parent.glob('*.py'))+list((Path(__file__).parent/'data').glob('*'))+list((ROOT/'unity/TanakaCap/Assets/TanakaCap').rglob('*.cs'))
-    files += [ROOT/'builds/lab/TanakaCap.exe',ROOT/'builds/lab/TanakaCap_Data/Managed/Assembly-CSharp.dll']
+    files += [ROOT/'builds/player/TanakaCap.exe',ROOT/'builds/player/TanakaCap_Data/Managed/Assembly-CSharp.dll']
     hashes={str(p.relative_to(ROOT)):sha256(p) for p in sorted(files) if p.is_file()}
     payload={'settings':settings,'files':hashes}
     return {'sha256':hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest(),**payload}

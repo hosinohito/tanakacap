@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from capture_lab.face_distance import FaceDistance
+from tanakacap.face_distance import FaceDistance
 from test_face_scale import add_face
 from test_body3d import body
 

@@ -1,7 +1,7 @@
 import numpy as np
-from capture_lab.gaze import eye_crop, iris_offset, contour_offset
-from capture_lab.gaze import IrisGaze
-from capture_lab.motion_gate import DirectionGate
+from tanakacap.gaze import eye_crop, iris_offset, contour_offset
+from tanakacap.gaze import IrisGaze
+from tanakacap.motion_gate import DirectionGate
 import json
 
 

@@ -11,7 +11,7 @@
 - D：公式YOLOX-tiny HumanArt416を追加。旧M640との切替であり、RTMW-L/RTMW3D/虹彩モデルは交換しない。追加依存版は不要。モデル重みは選択時取得でGit/Playerに含めない。
 - 胴体停止案：現行RTMW3Dは肩・肘・手首・指を共同推論している。手を維持してモデルだけを停止する独立構成ではないため、今回の高速化として採用しない。
 
-`run-avatar-lab.ps1`はtracking-settings.jsonのinference_mode / detector_interval / detector_modelを使う。引数で上書き可能。`-InferenceMode run -DetectorInterval 1 -DetectorModel yolox-m-human`で従来へ戻る。Python CLIの既定は再現性のためrun/1/Mを維持。デスクトップtestは全部ONの記録付き、liveは非記録無期限、head-only/motionは維持。
+`run-avatar.ps1`はtracking-settings.jsonのinference_mode / detector_interval / detector_modelを使う。引数で上書き可能。`-InferenceMode run -DetectorInterval 1 -DetectorModel yolox-m-human`で従来へ戻る。Python CLIの既定は再現性のためrun/1/Mを維持。デスクトップtestは全部ONの記録付き、liveは非記録無期限、head-only/motionは維持。
 
 ## 単独録画の処理時間
 

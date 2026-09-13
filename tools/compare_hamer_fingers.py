@@ -4,9 +4,9 @@ from pathlib import Path
 from collections import Counter,defaultdict
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from capture_lab.fingers import FingerTracker
-from capture_lab.visibility import screen_visibility
-from capture_lab.comparison import dump,line
+from tanakacap.fingers import FingerTracker
+from tanakacap.visibility import screen_visibility
+from tanakacap.comparison import dump,line
 
 def run(root,candidate,output):
  report=json.loads((root/'report.json').read_text());other=json.loads((candidate/'report.json').read_text())

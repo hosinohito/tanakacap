@@ -1,5 +1,5 @@
 import numpy as np
-from capture_lab.body_geometry import SupportedLengths,DepthAssist,constrain_front_arm
+from tanakacap.body_geometry import SupportedLengths,DepthAssist,constrain_front_arm
 
 
 def test_ten_frames_required_and_shorter_values_never_replace_length():

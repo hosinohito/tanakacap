@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from capture_lab.inference import local_peak_positions,decode_simcc3d
-from capture_lab.arm_width import measure_arm_widths
+from tanakacap.inference import local_peak_positions,decode_simcc3d
+from tanakacap.arm_width import measure_arm_widths
 
 
 def test_fractional_peak_has_no_quantization_step_and_does_not_average_modes():
