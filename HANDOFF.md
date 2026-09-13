@@ -1,5 +1,9 @@
 # 引き継ぎ：現在の状態
 
+2026-09-13最新：NVIDIA・FFmpeg・Unity Personalの配布条件を確認。詳細はdocs/RUNTIME_LICENSE_DECISIONS.md。cuDNN9/nvJitLinkは公式同版ZIPのLICENSEと現行11 DLLのSHA一致で解消。FFmpegは実DLL対応source commitを固定し、不足していたOpenCV/OpenH264ソースを補った約161 MBの対応ソースZIPをビルド同梱。UnityはPersonal申告、現行§2.2とWindows Mono Player専用TPNで確認、スプラッシュ維持。通知20件・DLL/ソースSHA監査を追加。open_license_itemsは空、publication_approved=falseは最終出荷ゲートとして維持。モデル・追跡・DLLの挙動は変更なし。
+検証完了：review7を既存release-playerから再梱包（Unity再ビルドなし）。part01=2,084,961,237 bytes、part02=162,028,059 bytes、計12,918ファイル。双方2 GiB未満・CRC合格。通知20/NVIDIA DLL20/全binary194、Unity runtime3のSHA、FFmpeg/source lock照合エラー0。同梱Python起動成功、FFmpeg不一致を模擬した拒否検査成功。resultsではなくbuilds/releases/0.1.0-review7/{release-report,license-audit}.jsonが検査結果。Playerの新規動作品質を今回確認したものではない。oversize-local-only.zipは公開対象外。
+
+
 2026-09-13最新：モデル3残件を解消。HumanArt版YOLOX-MとRTMW-LはRTMW作者Tau-JのHugging Face保管庫でApache-2.0、ZIPのSHAがOpenMMLab取得receiptと一致。頭MobileNetV3 smallは作者の重み別MIT宣言と原本SHA一致。公開条件に基づき商用利用・再配布可へ更新、ライセンス理由のモデル移行は不要。docs/MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.jsonに固定版/原文SHA/モデル対応、results/model-license-evidenceに原文。collectorで6資料/3モデル照合成功。release/config.jsonのモデル2項目を閉じ、NVIDIA/FFmpeg/Unityの3残件とpublication_approved=falseは維持。実行モデル・配布方式・ZIPは変更なし。次はモデル比較の必須化でなく、残るランタイム監査。外部問い合わせ/公開なし。
 
 2026-09-13：自動取得方式と頭・顔の代替を調査、docs/MODEL_DOWNLOAD_OPTIONS.md。初回に提供元から版/SHA固定で取得する案は未採用・未実装。利用制限は別取得でも残る。現行頭専用は作者の重み一覧にMITの追加根拠を発見（現行実物とのSHA照合は未完）。Face Landmarker/Face MeshのApache表記付きONNX移植が顔専用RTMW-L代替候補。全部ONのRTMW3D顔点共有とは区別し、別推論追加で軽くなるとは扱わない。モデル交換・公開判定変更なし。

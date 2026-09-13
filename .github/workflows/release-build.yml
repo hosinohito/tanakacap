@@ -24,6 +24,8 @@ jobs:
           uv pip sync --python .venv/Scripts/python.exe requirements-lab.lock.txt
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           .venv/Scripts/python.exe tools/prepare_release_ci.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .venv/Scripts/python.exe tools/prepare_ffmpeg_sources.py
       - name: Build and verify
         shell: pwsh
         env:

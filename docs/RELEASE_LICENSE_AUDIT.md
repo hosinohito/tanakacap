@@ -1,5 +1,7 @@
 # 実配布物のライセンス監査（2026-09-13）
 
+**最新判定：NVIDIA・FFmpeg・Unity Personalの3残件も解消。[確定表と原本照合](RUNTIME_LICENSE_DECISIONS.md)を参照。以下の3残件・確認必要という記述は今回の追加監査より前の履歴であり、現在の停止理由ではない。review6以前のZIPは新通知と対応ソースを含まない。**
+
 最新再監査：モデルについて残していたHumanArt版YOLOX-M、RTMW-L、頭専用MobileNetV3 smallは、作者のモデル保管庫の公開ライセンスと現行原本の同一性を確認し、商用利用・再配布可へ更新。[3モードの表と固定証拠](MODEL_LICENSE_DECISIONS.md)。以前の「モデル移行が必要」という提案は撤回し、代替は任意比較とする。製品全体にはNVIDIA、FFmpeg、Unityの3残件が残る。
 
 ## 代替候補の確認（許諾確認前の提案、未採用）

@@ -1,8 +1,27 @@
 {
   "asset_limit_bytes": 2147483648,
-  "models": ["rtmw3d-x-384", "rtmw-l-384", "yolox-m-human"],
-  "root_models": ["iris-landmark.onnx", "iris-landmark.LICENSE", "head-region-yunet.onnx", "head-mobilenetv3-small.onnx"],
-  "excluded_distributions": ["pytest", "pluggy", "iniconfig", "pygments", "colorama", "pip", "setuptools", "wheel", "pypdf"],
+  "models": [
+    "rtmw3d-x-384",
+    "rtmw-l-384",
+    "yolox-m-human"
+  ],
+  "root_models": [
+    "iris-landmark.onnx",
+    "iris-landmark.LICENSE",
+    "head-region-yunet.onnx",
+    "head-mobilenetv3-small.onnx"
+  ],
+  "excluded_distributions": [
+    "pytest",
+    "pluggy",
+    "iniconfig",
+    "pygments",
+    "colorama",
+    "pip",
+    "setuptools",
+    "wheel",
+    "pypdf"
+  ],
   "publication_approved": false,
-  "open_license_items": ["NVIDIA実wheel契約：cuDNN9 DLLと旧cudnn64_7表記、nvJitLinkの再配布根拠", "OpenCV同梱FFmpegの正確な対応ソース・ビルド手順の提供", "Unity適用契約とプラン条件、ネイティブ内部部品の通知・ソース対応の最終照合"]
+  "open_license_items": []
 }

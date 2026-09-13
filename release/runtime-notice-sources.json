@@ -1,0 +1,32 @@
+[
+  {
+    "file": "NVIDIA-cuDNN-9.26-LICENSE.txt",
+    "source": "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/LICENSE.txt",
+    "sha256": "295a1b7118d3417f5d6a943e5f87b59e2a0631fb277129c3b15dee6248adc7cf"
+  },
+  {
+    "file": "NVIDIA-CUDA-13.4-LICENSE.txt",
+    "source": "https://developer.download.nvidia.com/compute/cuda/redist/libnvjitlink/LICENSE.txt",
+    "sha256": "088381bc2d891e719a2a9398645b00bb45f3b24231473a8283ac7e3e66b8a028"
+  },
+  {
+    "file": "Unity-Player-Windows-Mono-2022.3.22f1.pdf",
+    "source": "https://storage.googleapis.com/live-platform-resources-prd/templates/assets/Player_Windows_Mono_2022_3_22f1_97d2e04a06/Player_Windows_Mono_2022_3_22f1_97d2e04a06.pdf",
+    "sha256": "e0ac9ec5052c1f98c180c099232fce9b76c3cff6241f82f37bbd27fc10f5adc7"
+  },
+  {
+    "file": "Unity-Editor-Software-Terms-2026-06-30.html",
+    "source": "https://unity.com/legal/editor-terms-of-service/software",
+    "sha256": "7356b549f4fc77d6f119756e9d0226081e19ce1fbb175547c197631cc6b20b1d"
+  },
+  {
+    "file": "Wine-d3d11on12.idl",
+    "source": "https://raw.githubusercontent.com/wine-mirror/wine/wine-6.4/include/d3d11on12.idl",
+    "sha256": "80f430ec0b9d87105c74d933055026de2db2f864f08c3e552aacc95a4d01dce3"
+  },
+  {
+    "file": "Wine-LGPL-2.1.txt",
+    "source": "https://raw.githubusercontent.com/wine-mirror/wine/wine-6.4/COPYING.LIB",
+    "sha256": "e237fa56668030e928551ddd60f05df5fe957f75eab874bbd017e085ed722e7c"
+  }
+]

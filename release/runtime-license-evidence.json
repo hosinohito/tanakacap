@@ -1,0 +1,167 @@
+{
+  "checked_date": "2026-09-13",
+  "nvidia_official_identity": [
+    {
+      "component": "libnvjitlink",
+      "version": "13.4.52",
+      "manifest": "https://developer.download.nvidia.com/compute/cuda/redist/redistrib_13.4.1.json",
+      "archive": "https://developer.download.nvidia.com/compute/cuda/redist/libnvjitlink/windows-x86_64/libnvjitlink-windows-x86_64-13.4.52-archive.zip",
+      "archive_sha256": "6888654b437de57775f23fc00fb51456399e22d3f795e30a9b6ce6f6ee787f8e",
+      "matches": [
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cu13/bin/x86_64/nvJitLink_130_0.dll",
+          "sha256": "3cba760a61417bb376418b5216abe8afd5378fd638100bba0c16d868c4108346"
+        }
+      ]
+    },
+    {
+      "component": "cudnn",
+      "version": "9.26.0.51",
+      "manifest": "https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_9.26.0.json",
+      "archive": "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.26.0.51_cuda13-archive.zip",
+      "archive_sha256": "f8610d403685c918e690de5b1ec68da0b4b1358a6be62627591362b7eb811644",
+      "matches": [
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn64_9.dll",
+          "sha256": "1a0728a6bd5c704bcdd1347cc6127fb6085fce773aaf9f1824281e9846c7b090"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_adv64_9.dll",
+          "sha256": "235134b2f410569d3517da2df3cccc5bc8b3ed8466bb49c2503702598d2bf12a"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_cnn64_9.dll",
+          "sha256": "f479a762f5e8b10ae737a8a279cef630e41ce4d4b32618f1fd9f943f61ff18d5"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_engines_precompiled64_9.dll",
+          "sha256": "c289ff5cab82e2be6a2ad116f966f4c655c94e11731e146bc3963d809eb46fc8"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_engines_runtime_compiled64_9.dll",
+          "sha256": "30a222f73ea8b89c216cc5384080addff3632a77ae6eed0d1eaa87fb57d9b184"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_engines_tensor_ir64_9.dll",
+          "sha256": "b97ef392f51923ee8dc616dca596fbc6f979281b135eb76991e8cadd43c6294f"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_ext64_9.dll",
+          "sha256": "ba3a74ab3996caee8ca893825db87b27e97f00ab14a13f7e985fd2ebc7683ea0"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_graph64_9.dll",
+          "sha256": "8f98ea372de52da536559b538f84739b0f1c50ae7f32a07e7fd111f4938fb641"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_heuristic64_9.dll",
+          "sha256": "7ff562ba7530ff390575abd62794338565d397cd5627760bb94028e6d256012d"
+        },
+        {
+          "path": ".venv/Lib/site-packages/nvidia/cudnn/bin/cudnn_ops64_9.dll",
+          "sha256": "bf813ebb0a8c1e09dd95499ac701b5e45e3d066d5624b2716a289ed5a2ca1c28"
+        }
+      ]
+    }
+  ],
+  "nvidia_runtime": [
+    {
+      "path": "nvidia/cu13/bin/x86_64/cublas64_13.dll",
+      "sha256": "1119dbca0a808e0c8850bb4221e330daf0b5ddb348d62d37b6ac533854723df9"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/cublasLt64_13.dll",
+      "sha256": "0f5bc315fef706b5626248ebd74e8a48a9e82fa2f0cad38330f5f70984913107"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/cudart64_13.dll",
+      "sha256": "05bfafcb97bd53b0089568a96e1e5bd6921637bd0853ff7f5342bd31a6a16890"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/cufft64_12.dll",
+      "sha256": "4599bb1399b1047084e8fb792fd1ab937ce28c5c09f562bd670cc66ee845cccb"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/cufftw64_12.dll",
+      "sha256": "622ab165ff80375c7d83fd5b1a5ee570a5de127a0a4e1fdd759c8f2bf4f9cb9b"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/curand64_10.dll",
+      "sha256": "2e04701a9370e84eb60777e25d542e66d07086d452d5a5925f6a503468ffb208"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/nvblas64_13.dll",
+      "sha256": "541042866f4ee243de298ddd4212ac64bea9502e3503dc4ca5c210ae10cad262"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/nvJitLink_130_0.dll",
+      "sha256": "3cba760a61417bb376418b5216abe8afd5378fd638100bba0c16d868c4108346"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/nvrtc-builtins64_134.dll",
+      "sha256": "b49089ced9cde0b6400aeb009b68aff3030fb76b99abc13e9be515a40648f64e"
+    },
+    {
+      "path": "nvidia/cu13/bin/x86_64/nvrtc64_130_0.dll",
+      "sha256": "bbc235709274cacd9e7d0fff4892d24ba4256c4bb2543288299d60454b6515f2"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn64_9.dll",
+      "sha256": "1a0728a6bd5c704bcdd1347cc6127fb6085fce773aaf9f1824281e9846c7b090"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_adv64_9.dll",
+      "sha256": "235134b2f410569d3517da2df3cccc5bc8b3ed8466bb49c2503702598d2bf12a"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_cnn64_9.dll",
+      "sha256": "f479a762f5e8b10ae737a8a279cef630e41ce4d4b32618f1fd9f943f61ff18d5"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_engines_precompiled64_9.dll",
+      "sha256": "c289ff5cab82e2be6a2ad116f966f4c655c94e11731e146bc3963d809eb46fc8"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_engines_runtime_compiled64_9.dll",
+      "sha256": "30a222f73ea8b89c216cc5384080addff3632a77ae6eed0d1eaa87fb57d9b184"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_engines_tensor_ir64_9.dll",
+      "sha256": "b97ef392f51923ee8dc616dca596fbc6f979281b135eb76991e8cadd43c6294f"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_ext64_9.dll",
+      "sha256": "ba3a74ab3996caee8ca893825db87b27e97f00ab14a13f7e985fd2ebc7683ea0"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_graph64_9.dll",
+      "sha256": "8f98ea372de52da536559b538f84739b0f1c50ae7f32a07e7fd111f4938fb641"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_heuristic64_9.dll",
+      "sha256": "7ff562ba7530ff390575abd62794338565d397cd5627760bb94028e6d256012d"
+    },
+    {
+      "path": "nvidia/cudnn/bin/cudnn_ops64_9.dll",
+      "sha256": "bf813ebb0a8c1e09dd95499ac701b5e45e3d066d5624b2716a289ed5a2ca1c28"
+    }
+  ],
+  "ffmpeg_source_bundle_sha256": "5663d7d14403db8f4f890e3ada265406191db05aa7018be1b9537727294689b6",
+  "unity_plan": "Personal",
+  "unity_version": "2022.3.22f1",
+  "unity_splash": true,
+  "unity_runtime": [
+    {
+      "path": "builds/lab/UnityPlayer.dll",
+      "sha256": "c2871ee449bef29e658380bf47f1a23839abde7d1e4dcb9bc1ada7a93ae08da6"
+    },
+    {
+      "path": "builds/lab/MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll",
+      "sha256": "c35a508da949fc3ed0cfa2cc9882043ed52e9fef007a00d3e228419e104cf5e7"
+    },
+    {
+      "path": "builds/lab/MonoBleedingEdge/EmbedRuntime/MonoPosixHelper.dll",
+      "sha256": "e9886e9e5dfdbdb13367431aca8c879b2573f8f1dafae4cd2107d35b42f45679"
+    }
+  ]
+}

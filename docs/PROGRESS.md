@@ -1134,3 +1134,12 @@ MODEL_DOWNLOAD_OPTIONSに自動取得案と代替調査を記録。現行頭専�
 MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.jsonに固定した根拠、原文はresults/model-license-evidence。再取得tools/collect_model_license_evidence.py。モデル通知/既存監査/HEAD_ONLY/README/引継ぎを更新。release/config.jsonのモデル2項目を閉じるがNVIDIA/FFmpeg/Unityの3残件で公開ゲートを維持。モデル本体・通常起動・初回取得方式・ZIPは変更せず、外部問い合わせ/公開/実カメラ検証なし。
 
 既存review6の機械監査を再実行し、通知14件・NVIDIA20 DLL・全194バイナリ・モデルlock照合でerrors=[]、publication_approved=false。results/model-license-evidence/review6-audit.json。古いZIP内の説明文を更新した検証ではない。新しい表・条件は次回ビルドから反映する。
+
+
+## 2026-09-13 NVIDIA・FFmpeg・Unityの配布条件確定
+
+2026-09-13最新：NVIDIA・FFmpeg・Unity Personalの配布条件を確認。詳細はdocs/RUNTIME_LICENSE_DECISIONS.md。cuDNN9/nvJitLinkは公式同版ZIPのLICENSEと現行11 DLLのSHA一致で解消。FFmpegは実DLL対応source commitを固定し、不足していたOpenCV/OpenH264ソースを補った約161 MBの対応ソースZIPをビルド同梱。UnityはPersonal申告、現行§2.2とWindows Mono Player専用TPNで確認、スプラッシュ維持。通知20件・DLL/ソースSHA監査を追加。open_license_itemsは空、publication_approved=falseは最終出荷ゲートとして維持。モデル・追跡・DLLの挙動は変更なし。
+
+外部問い合わせ・GitHub公開・実カメラ試験なし。FFmpegソース再ビルド未実施。公式の空ヘッダーtarを完全ソースで補完し、原本は保持。Personalの財務適格性は利用者責任で、財務資料の検査ではない。
+
+検証完了：review7を既存release-playerから再梱包（Unity再ビルドなし）。part01=2,084,961,237 bytes、part02=162,028,059 bytes、計12,918ファイル。双方2 GiB未満・CRC合格。通知20/NVIDIA DLL20/全binary194、Unity runtime3のSHA、FFmpeg/source lock照合エラー0。同梱Python起動成功、FFmpeg不一致を模擬した拒否検査成功。resultsではなくbuilds/releases/0.1.0-review7/{release-report,license-audit}.jsonが検査結果。Playerの新規動作品質を今回確認したものではない。oversize-local-only.zipは公開対象外。
