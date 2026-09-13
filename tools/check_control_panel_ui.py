@@ -34,6 +34,20 @@ def run():
                 assert widgets('保存して開始') and not widgets('保存して適用（実行中は再起動）')
                 assert widgets('終了')[0].pack_info()['side']=='right'
                 assert len(widgets('規定値'))==8
+                from tkinter import ttk, Canvas
+                notebook=next(w for w in descendants(window) if isinstance(w,ttk.Notebook))
+                notebook.select(3);window.geometry('770x730');window.update()
+                pane=window.nametowidget(notebook.select())
+                canvas=next(w for w in descendants(pane) if isinstance(w,Canvas))
+                combo=next(w for w in descendants(pane) if isinstance(w,ttk.Combobox))
+                original=combo.get();before=canvas.yview()
+                combo.event_generate('<MouseWheel>',delta=-120);window.update_idletasks()
+                assert canvas.yview()[0]>before[0] and combo.get()==original
+                canvas.yview_moveto(0)
+                label=next(w for w in descendants(pane) if isinstance(w,ttk.Label))
+                label.event_generate('<MouseWheel>',delta=-120);window.update_idletasks()
+                assert canvas.yview()[0]>0
+                notebook.select(0);window.update()
                 variables['source'].set('camera');window.update_idletasks()
                 assert not widgets('録画のパス')[0].grid_info()
                 variables['source'].set('video');window.update_idletasks()

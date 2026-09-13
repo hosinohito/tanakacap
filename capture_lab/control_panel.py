@@ -206,7 +206,7 @@ def main(test_hook=None):
     metrics=ttk.Label(outer,text='停止中',style='Metric.TLabel');metrics.pack(anchor='w',pady=8)
     state=ttk.Label(outer,text='');state.pack(anchor='w')
     tabs=ttk.Notebook(outer);tabs.pack(fill='both',expand=True,pady=12)
-    frames={}
+    frames={};scroll_panes=[]
     for name in ('入力・推論','描画・OBS','表情','実験'):
         pane=ttk.Frame(tabs);tabs.add(pane,text=name)
         canvas=tk.Canvas(pane,highlightthickness=0,background=style.lookup('TFrame','background'))
@@ -216,7 +216,7 @@ def main(test_hook=None):
         item=canvas.create_window((0,0),window=frame,anchor='nw')
         frame.bind('<Configure>',lambda event,c=canvas:c.configure(scrollregion=c.bbox('all')))
         canvas.bind('<Configure>',lambda event,c=canvas,i=item:c.itemconfigure(i,width=event.width))
-        canvas.bind('<MouseWheel>',lambda event,c=canvas:c.yview_scroll(-int(event.delta/120),'units'))
+        scroll_panes.append((pane,canvas))
         frames[name]=frame
     display_names={'source':{'camera':'カメラ','video':'保存済み録画','motion':'デモモーション'},
                    'mode':MODES,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力（推論上限をつけて負荷を軽減できます）'},
@@ -354,6 +354,20 @@ def main(test_hook=None):
         nonlocal closing
         closing=True;stop()
     ttk.Button(buttons,text='終了',command=close).pack(side='right')
+    # Canvas bindings alone do not receive events over embedded entries/labels.
+    # Run before widget class bindings so a closed combobox does not change value.
+    for pane,canvas in scroll_panes:
+        tag='TanakaCapScroll'+str(canvas)
+        def wheel(event,c=canvas):
+            if event.delta and c.yview()!=(0.0,1.0):
+                steps=max(1,abs(int(event.delta/120)))
+                c.yview_scroll(-steps if event.delta>0 else steps,'units')
+            return 'break'
+        window.bind_class(tag,'<MouseWheel>',wheel)
+        def bind_subtree(widget,t=tag):
+            widget.bindtags((t,)+widget.bindtags())
+            for child in widget.winfo_children():bind_subtree(child,t)
+        bind_subtree(pane)
     window.protocol('WM_DELETE_WINDOW',close)
     def tick():
         nonlocal pending,was_running,last_error
