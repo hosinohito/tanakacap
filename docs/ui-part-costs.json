@@ -13,7 +13,14 @@
     },
     "detector": {
       "ms": 6.767945222640669,
-      "tenths": 4
+      "tenths": 4,
+      "reference_tenths": 4,
+      "reference_estimate": {
+        "total_ms": 16.266755167588247,
+        "fraction": 0.4160599426814944,
+        "total_source": "results/comparisons/cuda-precision/report.json: variants.CUDA-FP16.pipeline_ms.mean",
+        "method": "Historical detector mean held constant / recorded FP16 full pipeline mean. Approximate reference only; detector also changed to split CUDA Graph / FP16, so this is not a current measured share or OFF savings."
+      }
     }
   },
   "valid_for_current_configuration": false,
