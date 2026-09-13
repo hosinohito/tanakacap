@@ -38,9 +38,18 @@ def run():
                 variables['source'].set('video');window.update_idletasks()
                 assert widgets('録画のパス')[0].grid_info()
                 variables['rate'].set('60');window.update_idletasks()
-                assert not widgets('自由入力 fps / 同期時の上限')[0].grid_info()
+                assert not widgets('自由入力 fps')[0].grid_info()
+                variables['rate'].set('sync');window.update_idletasks()
+                assert not widgets('自由入力 fps')[0].grid_info()
                 variables['rate'].set('custom');window.update_idletasks()
-                assert widgets('自由入力 fps / 同期時の上限')[0].grid_info()
+                assert widgets('自由入力 fps')[0].grid_info()
+                from tkinter import ttk
+                combos=[w for w in descendants(window) if isinstance(w,ttk.Combobox)]
+                widths={str(w):w.winfo_reqwidth() for w in combos}
+                for key,values in [('source',['camera','video','motion']),('mode',['full','face_head','head_only']),('rate',['60','sync','custom'])]:
+                    for value in values:
+                        variables[key].set(value);window.update_idletasks()
+                        assert all(w.winfo_reqwidth()==widths[str(w)] for w in combos)
                 variables['preview'].set(False);window.update_idletasks()
                 assert not widgets('背景')[0].master.grid_info()
                 variables['preview'].set(True);window.update_idletasks()

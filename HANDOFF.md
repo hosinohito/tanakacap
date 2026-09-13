@@ -1,5 +1,13 @@
 # 引き継ぎ：現在の状態
 
+## 2026-09-13 — ライセンス実物監査と推論同期UI修正
+
+監査を実施しdocs/RELEASE_LICENSE_AUDIT.mdへ根拠・判断・残件を記録。本文14件をrelease/noticesに出所/SHA付きで追加、THIRD_PARTY/TERMSを同梱。build_release.pyにaudit_release_licenses.pyの検査を接続。NVIDIA .h122/.hpp14/.lib5を製品から除外、DLL20は不変。review5は2,085,247,898 bytes/CRC成功、合成虹彩CUDA381/CPU0確認。5残件はconfig.json：cuDNN9と旧wheel本文/nvJitLink、HumanArt YOLOX-M #3271未回答、RTMW-L/頭モデル適用範囲、OpenCV内部FFmpeg対応ソース、Unity適用契約/プラン/内部由来。禁止と未確認を混同しない。問い合わせ未送信。公開可ゲートは解除しない。
+
+追加UI要求：同期時はFPS入力なし、固定/自由fpsの残値を推論上限に使わない。入力欄はcustom時だけ。ラベル列/Combobox幅を固定。18 tests/実Tkモック合格。通常Player再ビルド済み、合成packet15/35Hz→14.93/34.00fps（results/render-sync-ui）。イベントループは上限240で、出力だけpacket同期。停止時10Hz維持は従来どおり。実カメラは開いていない。release6は最初sandbox licensing IPC失敗、通常権限の再実行でUnityビルド成功、review6梱包も成功：2,085,247,952 bytes/12,911 files、CRC/同梱Python/通知SHA成功。最新UI/Playerを含むローカルレビューZIP。公開許諾は保留。
+
+次：5残件の個別解消。NVIDIAは採用実配布版の正しい契約取得・整合確認、MMPose/頭重みの条件確認、OpenCV同梱DLLの対応ソースとビルド手順固定、Unity契約プランと内部通知の照合。モデル変更/外部連絡が必要になったら具体案を示す。既存UI/カメラ/追跡の実装は維持。
+
 2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
 
 

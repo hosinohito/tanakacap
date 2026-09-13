@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import zipfile
+from audit_release_licenses import audit
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -43,6 +44,9 @@ def run(version,publishable=False):
     tree(ROOT/'capture_lab','capture_lab',('__pycache__',))
     for name in ('tracking-settings.json','models/catalog.json','docs/ui-part-costs.json'):copy(ROOT/name,name)
     copy(ROOT/'docs/USER_GUIDE.md','使い方.md')
+    copy(ROOT/'release/THIRD_PARTY.md','ライセンス/README.md')
+    copy(ROOT/'release/THIRD_PARTY_TERMS.md','ライセンス/第三者部品の利用条件.md')
+    tree(ROOT/'release/notices','ライセンス/notices')
     base=Path(sys.base_prefix)
     for name in ('python.exe','pythonw.exe','python3.dll','python311.dll','vcruntime140.dll','vcruntime140_1.dll','LICENSE.txt'):copy(base/name,Path('runtime')/name)
     for name in ('Lib','DLLs','tcl'):tree(base/name,Path('runtime')/name,('site-packages','test','tests','idlelib','ensurepip','__pycache__'))
@@ -59,6 +63,10 @@ def run(version,publishable=False):
         for entry in dist.files or []:
             source=Path(dist.locate_file(entry)).resolve()
             if not source.is_relative_to(site) or not source.is_file() or source.suffix=='.pyc':continue
+            # NVIDIA SDK headers/import libraries are not needed by the prebuilt runtime.
+            # Retain dist-info (including original license) and the DLLs unchanged.
+            relative=source.relative_to(site)
+            if name.lower().startswith('nvidia-') and relative.parts[0]=='nvidia' and source.suffix.lower()!='.dll':continue
             copy(source,Path('runtime/Lib/site-packages')/source.relative_to(site))
             if any(word in source.name.lower() for word in ('license','licence','notice','copying')):
                 copy(source,Path('ライセンス/packages')/name/(sha(source)[:12]+'-'+source.name))
@@ -86,6 +94,9 @@ def run(version,publishable=False):
     result=subprocess.run([str(stage/'runtime/python.exe'),'-s','-c',code],cwd=stage,text=True,capture_output=True,encoding='utf-8',errors='replace')
     (output/'runtime-check.txt').write_text(result.stdout+result.stderr,encoding='utf-8')
     if result.returncode:raise RuntimeError('Portable runtime failed: '+result.stderr[-2000:])
+    license_report=audit(stage)
+    (output/'license-audit.json').write_text(json.dumps(license_report,ensure_ascii=False,indent=2),encoding='utf-8')
+    if license_report['mechanical_errors']:raise RuntimeError('Release license packaging check failed: '+str(license_report['mechanical_errors']))
     files=[p for p in sorted(stage.rglob('*')) if p.is_file() and '__pycache__' not in p.parts]
     manifest=[dict(path=p.relative_to(stage).as_posix(),size=p.stat().st_size,sha256=sha(p)) for p in files]
     m=stage/'manifest.json';m.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8');files.append(m)

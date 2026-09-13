@@ -62,15 +62,16 @@ def save_settings(values):
 
 def commands(config, port, status_port, player_pid=0):
     c=validate(config);tracking=json.loads((ROOT/'tracking-settings.json').read_text(encoding='utf-8'))
-    cap=c['fps'] if c['rate'] in ('sync','custom') else int(c['rate'])
+    cap=0 if c['rate']=='sync' else c['fps'] if c['rate']=='custom' else int(c['rate'])
     player=[str(ROOT/'builds/lab/TanakaCap.exe'),'-nolog','--port',str(port),'--ui-status-port',str(status_port),
-            '--avatar',str(Path(c['avatar']).resolve()),'--render-fps',str(cap),'--output-width',str(c['width']),
+            '--avatar',str(Path(c['avatar']).resolve()),'--output-width',str(c['width']),
             '--output-height',str(c['height']),'--expression-mode',c['expression'],'--mouth-corner-emphasis',str(c['emphasis']),
             '--gaze-gain',str(c['gaze_gain'])]
     for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration'):
         player+=['--'+key.replace('_','-'),str(c[key])]
     if Path(c['avatar']).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve():player+=['--use-demo-shape-keys']
     if c['rate']=='sync':player+=['--render-sync']
+    else:player+=['--render-fps',str(cap)]
     if not c['aa']:player+=['--no-edge-aa']
     if not c['preview']:player+=['--no-preview']
     if c['preview'] and c['background']!='none':player+=['--preview-background',c['background']]
@@ -211,7 +212,7 @@ def main(test_hook=None):
         canvas=tk.Canvas(pane,highlightthickness=0,background=style.lookup('TFrame','background'))
         scroll=ttk.Scrollbar(pane,orient='vertical',command=canvas.yview);scroll.pack(side='right',fill='y')
         canvas.configure(yscrollcommand=scroll.set);canvas.pack(fill='both',expand=True)
-        frame=ttk.Frame(canvas,padding=15);frame.columnconfigure(1,weight=1)
+        frame=ttk.Frame(canvas,padding=15);frame.columnconfigure(0,minsize=210);frame.columnconfigure(1,weight=1)
         item=canvas.create_window((0,0),window=frame,anchor='nw')
         frame.bind('<Configure>',lambda event,c=canvas:c.configure(scrollregion=c.bbox('all')))
         canvas.bind('<Configure>',lambda event,c=canvas,i=item:c.itemconfigure(i,width=event.width))
@@ -222,13 +223,13 @@ def main(test_hook=None):
                    'expression':{'existing':'既存キー優先','auto-custom':'自動独自キー（実験用）'}}
     display_names.update({key:value[2] for key,value in OPTIONS.items()})
     def row(frame,index,label,key,choices=None):
-        ttk.Label(frame,text=label).grid(row=index,column=0,sticky='w',padx=(0,15),pady=9)
+        ttk.Label(frame,text=label,width=20,wraplength=190).grid(row=index,column=0,sticky='w',padx=(0,15),pady=9)
         if choices and key in display_names:
             names=display_names[key];shown=tk.StringVar(value=names[variables[key].get()])
-            widget=ttk.Combobox(frame,textvariable=shown,values=list(names.values()),state='readonly')
+            widget=ttk.Combobox(frame,textvariable=shown,values=list(names.values()),state='readonly',width=32)
             widget.bind('<<ComboboxSelected>>',lambda event:variables[key].set(next(k for k,v in names.items() if v==shown.get())))
             variables[key].trace_add('write',lambda *args:shown.set(names[variables[key].get()]))
-        else:widget=ttk.Combobox(frame,textvariable=variables[key],values=choices,state='readonly') if choices else ttk.Entry(frame,textvariable=variables[key])
+        else:widget=ttk.Combobox(frame,textvariable=variables[key],values=choices,state='readonly',width=32) if choices else ttk.Entry(frame,textvariable=variables[key],width=32)
         widget.grid(row=index,column=1,sticky='ew');return widget
     f=frames['入力・推論']
     row(f,0,'入力','source',['camera','video','motion'])
@@ -276,11 +277,11 @@ def main(test_hook=None):
     for index,(key,(label,_,choices)) in enumerate(OPTIONS.items()):row(frames['実験'],index,label,key,list(choices))
     f=frames['描画・OBS']
     row(f,0,'描画レート','rate',['60','sync','30','custom'])
-    row(f,2,'自由入力 fps / 同期時の上限','fps')
+    row(f,2,'自由入力 fps','fps')
     rate_widgets=list(f.grid_slaves(row=2))
     def rate_state(*args):
         for widget in rate_widgets:
-            if variables['rate'].get() in ('sync','custom'):widget.grid()
+            if variables['rate'].get()=='custom':widget.grid()
             else:widget.grid_remove()
     variables['rate'].trace_add('write',rate_state);rate_state()
     row(f,3,'出力の幅','width');row(f,4,'出力の高さ','height')

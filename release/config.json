@@ -4,5 +4,5 @@
   "root_models": ["iris-landmark.onnx", "iris-landmark.LICENSE", "head-region-yunet.onnx", "head-mobilenetv3-small.onnx"],
   "excluded_distributions": ["pytest", "pluggy", "iniconfig", "pygments", "colorama", "pip", "setuptools", "wheel", "pypdf"],
   "publication_approved": false,
-  "open_license_items": ["NVIDIA DLLと再配布対象の照合・製品利用条件", "モデル重みごとの許諾の最終確認（頭専用を含む）", "Unity/Spout内部部品の出荷通知照合"]
+  "open_license_items": ["NVIDIA実wheel契約：cuDNN9 DLLと旧cudnn64_7表記、nvJitLinkの再配布根拠", "HumanArt版YOLOX-M重みの商用再配布範囲（MMPose issue 3271未回答）", "RTMW-Lと頭専用モデルの重み・学習由来の適用範囲", "OpenCV同梱FFmpegの正確な対応ソース・ビルド手順の提供", "Unity適用契約とプラン条件、ネイティブ内部部品の通知・ソース対応の最終照合"]
 }

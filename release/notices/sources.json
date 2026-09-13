@@ -1,0 +1,72 @@
+[
+  {
+    "file": "YuNet-MIT.txt",
+    "source": "docs/YUNET_LICENSE.txt",
+    "sha256": "c83b8120c50ccbd4c4f96edf53141bdd566ebb8f8e9227e415326aa1b1aba958"
+  },
+  {
+    "file": "HeadPose-MIT.txt",
+    "source": "docs/HEAD_MODEL_LICENSE.txt",
+    "sha256": "a4f7998feb5c90555daae4329db61caf7049e6b2706991dc1d9eb2a0923847ae"
+  },
+  {
+    "file": "Iris-Apache-2.0.txt",
+    "source": "models/iris-landmark.LICENSE",
+    "sha256": "d7c9068d896188264b60827b8cd1e25fdb9f5b5cad0b1589e90b96c87729c404"
+  },
+  {
+    "file": "lilToon-MIT.txt",
+    "source": "unity/TanakaCap/Packages/jp.lilxyzw.liltoon/LICENSE",
+    "sha256": "7ca2e241979e77241d90ce5c122dc2f5128881ed5af3538eb9aa1e61f35d2660"
+  },
+  {
+    "file": "VRC-Light-Volumes-MIT.txt",
+    "source": "unity/TanakaCap/Packages/jp.lilxyzw.liltoon/Shader/Includes/VRC Light Volumes/license.txt",
+    "sha256": "49d0528ff4ab0d2ab36bcdb6bc2fdd9e7a71dc722b8e6a958461302b039e69c1"
+  },
+  {
+    "file": "KlakSpout-Unlicense.txt",
+    "source": "unity/TanakaCap/Packages/jp.keijiro.klak.spout/LICENSE",
+    "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c"
+  },
+  {
+    "file": "Unity-2022.3.22f1-ThirdPartyNotices.txt",
+    "source": "Unity 2022.3.22f1 Editor/Data/Resources/legal.txt",
+    "sha256": "897c4728b086aa6a31cf7bd5a273a3ba452403268596c594ae362850d421b6f2"
+  },
+  {
+    "file": "Unity-NativePlugin-License.md",
+    "source": "Unity 2022.3.22f1 Editor/Data/PluginAPI/LICENSE.md",
+    "sha256": "dc34d09c3c3a5057244ba4e6cbb871105ec42cd1130617aceeddb9219da922d1"
+  },
+  {
+    "file": "Unity-Companion-License.html",
+    "source": "https://unity.com/legal/licenses/unity-companion-license",
+    "sha256": "7f743de8ca45ec6ecf5ab0f1522f17c4d21fd1eacbf01f7660fa6160b112fae9"
+  },
+  {
+    "file": "MMPose-Apache-2.0.txt",
+    "source": "https://raw.githubusercontent.com/open-mmlab/mmpose/759b39c13fea6ba094afc1fa932f51dc1b11cbf9/LICENSE",
+    "sha256": "aa2c6f3408169b96e5547c875deb481c91502514c1885fa0acb4b596c8909cb9"
+  },
+  {
+    "file": "YOLOX-Apache-2.0.txt",
+    "source": "https://raw.githubusercontent.com/Megvii-BaseDetection/YOLOX/6ddff4824372906469a7fae2dc3206c7aa4bbaee/LICENSE",
+    "sha256": "0ec3668d3274bcf29e8a29e9576d5a2cd96fc78d3c5bec4387355a796e5d9088"
+  },
+  {
+    "file": "KlakSpout-SpoutSenderNames.cpp-NOTICE.txt",
+    "source": "https://raw.githubusercontent.com/keijiro/KlakSpout/849e7bca3c167839ed697796153e1749acf0c53f/Plugin/Spout/SpoutSenderNames.cpp",
+    "sha256": "f7113064bee6d0888beac588f562a7b80cebe3c6f989cbe25ed92094649d28d2"
+  },
+  {
+    "file": "KlakSpout-SpoutSharedMemory.cpp-NOTICE.txt",
+    "source": "https://raw.githubusercontent.com/keijiro/KlakSpout/849e7bca3c167839ed697796153e1749acf0c53f/Plugin/Spout/SpoutSharedMemory.cpp",
+    "sha256": "db16b185114b22847163c2fbd2ce72bdac490c520df155cd6afca6eaad5196ef"
+  },
+  {
+    "file": "KlakSpout-SpoutUtils.cpp-NOTICE.txt",
+    "source": "https://raw.githubusercontent.com/keijiro/KlakSpout/849e7bca3c167839ed697796153e1749acf0c53f/Plugin/Spout/SpoutUtils.cpp",
+    "sha256": "1042c3cb0fe8eaac0419eeed39d02c1334b65e3d8292eb88d0bb88a4288a6375"
+  }
+]

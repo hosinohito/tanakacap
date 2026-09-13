@@ -1104,3 +1104,9 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 ## 2026-09-13 — Unity Hubログイン後のビルド復旧
 
 2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
+
+## 2026-09-13 — 実配布物ライセンス監査・同期UI修正
+
+実wheel契約と公式資料を照合。通知14件/出所SHAを追加、NVIDIA SDKヘッダー等141件を製品から除外。20 DLLとモデル/194ネイティブファイルを自動監査。cuDNN9/旧補足、nvJitLink、HumanArt重み、他重み適用範囲、FFmpeg対応ソース、Unity条件の具体残件をRELEASE_LICENSE_AUDITへ記録。公開可のゲートが停止することを確認。外部連絡/公開なし。review5の同梱Pythonで合成虹彩CUDA381/CPU0。
+
+追加指示で同期FPS欄を撤去、保存fpsの推論上限も解除。自由入力時だけ表示、プルダウン/ラベル列の幅固定。18 tests/実Tk成功、合成15/35Hzに対する出力14.93/34.00fpsを確認。カメラ/実写表示なし。通常Playerビルド成功。製品再ビルドはsandbox内ライセンスIPC失敗後、通常権限で成功。review6は最新UI/Playerと通知を同梱、2,085,247,952 bytes/12,911 files、CRC/同梱Python/通知モデルSHA検査合格。公開許諾確定ではない。

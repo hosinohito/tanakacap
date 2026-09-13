@@ -224,6 +224,9 @@ namespace TanakaCap
         {
             int renderFps = 60;
             var renderArgs = Environment.GetCommandLineArgs();
+            // Sync output is packet-driven in AlphaOutput. Keep the event loop responsive
+            // without inheriting the user's previous fixed/custom output rate.
+            if(Array.IndexOf(renderArgs,"--render-sync")>=0)renderFps=240;
             int renderIndex = Array.IndexOf(renderArgs, "--render-fps");
             if (renderIndex >= 0 && (renderIndex+1 >= renderArgs.Length ||
                 !int.TryParse(renderArgs[renderIndex+1], out renderFps) || renderFps<1 || renderFps>240))

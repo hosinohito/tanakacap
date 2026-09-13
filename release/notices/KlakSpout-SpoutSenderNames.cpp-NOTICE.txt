@@ -1,0 +1,100 @@
+/**
+
+	SpoutSenderNames.cpp
+
+	Spout sender management
+
+	Thanks and credit to Malcolm Bechard for modifications to this class
+
+	https://github.com/mbechard	
+
+	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	25.04.14 - started class file
+	27.05.14 - cleanup using memory map creation, open, close, lock
+	05.06.14 - FindSenderName - allow for a null name entered
+	08.06.14 - rebuild
+	12.06.13 - major revision, included map handling
+	23-07-14 - cleanup of DX9 / DX11 functions
+			 - Changed CheckSender logic
+	27.07-14 - changed mutex lock creation due to memory leak
+	28-07-14 - major change
+			 - remove handle management
+			 - changed map creation and release
+	30-07-14 - Map locks and cleanup
+	31-07-14 - fixed duplicate names class object
+	01-08-14 - fixed mutex handle leak / cleanup
+	03-08-14 - fixed GetActiveSenderInfo
+	-- names class revision additions --
+	22-08-14 - activated event locks
+	03.09.14 - cleanup
+	10.10.14 - Restored CreateSender for use by DirectX apps
+	01.08.15 - FindSender
+				- return false if the the sender is not registered
+				- if registered sender is no longer there release it
+			 - CheckSender bug - Name for ReleaseSenderName was wrong
+	24.08.15 - the active sender is the one selected or the last one opened by the user
+			   so don't limit to the first sender
+	15.09.15 - removed "using namespace std" from header
+	24.02.16 - replaced #define MaxSenders with a global variable m_MaxSenders
+			 - changed readSenderSetFromBuffer to create a buffer based on
+			   the number of senders in the map passed
+			 - changed writeBufferFromSenderSet to use the global m_MaxSenders
+			 - Created SetMaxSenders to set m_MaxSenders
+	03.07-16 - Use helper functions for conversion of 64bit HANDLE to unsigned __int32
+			   and unsigned __int32 to 64bit HANDLE
+			   https://msdn.microsoft.com/en-us/library/aa384267%28VS.85%29.aspx
+	22.05.17 - Initialize unused variables in SetTextureInfo
+			 - __movsd for info shared memory access instead of memcpy
+	09.03.18 - change to FindSender and CheckSender so that the sendernames map 
+			   is not accessed every frame by a receiver.
+			   Possible problem for multiple receivers and larger maps > 10 senders.
+	02.08.18 - #include <intrin.h> for __movsd intrinsic for VS2017
+	15.09.18 - move maxsenders registry read from the spoutGLDXinterop class
+	06.06.19 - Increase default maximum sender names from 10 to 256 = 64K
+			   RegisterSenderName - check for exceed maximum number of senders
+			   SetMaxSenders - set max to the registry for other applications to read
+	25.02.20 - Correct FindSenderName. Always returned true for one sender.
+	21.07.20 - Change default max senders from 256 to 64
+	28.08.20 - Correct in SpoutSettings
+	24.09.20 - Add GetPartnerID and SetPartnerID
+			 - Some testing of print format for HANDLE 32/64 bit
+	25.09.20 - Remove GetPartnerID and SetPartnerID - not reliable
+	29.09.20 - Add hasSharedInfo - to test for shared info memory map existence
+	23.10.20 - Add CleanSenders
+	28.12.20 - Protect against null name in SetActiveSender
+	12.01.21 - Add CleanSenders to CreateSender
+			   Write host path to the sender shared memory Description field in CreateSender
+	13.01.21 - Remove CleanSenders until sender registration investigations are completed
+			   Fix typo in host path write. To be tested.
+	10.02.21 - GetActiveSender - erase the active sender memory map if the sender info is closed
+	15.02.21 - Rebuild Win32 /MD for GitHub 2.007b release
+	26.02.21 - Change SetSenderCPUmode to include CPU sharing mode and GLDX compatibility
+	27.02.21 - Change SetSenderCPUmode name to SetSenderID
+	09.04.21 - Add GetSender to retrieve class sender.
+			   Remove SenderDebug
+
+	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	Copyright (c) 2014-2021, Lynn Jarvis. All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without modification, 
+	are permitted provided that the following conditions are met:
+
+		1. Redistributions of source code must retain the above copyright notice, 
+		   this list of conditions and the following disclaimer.
+
+		2. Redistributions in binary form must reproduce the above copyright notice, 
+		   this list of conditions and the following disclaimer in the documentation 
+		   and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"	AND ANY 
+	EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+	OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE	ARE DISCLAIMED. 
+	IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+	INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+	PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+	LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+*/
