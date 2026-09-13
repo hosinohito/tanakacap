@@ -72,7 +72,8 @@ namespace TanakaCap.Editor {
    return docs.Values.Where(x=>x.type=="114"&&x.Text("m_Script").Contains("fileID: 1661641543,")&&x.Text("m_Script").Contains("2a2c05204084d904aa4945ccff20d8e5")).Cast<Reader>().ToList();
   }
   public static SecondaryPhysicsData Collect(GameObject source,GameObject copy,List<string> warnings){
-   var readers=Read(source,warnings);var chains=new List<SecondaryChain>();var colliders=new List<SecondaryCollider>();var bones=new List<SecondaryBone>();
+   var readers=Read(source,warnings).Where(r=>r.Number("m_Enabled",1)!=0).OrderBy(r=>r.Root().Count(ch=>ch=='/')+(r.Root().Length==0?0:1)).ToList();var chains=new List<SecondaryChain>();var colliders=new List<SecondaryCollider>();var bones=new List<SecondaryBone>();
+   var activeRoots=new HashSet<string>(readers.Select(r=>r.Root()));
    var colliderIds=new Dictionary<string,int>();var roots=new HashSet<string>();var owned=new HashSet<string>();
    var animator=copy.GetComponent<Animator>();var human=new HashSet<Transform>();for(int i=0;i<(int)HumanBodyBones.LastBone;i++){var b=animator.GetBoneTransform((HumanBodyBones)i);if(b)human.Add(b);}
    foreach(var r in readers){
@@ -94,19 +95,7 @@ namespace TanakaCap.Editor {
       ci=colliders.Count;colliders.Add(cc);colliderIds.Add(id,ci);
      }refs.Add(ci);
     }c.colliders=refs.Distinct().ToArray();int chainIndex=chains.Count;chains.Add(c);
-    var selected=new List<Tuple<Transform,Vector3,int>>();
-    Action<Transform,int> visit=null;visit=(b,depth)=>{
-     string bp=AnimationUtility.CalculateTransformPath(b,copy.transform);
-     if(c.ignored.Any(p=>bp==p||bp.StartsWith(p+"/",StringComparison.Ordinal)))return;
-     if(human.Contains(b))throw new Exception("PhysBone controls Humanoid bone: "+bp);
-     var children=b.Cast<Transform>().Where(x=>!c.ignored.Contains(AnimationUtility.CalculateTransformPath(x,copy.transform))).ToArray();
-     Vector3 tail=c.endpointPosition;
-     if(children.Length==1 || children.Length>1&&c.multiChildType==1)tail=children[0].localPosition;
-     else if(children.Length>1&&c.multiChildType==2){tail=Vector3.zero;foreach(var child in children)tail+=child.localPosition;tail/=children.Length;}
-     else if(children.Length>1)tail=Vector3.zero;
-     if(ShouldSimulate(b,tail,bp,warnings))selected.Add(Tuple.Create(b,tail,depth));
-     foreach(var child in children)visit(child,depth+1);
-    };visit(t,0);
+    var selected=CollectSegments(t,copy.transform,c,activeRoots,human,warnings);
     int maxDepth=selected.Count==0?1:Math.Max(1,selected.Max(x=>x.Item3)+1);
     foreach(var item in selected){string bp=AnimationUtility.CalculateTransformPath(item.Item1,copy.transform);if(!owned.Add(bp))throw new Exception("Overlapping PhysBone chains: "+bp);bones.Add(new SecondaryBone{path=bp,tail=item.Item2,chain=chainIndex,depth=item.Item3/(float)maxDepth});}
     if(c.isAnimated)warnings.Add("Animated PhysBone: base transforms supported, original Animator controllers are not exported: "+root);
@@ -115,6 +104,23 @@ namespace TanakaCap.Editor {
    warnings.Add("Independent PhysBone-parameter conversion: "+chains.Count+" chains / "+bones.Count+" segments / "+colliders.Count+" explicit colliders. Force mapping, curve depth and collision response approximate; not the VRChat solver. No global/player collisions, grab/pose or animator parameters.");
    if(chains.Count==0)warnings.Add("No readable PhysBone chains; secondary motion unavailable.");
    return new SecondaryPhysicsData{chains=chains.ToArray(),bones=bones.ToArray(),colliders=colliders.ToArray()};
+  }
+  internal static List<Tuple<Transform,Vector3,int>> CollectSegments(Transform root,Transform avatar,SecondaryChain c,HashSet<string> activeRoots,HashSet<Transform> human,List<string> warnings){
+    var selected=new List<Tuple<Transform,Vector3,int>>();
+    Action<Transform,int> visit=null;visit=(b,depth)=>{
+     string bp=AnimationUtility.CalculateTransformPath(b,avatar);
+     if(c.ignored.Any(p=>bp==p||bp.StartsWith(p+"/",StringComparison.Ordinal)))return;
+     if(b!=root&&activeRoots.Contains(bp)){warnings.Add("Nested PhysBone boundary: "+c.root+" stops at "+bp+"; the child PhysBone owns this subtree. Parent tail still references the child position. Original components are unchanged.");return;}
+     if(human.Contains(b))throw new Exception("PhysBone controls Humanoid bone: "+bp);
+     var children=b.Cast<Transform>().Where(x=>!c.ignored.Contains(AnimationUtility.CalculateTransformPath(x,avatar))).ToArray();
+     Vector3 tail=c.endpointPosition;
+     if(children.Length==1 || children.Length>1&&c.multiChildType==1)tail=children[0].localPosition;
+     else if(children.Length>1&&c.multiChildType==2){tail=Vector3.zero;foreach(var child in children)tail+=child.localPosition;tail/=children.Length;}
+     else if(children.Length>1)tail=Vector3.zero;
+     if(ShouldSimulate(b,tail,bp,warnings))selected.Add(Tuple.Create(b,tail,depth));
+     foreach(var child in children)visit(child,depth+1);
+    };visit(root,0);
+    return selected;
   }
   internal static bool ShouldSimulate(Transform bone,Vector3 tail,string path,List<string> warnings){
    if(tail.sqrMagnitude<=1e-10f)return false;

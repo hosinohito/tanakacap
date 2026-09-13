@@ -11,3 +11,6 @@ Unity Parent Constraintは位置/回転を追従する。Unity 2022.3のPlayerLo
 - https://github.com/Unity-Technologies/UnityCsReference/blob/2022.3/Runtime/Export/PlayerLoop/PlayerLoop.bindings.cs
 
 SDKのPhysBoneソルバーは導入していない。警告付きの互換フォールバックで、完全なParent ConstraintとPhysBoneの合成を実装したものではない。実モデルの成功はユーザー確認待ち。
+
+
+2026-09-13：続くOverlapping PhysBone chains（イヤリングBone）に対応。全有効PhysBoneルートを事前収集し、親からの走査は別の子ルートで停止。子の専用設定を優先し、親のtailは子ルート位置を参照する。親→子の順でデータを作成、同一rootの既存first-wins警告は維持。二重登録の最終検査は残す。元のPhysBone/ignore設定は変更せず、境界変更をreport警告へ記録。Unityで実際のCollectSegmentsの親/子領域、子PBなし、ignoreを回帰検査し成功。results/unity-exporter-nested-physbone-fix.log。builds/fixes/parent-constraint/TanakaCapExporter.unitypackageを両修正入りに更新。PlayerとGitHub公開ZIPは未変更、実アバター再書出しは未確認。
