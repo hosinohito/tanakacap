@@ -1,5 +1,7 @@
 # tanakacap 仕様書
 
+最新（2026-09-13）：推論同期はFPS入力なし・保存済みfpsで推論を抑えない可変出力。自由入力時だけFPS欄を出す。プルダウンの幅は選択値や条件表示で変えない。配布監査はRELEASE_LICENSE_AUDIT.md、本文追加と自動照合を実装したが許諾5残件があり公開確定ではない。
+
 2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
 
 

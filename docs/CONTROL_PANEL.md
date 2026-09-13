@@ -1,5 +1,9 @@
 # 操作用UI
 
+最新指定（2026-09-13）：推論同期でFPS入力欄を表示しない。自由入力時だけ表示。同期では保存済みfpsを推論上限に使わずinference-limit=0、Playerはrender-syncだけを渡す。内部イベントループは最大240回/秒で受信を処理し、アバター出力は新packet到着時（停止中は従来の10Hz維持更新）に限定する。プレビューの転送ループまで完全なイベント駆動に変えたという意味ではない。プルダウンはwidth=32、ラベル列minsize=210と固定ラベル幅で欄の表示切替に伴う幅変化を抑える。
+
+18単体テストと実Tk検査成功。合成packet15/35Hzで出力14.93/34.00fps（results/render-sync-ui）。実カメラなし。通常60/30/自由入力の推論上限は維持。
+
 2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
 
 

@@ -20,11 +20,12 @@ def test_bad_limit_rejected(limit):
     with pytest.raises(ValueError):LiveStatus(limit)
 
 
-@pytest.mark.parametrize('rate,expected',[('60',60),('30',30),('custom',23),('sync',23)])
+@pytest.mark.parametrize('rate,expected',[('60',60),('30',30),('custom',23),('sync',0)])
 def test_matching_inference_cap_and_safe_command_arguments(rate,expected):
     config={**ui.DEFAULT,'rate':rate,'fps':23,'avatar':'D:/model with spaces/a.tcap','preview':True,DISPLAY_FLAG:True}
     player,infer=ui.commands(config,40001,40002,123)
-    assert player[player.index('--render-fps')+1]==str(expected)
+    if rate=='sync':assert '--render-fps' not in player
+    else:assert player[player.index('--render-fps')+1]==str(expected)
     assert infer[infer.index('--inference-limit')+1]==str(expected)
     assert ('--render-sync' in player)==(rate=='sync')
     assert DISPLAY_FLAG not in player+infer and '--preview' not in infer

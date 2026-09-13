@@ -37,4 +37,5 @@ jobs:
             builds/releases/${{ inputs.version }}/TanakaCap-*.zip
             builds/releases/${{ inputs.version }}/release-report.json
             builds/releases/${{ inputs.version }}/runtime-check.txt
+            builds/releases/${{ inputs.version }}/license-audit.json
           if-no-files-found: error

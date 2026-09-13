@@ -1,0 +1,75 @@
+/*
+
+			SpoutUtils
+
+			Utility functions
+
+	CREDIT - logging based on Openframeworks ofLog
+	https://github.com/openframeworks/openFrameworks/tree/master/libs/openFrameworks/utils
+
+	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	Copyright (c) 2017-2021, Lynn Jarvis. All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without modification, 
+	are permitted provided that the following conditions are met:
+
+		1. Redistributions of source code must retain the above copyright notice, 
+		   this list of conditions and the following disclaimer.
+
+		2. Redistributions in binary form must reproduce the above copyright notice, 
+		   this list of conditions and the following disclaimer in the documentation 
+		   and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"	AND ANY 
+	EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+	OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE	ARE DISCLAIMED. 
+	IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+	INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+	PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+	LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	========================
+
+		31.05.15 - started
+		01.01.18 - added check for subkey
+		17.03.18 - Document SetLogLevel function in header
+		16.10.18 - Add SpoutLogNotice, Warning, Error, Fatal
+		28.10.18 - Checks for lastlog and fatal messagebox moved from SpoutLog to _doLog
+		15.11.18 - Removed delay after SpoutPanel open
+		10.12.18 - Add Timeout option to SpoutMessageBox
+		12.12.18 - Add SpoutLogFile
+		13.12.18 - Add GetSpoutLog and ShowSpoutLogs
+		14.12.18 - Clean up
+		02.10.19 - Change registry functions including hKey
+				   to allow HKLM and changed argument order
+				 - Add RemoveSubKey and FindSubKey
+		26.01.19 - Corrected Verbose log to show verbose and not notice
+		07.04.19 - Add SpoutLog for logging without specifying level
+		28.04.19 - Change OpenSpoutConsole() to check for existing console
+		19.05.19 - Cleanup
+		16.06.19 - Include calling process file name in SpoutMessageBox
+		13.10.19 - Corrected EnableSpoutLogFile for a filename without an extension
+				   Changed default extension from "txt" to "log"
+		27.11.19 - Prevent multiple logs for warnings and errors
+		22.12.19 - add pragma in header for registry function lbraries
+		22.12.19 - Remove calling process name from SpoutMessageBox
+		18.02.20 - Remove messagebox for Fatal errors
+		19.05.20 - Add missing LPCSTR cast in SpoutMessageBox ShellExecute
+		12.06.20 - Add timing functions for testing
+		01.09.20 - Add seconds to log file header
+		03.09.20 - Add DisableSpoutLogFile() DisableLogs() and EnableLogs() 
+				   for more control over logging
+		09.09.20 - move _doLog outside anonymous namespace
+		23.09.20 - _doLog : always prevent multiple logs by comparing with the last
+				   instead of reserving for > warnings
+		16.10.20 - Add bool WriteBinaryToRegistry
+		04.03.21 - Add std::string GetSDKversion()
+		09.03.21 - Fix code if USE_CHRONO not defined
+		17.04.21 - Disable close button on console
+				   Bring the main window to the top again
+		07.05.21 - Remove noisy warning from ReadPathFromRegistry
+		09.06.21 - Update Version to "2.007.002"
+
+*/

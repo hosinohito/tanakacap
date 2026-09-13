@@ -27,4 +27,6 @@
 
 GitHub Actionsは `.github/workflows/release-build.yml` の手動起動のみ。`tanakacap-release` ラベルのWindowsセルフホストrunnerに認証済みUnity、uv、NVIDIAドライバーと `TANAKACAP_MODEL_DEPOT`（models相当のローカルキャッシュ）を用意する。モデルや録画をリポジトリへ追加しない。lockからvenvを再構成し、同じbuild-release.ps1を実行してActions成果物へ保存する。GitHub Release自体の公開は自動実行しない。Actions側の実実行は未検証。checkout/upload-artifact v4は既存runner互換を優先し、公式READMEで仕様を確認した。
 
-独自コードはユーザー指定のMIT。外部部品のライセンス本文を別途同梱する。現在はNVIDIA再配布DLL照合、重みごとの許諾、Unity/Spout内部通知の最終監査が残るため、生成物はローカルレビュー用。`release/config.json`に残件を管理し、未解決のまま `-Publishable` を指定すると停止する。公開/アップロードはこのスクリプトでは行わない。これは新規PC導入成功や全モデルの配布許諾確定を意味しない。
+独自コードはユーザー指定のMIT。実物の監査結果と5残件は[RELEASE_LICENSE_AUDIT.md](RELEASE_LICENSE_AUDIT.md)。通知14件をrelease/noticesへ出所/SHA付きで固定し、ビルド時にlicense-audit.jsonへ本文・モデル・全ネイティブファイルの照合結果を記録します。NVIDIAのヘッダー/インポートライブラリは製品から除外。本文の追加取得はtools/collect_release_notices.pyで行い、更新後の差分を確認してコミットしてください。通常ビルドはネット取得せず固定本文を使います。
+
+生成物は引き続きローカルレビュー用。`release/config.json`に残件を管理し、未解決のまま `-Publishable` を指定すると停止する。公開/アップロードはこのスクリプトでは行わない。機械検査成功は新規PC導入成功や全モデルの配布許諾確定を意味しない。
