@@ -1235,3 +1235,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：ユーザー指摘でUIの人物検出「負荷4割」を再監査。ui-part-costs.jsonは過去FP32/shared body-face/batch eyes測定の6.7679ms÷17.6735msを整数丸めした値。現在FP16/高速化後の値でもON/OFF削減率でもない。旧数値を現在構成に無条件適用した表示を訂正し、全3項目は負荷未計測と表示する。履歴数値は保持しvalid_for_current_configuration=falseを追加。人物検出の名称は人物範囲の自動検出へ明確化。推論処理は変更なし。別PCへはtanakacap/control_panel.pyとdocs/ui-part-costs.jsonを同じ相対パスへコピー。ZIP/Playerビルド不要。
+
+
+2026-09-13：参考値なので再測定不要、既存全体値が見つからなければ4割復元というユーザー指定。既存FP16全編測定の平均16.266755msを確認。人物検出の旧平均6.767945msを据え置く参考計算は41.61%、四捨五入で4割。人物範囲の自動検出だけ「参考負荷 約4割」へ復元。検出自体もGraph/FP16化されており実測不変とは断定せず、混合条件の概算として式と出典をui-part-costs.jsonに保存。再測定なし、推論の変更なし。他2項目は前回表示を維持。別PCコピー対象はtanakacap/control_panel.py、docs/ui-part-costs.json。
