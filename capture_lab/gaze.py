@@ -8,6 +8,7 @@ from .inference import provider_summary
 from .models import sha256
 from .motion_gate import DirectionGate
 from .gpu_runner import GpuRunner, provider_options
+from .gaze_range import GazeRange
 
 MODEL = Path(__file__).resolve().parents[1]/'models/iris-landmark.onnx'
 MODEL_HASH = 'e3c8ae73a21415e396688d655d5f1d9e1cb5a01b7ed19962de76c06458bfddcb'
@@ -71,9 +72,10 @@ def contour_offset(iris, contour, flip):
 
 
 class IrisGaze:
-    def __init__(self, output, block=3, stride=1, reference='contour', execution_mode='run', batch_eyes=False):
+    def __init__(self, output, block=3, stride=1, reference='contour', execution_mode='run', batch_eyes=False, range_calibration=True):
         if reference not in ('contour','legacy'):raise ValueError('Unknown gaze reference')
         self.reference=reference
+        self.range_calibration=GazeRange() if range_calibration else None
         self.batch_eyes=bool(batch_eyes)
         if not MODEL.exists() or sha256(MODEL)!=MODEL_HASH: raise RuntimeError('Iris model missing or hash mismatch')
         ort.preload_dlls(directory='')
@@ -139,12 +141,18 @@ class IrisGaze:
             values=[]; reasons.append('eyes_disagree')
         if values:
             value=np.mean(values,axis=0)
+            calibration=getattr(self,'range_calibration',None)
+            if calibration is not None:
+                # Do not learn a shifted reference when only one eye is visible.
+                value=calibration.update(value,now,learn=len(values)==2)
             angles=np.clip(value*[-80,60],[-20,-12],[20,12])
             accepted=self.gate.update(angles,now)
             if accepted is not None:
                 packet.update(gazeTracked=True,gazeYaw=float(accepted[0]),gazePitch=float(accepted[1]))
         else: self.gate.reset()
+        calibration=getattr(self,'range_calibration',None)
         self.diagnostics=dict(reference=getattr(self,'reference','contour'),valid_eyes=len(values),rejections=reasons,calls=self.calls,
+                              range_calibration=None if calibration is None else calibration.report(),
                               eyes=observations,output_tracked=packet['gazeTracked'],
                               output_angles=[packet['gazeYaw'],packet['gazePitch']],
                               elapsed_ms=(time.perf_counter()-start)*1000)

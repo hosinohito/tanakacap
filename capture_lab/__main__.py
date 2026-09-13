@@ -152,7 +152,7 @@ def benchmark(args):
             from .gaze import IrisGaze
             gaze_execution={**execution}
             if args.batch_eyes:gaze_execution['batch_eyes']=True
-            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference, **gaze_execution)
+            gaze=IrisGaze(profile_output,args.observation_block,args.observation_stride,args.gaze_reference,range_calibration=not args.no_gaze_range_calibration, **gaze_execution)
         if args.body3d:
             body_model = model if args.face_source == 'body3d' else SimCCModel('rtmw3d-x-384', profile_output, **pose_execution)
             body_model.refine_body_peaks=not args.integer_body_peaks
@@ -527,6 +527,7 @@ def main(argv=None, *, inference_mode=None):
             sub.add_argument('--arm-depth-mode',choices=['legacy','front_projection'],default='legacy')
             sub.add_argument('--gaze',action='store_true',help='Experimental CUDA iris-driven eye rotation')
             sub.add_argument('--gaze-reference',choices=['contour','legacy'],default='contour',help='Legacy restores the previous ROI reference and eye flips')
+            sub.add_argument('--no-gaze-range-calibration',action='store_true',help='Disable expanding observed gaze range midpoint calibration')
             sub.add_argument('--integer-body-peaks',action='store_true',help='Restore integer body coordinate decoding for comparison')
     args = parser.parse_args(argv)
     if hasattr(args, 'frames') and args.frames < 2 and not (args.command=='benchmark' and args.frames==0 and args.no_log):
