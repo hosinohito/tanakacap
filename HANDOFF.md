@@ -1,3 +1,5 @@
+2026-09-13：説明書更新版v0.1.3公開完了。https://github.com/hosinohito/tanakacap/releases/tag/v0.1.3 。ソース/タグ6b29c79。-SkipUnityで検証済み0.1.2本体を再利用し、原本/ライセンス/同梱Python/ZIP CRC検査成功。同梱使い方.mdはdocs/USER_GUIDE.mdとSHA一致。12924 files、part01=2084980594 bytes、part02=162031064 bytes。GitHub側の両ZIPサイズ/SHA256一致、draft=false/latest=v0.1.3、公開2026-09-13T10:12:37Z確認。0.1.2利用者は説明書だけ更新可、新規導入は両ZIPを同じフォルダーへ展開する。
+
 2026-09-13：ユーザーが保存したbuilds/releases/0.1.2/TanakaCap/使い方.mdの追記をdocs/USER_GUIDE.mdへ反映。プロジェクト複製は必須ではなく原本保護の推奨と明記し、以降は複製を使う手順と説明。ログ/構図の重複を統合、モーション入力名と操作順を現UIへ合わせ、カメラ設定・更新を見出し整理。旧同梱ファイルは変更せず保持。文書のみ変更のv0.1.3を-SkipUnity -Publishableで作成中（検証済み0.1.2 Player/Exporter再利用）。公開指示は継続。
 
 2026-09-13：ユーザー指定でv0.1.2を公開。https://github.com/hosinohito/tanakacap/releases/tag/v0.1.2 。ソース/タグ2fc0aef、カメラ対応一覧からfps・解像度を選ぶUIを同梱。300 tests、模擬デバイス実Tk/既存UI検査、Unity Player/Exporter再ビルド、原本SHA・ライセンス・同梱Python・ZIP CRC検査成功。builds/releases/0.1.2、12924 files。part01=2084980594 bytes、part02=162031109 bytes。両添付のGitHub側サイズ/SHA256一致、draft=false、latest=v0.1.2、published_at=2026-09-13T09:58:14Z確認。更新は両ZIPを同じ新しいフォルダーへ展開。実カメラの新UI試験は未実施。
