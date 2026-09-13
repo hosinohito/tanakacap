@@ -10,6 +10,7 @@ import subprocess
 import threading
 import time
 from .ui_experiments import OPTIONS
+from .camera_modes import query_modes, default_fps, resolutions
 from .player_diagnostics import PlayerDiagnostics
 from .development_log import DevelopmentLog
 
@@ -22,7 +23,7 @@ SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON（顔・頭・体・腕・指・目線）','face_head':'顔・頭（表情あり・目線なし）','head_only':'頭のみ（軽量・表情なし）'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/player/avatars/haolan.tcap'),
              camera_id='',camera_powerline='keep',camera_lowlight='keep',camera_backend='dshow',camera_format='auto',
-             camera_width=1280,camera_height=720,camera_fps=30,
+             camera_width=1280,camera_height=720,camera_fps=30,camera_mode_device='',
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
              aa=True,preview=True,background='none',expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp',
              brow_exaggeration=0.,eye_exaggeration=0.,eyelid_exaggeration=0.,mouth_exaggeration=0.)
@@ -38,10 +39,13 @@ def validate(values):
     if data['head_pose_mode'] not in ('pnp','size2d','legacy','depth3d','pnp_depthmouth'):raise ValueError('Invalid head_pose_mode')
     for key,choices in dict(camera_powerline=('keep','off','50hz','60hz'),camera_lowlight=('keep','fixed','variable'),camera_backend=('dshow','msmf'),camera_format=('auto','native','MJPG','YUY2','NV12')).items():
         if data[key] not in choices:raise ValueError('Invalid '+key)
-    for key,lo,hi in [('camera',0,255),('fps',1,240),('width',64,4096),('height',64,4096),('camera_width',64,8192),('camera_height',64,8192),('camera_fps',1,240)]:
+    for key,lo,hi in [('camera',0,255),('fps',1,240),('width',64,4096),('height',64,4096),('camera_width',64,8192),('camera_height',64,8192)]:
         value=float(data[key])
         if not math.isfinite(value) or value!=int(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} の整数を指定してください')
         data[key]=int(value)
+    value=float(data['camera_fps'])
+    if not math.isfinite(value) or not 1<=value<=240:raise ValueError('camera_fps: 1〜240を指定してください')
+    data['camera_fps']=int(value) if value.is_integer() else value
     for key,lo,hi in [('gamma',.25,4),('suppression',0,1),('emphasis',0,1),('gaze_gain',.5,6),
                       *[(k,0,1) for k in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration')]]:
         if data[key] is None and key in ('gamma','suppression'):continue
@@ -50,7 +54,7 @@ def validate(values):
         data[key]=value
     for key in ('body','gaze','detector','aa','preview'):
         if type(data[key]) is not bool:raise ValueError('Invalid '+key)
-    for key in ('avatar','video','camera_id'):
+    for key in ('avatar','video','camera_id','camera_mode_device'):
         if not isinstance(data[key],str):raise ValueError('Invalid '+key)
     return data
 
@@ -287,13 +291,54 @@ def main(test_hook=None):
     camera_choice.bind('<<ComboboxSelected>>',camera_selected,add='+')
     if not saved_id:camera_selected()
     camera_frame=frames['カメラ']
-    row(camera_frame,0,'ちらつき防止','camera_powerline',list(display_names['camera_powerline']))
-    row(camera_frame,1,'カメラ解像度・幅','camera_width')
-    row(camera_frame,2,'カメラ解像度・高さ','camera_height')
-    row(camera_frame,3,'カメラ fps','camera_fps')
-    row(camera_frame,4,'転送形式','camera_format',list(display_names['camera_format']))
-    row(camera_frame,5,'取得方式','camera_backend',list(display_names['camera_backend']))
-    row(camera_frame,6,'暗所補正（自動露出時）','camera_lowlight',list(display_names['camera_lowlight']))
+    mode_data=[];mode_device='';mode_pending=False;mode_start=False;mode_failed=set();mode_results=queue.Queue()
+    fps_choice=row(camera_frame,0,'fps','camera_fps',['30'])
+    resolution_var=tk.StringVar(value=variables['camera_width'].get()+' × '+variables['camera_height'].get())
+    ttk.Label(camera_frame,text='解像度').grid(row=1,column=0,sticky='w',pady=9)
+    resolution_choice=ttk.Combobox(camera_frame,textvariable=resolution_var,state='readonly',width=32)
+    resolution_choice.grid(row=1,column=1,sticky='ew')
+    row(camera_frame,2,'ちらつき防止','camera_powerline',list(display_names['camera_powerline']))
+    format_choice=row(camera_frame,3,'形式','camera_format',list(display_names['camera_format']))
+    row(camera_frame,4,'取得方法','camera_backend',list(display_names['camera_backend']))
+    row(camera_frame,5,'暗所補正（自動露出時）','camera_lowlight',list(display_names['camera_lowlight']))
+    def update_formats(event=None):
+        try:
+            w,h=map(int,resolution_var.get().split(' × '));fps=float(variables['camera_fps'].get())
+        except ValueError:return
+        variables['camera_width'].set(str(w));variables['camera_height'].set(str(h))
+        if not mode_data or mode_device!=variables['camera_id'].get():return
+        formats={fmt for mw,mh,mf,fmt in mode_data if (mw,mh)==(w,h) and abs(mf-fps)<.00001}
+        allowed=['auto','native']+[f for f in ('MJPG','NV12','YUY2') if f in formats]
+        format_choice.configure(values=[display_names['camera_format'][v] for v in allowed])
+        if variables['camera_format'].get() not in allowed:variables['camera_format'].set('auto')
+    def update_resolutions(event=None):
+        if not mode_data:return
+        choices=resolutions(mode_data,float(variables['camera_fps'].get()))
+        labels=[f'{w} × {h}' for w,h in choices]
+        resolution_choice.configure(values=labels)
+        if resolution_var.get() not in labels:
+            selected=(1280,720) if (1280,720) in choices else choices[0]
+            resolution_var.set(f'{selected[0]} × {selected[1]}')
+        update_formats()
+    fps_choice.bind('<<ComboboxSelected>>',update_resolutions,add='+')
+    resolution_choice.bind('<<ComboboxSelected>>',update_formats)
+    resolution_choice.bind('<FocusOut>',update_formats)
+    def request_modes(event=None,force=False,starting=False):
+        nonlocal mode_pending,mode_data,mode_device
+        if closing or session.running or session.stopping or mode_pending:return
+        if not starting and tabs.select()!=str(frames['カメラ'].master.master):return
+        device=variables['camera_id'].get()
+        if not device or (not force and (device==mode_device or device in mode_failed)):return
+        mode_pending=True
+        fps_choice.configure(state='disabled');resolution_choice.configure(state='disabled')
+        session.messages.put('【カメラ】デバイスの対応fps・解像度を取得しています。')
+        def worker():
+            try:mode_results.put((device,query_modes(device),None))
+            except Exception as e:mode_results.put((device,[],str(e)))
+        threading.Thread(target=worker,daemon=True).start()
+    ttk.Button(camera_frame,text='対応一覧を再取得',command=lambda:request_modes(force=True)).grid(row=6,column=1,sticky='w',pady=9)
+    tabs.bind('<<NotebookTabChanged>>',request_modes,add='+')
+    variables['camera_id'].trace_add('write',lambda *a:window.after_idle(request_modes))
     row(f,4,'録画のパス','video')
     takes=sorted((ROOT/'results/comparison-takes').glob('*/camera.avi'))
     def choose_take():
@@ -401,8 +446,13 @@ def main(test_hook=None):
     buttons=ttk.Frame(outer);buttons.pack(fill='x',pady=(12,0))
     def config():return validate({k:(None if k in ('gamma','suppression') and v.get()=='' else v.get()) for k,v in variables.items()})
     def start():
-        nonlocal last_error
+        nonlocal last_error,mode_start
+        if mode_pending:return
+        device=variables['camera_id'].get()
+        if variables['source'].get()=='camera' and device and device!=mode_device and device not in mode_failed:
+            mode_start=True;request_modes(starting=True);return
         try:
+            update_formats()
             c=config();save_settings(c);session.start(c);last_error='';state.configure(text='起動中：モデルの準備を待っています')
         except Exception as e:messagebox.showerror('開始できません',str(e))
     def apply():
@@ -437,16 +487,40 @@ def main(test_hook=None):
         bind_subtree(pane)
     window.protocol('WM_DELETE_WINDOW',close)
     def tick():
-        nonlocal pending,was_running,last_error
+        nonlocal pending,was_running,last_error,mode_pending,mode_data,mode_device,mode_start
         statuses=session.poll();running=session.running
-        start_button.configure(state='disabled' if session.stopping else 'normal')
+        start_button.configure(state='disabled' if session.stopping or mode_pending else 'normal')
+        try:
+            device,found,error=mode_results.get_nowait()
+        except queue.Empty:pass
+        else:
+            mode_pending=False
+            if device==variables['camera_id'].get():
+                if error or not found:
+                    mode_failed.add(device);mode_data=[];mode_device=''
+                    fps_choice.configure(state='normal');resolution_choice.configure(state='normal')
+                    session.messages.put('【警告・継続中】対応一覧を取得できません。現在値を保持し手入力できます。 '+(error or '対応モードなし'))
+                else:
+                    mode_data=found;mode_device=device
+                    rates=sorted({m[2] for m in found},reverse=True)
+                    if variables['camera_mode_device'].get()!=device or not any(abs(float(variables['camera_fps'].get())-f)<.00001 for f in rates):
+                        variables['camera_fps'].set(format(default_fps(found),'.12g'))
+                    variables['camera_mode_device'].set(device)
+                    fps_choice.configure(values=[format(v,'.12g') for v in rates],state='readonly')
+                    resolution_choice.configure(state='readonly');update_resolutions()
+                    session.messages.put('【カメラ】デバイスの対応一覧を反映しました。実取得fpsは照明・接続状況で変わります。')
+            else:request_modes(starting=mode_start)
+            if mode_start and not mode_pending and not closing:
+                mode_start=False;start()
         if was_running and not running:state.configure(text=last_error or '停止しました')
         if session.infer is not None and session.infer.poll() is not None and session.player and session.player.poll() is None and not session.stopping:
             code=session.infer.returncode;session.stop();last_error=f'推論が終了しました (code {code})。下のメッセージを確認してください';state.configure(text=last_error)
         was_running=running
         if pending and not running and not session.stopping:
             c=pending;pending=None
-            try:session.start(c);last_error=''
+            try:
+                if c['source']=='camera' and c['camera_id']!=mode_device and c['camera_id'] not in mode_failed:start()
+                else:session.start(c);last_error=''
             except Exception as e:messagebox.showerror('再起動できません',str(e))
         def number(kind,key):return f'{statuses[kind][key]:.1f}' if kind in statuses and key in statuses[kind] else '—'
         metrics.configure(text=f'推論 {number("inference","hz")} Hz    描画 {number("player","renderHz")} fps')
