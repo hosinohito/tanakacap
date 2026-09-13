@@ -2,9 +2,25 @@
 
 開発者向け手順。利用者向けは [USER_GUIDE.md](USER_GUIDE.md) に分離する。
 
-```powershell
-.\build-release.ps1 -Version 0.1.0-review3
-```
+このPCではプロジェクト直下の **build-release.batをダブルクリック**する。AIや手作業によるソース生成は不要。Unityでこのプロジェクトを開いている場合は先に閉じる。
+
+素材/SHA/依存版の確認→Unity PlayerとExporterをソースからビルド→同梱・監査・ZIP分割・CRC検査を行う。版名は日時から自動生成し、既存リリースを上書きしない。最後に保存先を表示し、画面はキーを押すまで閉じない。GitHubへのアップロードはしない。
+
+必要なときだけ `build-release.bat -Version 0.1.0-test1` で名前を指定する。`build-release.bat -CheckOnly` は入力確認のみで、Unity起動やネット取得を行わない。通常ビルドはFFmpeg対応ソースZIPが欠けていれば固定版から自動準備し、他の原本不足は一覧を表示して停止する。ログは `results/release-build-<版>.log` と `results/unity-release-<版>.log`。
+
+## 保管する原本
+
+| 場所 | 内容・保管上の注意 |
+| --- | --- |
+| capture_lab / unity/TanakaCap/Assets/TanakaCap / ProjectSettings | Python UI・推論・Unity・Exporterのソース。Git管理 |
+| unity/TanakaCap/Packages | 使用中のlilToon/KlakSpout等の原本。Git管理外の埋め込みパッケージも含めて保管 |
+| models | 学習済み原本と取得記録。大容量のためGit管理外。release/models.lock.jsonと照合 |
+| assets-source/licenses/opencv-ffmpeg-sources.zip | 配布に添付する対応ソース。Git管理外、固定版から再作成可能 |
+| release / docs / tracking-settings.json / requirements-lab.lock.txt | 通知原文・ライセンス・設定・手順・依存版。Git管理 |
+
+この作業フォルダーには上記が揃っている。**Git cloneだけではモデルや埋め込みパッケージは復元されない**。移行・バックアップ時はそれらも保管する。アバター原本や過去の比較動画・既存Playerは、通常の配布ビルドの入力ではない。
+
+外部ツールは認証済みUnity 2022.3.22f1 PersonalとPython 3.11環境が必要。現在の.venvはインストール済みPythonを参照するため、そのフォルダーだけを別PCへコピーしてビルド環境になるとは限らない。別PCではREADMEのuv/lock手順で再構成する。今回の.batはその導入やUnity認証を勝手に変更しない。
 
 認証済みUnity 2022.3.22f1（現在Personal）、lockどおりの開発venv、同梱対象モデルが必要。公開Playerは `BuildRelease.Build` で空のシーンから作り、原本アバター/検証動画/VRChat SDKを配布へ含めない。ExporterはUnitypackageとして同時生成。Playerのビルドは `builds/release-player`、梱包結果は `builds/releases/<version>`。既存バージョンは上書きせず、新しい版名を渡す。`-SkipUnity` は既存release-playerを使用する。
 

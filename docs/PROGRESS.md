@@ -1143,3 +1143,10 @@ MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.json
 外部問い合わせ・GitHub公開・実カメラ試験なし。FFmpegソース再ビルド未実施。公式の空ヘッダーtarを完全ソースで補完し、原本は保持。Personalの財務適格性は利用者責任で、財務資料の検査ではない。
 
 検証完了：review7を既存release-playerから再梱包（Unity再ビルドなし）。part01=2,084,961,237 bytes、part02=162,028,059 bytes、計12,918ファイル。双方2 GiB未満・CRC合格。通知20/NVIDIA DLL20/全binary194、Unity runtime3のSHA、FFmpeg/source lock照合エラー0。同梱Python起動成功、FFmpeg不一致を模擬した拒否検査成功。resultsではなくbuilds/releases/0.1.0-review7/{release-report,license-audit}.jsonが検査結果。Playerの新規動作品質を今回確認したものではない。oversize-local-only.zipは公開対象外。
+
+
+## 2026-09-13 .batによる再ビルド
+
+build-release.batを追加し、build-release.ps1を日時版名・原本検査・個別ログ付きへ変更。check_release_inputs.pyでモデル/通知/対応ソース/NVIDIA DLL SHAとPython依存版、Unity素材を確認。全原本は現作業フォルダーに存在。AI生成不要だが、Git管理外models/Packages/対応ソースと外部Unity/Python環境は別途保管/準備が必要。README/RELEASE_BUILD/SPECへ反映。
+
+.bat -CheckOnly成功、原本不足の模擬検査でパス表示と拒否を確認。通常権限でUnityソースからPlayer/Exporter再ビルド、review8梱包成功。最初のsandbox試行はUnity licensing IPC拒否で失敗、通常権限で成功したためユーザーのライセンス再操作不要。review8は12,918ファイル、part01 2,084,961,325 bytes、part02 162,028,053 bytes、CRC/通知20/NVIDIA20/全binary194検査成功。results/unity-release-0.1.0-review8.log、builds/releases/0.1.0-review8/release-report.json参照。実カメラ未使用。追加着せ替えガイドはこのビルドの取り込み後に作成しておりreview8のZIPには未収録、次回ビルドから反映。
