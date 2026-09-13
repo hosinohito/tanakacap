@@ -42,8 +42,7 @@ namespace TanakaCap {
      var prefab=bundle.LoadAsset<GameObject>(m.prefab);if(!prefab)throw new Exception("Avatar prefab missing.");
      avatar=Instantiate(prefab);avatar.name=m.displayName;
      var animator=avatar.GetComponent<Animator>();if(!animator||!animator.isHuman)throw new Exception("Humanoid avatar missing.");
-     foreach(var r in avatar.GetComponentsInChildren<Renderer>(true))foreach(var mat in r.sharedMaterials)
-      if(!mat||!mat.shader||!mat.shader.isSupported||mat.shader.name=="Hidden/InternalErrorShader")throw new Exception("Unsupported avatar material: renderer="+r.name+", material="+(mat?mat.name:"<missing>")+", shader="+(mat&&mat.shader?mat.shader.name:"<missing>")+", supported="+(mat&&mat.shader&&mat.shader.isSupported)+", graphics="+SystemInfo.graphicsDeviceType);
+     DisableUnsupportedRenderers(avatar);
      animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
      var driver=avatar.AddComponent<AvatarDriver>();driver.animator=animator;driver.faceProfile=m.faceProfile;
      if(m.secondaryPhysics!=null && m.secondaryPhysics.bones.Length>0)avatar.AddComponent<SecondaryMotion>().Initialize(m.secondaryPhysics,animator);
@@ -62,6 +61,19 @@ namespace TanakaCap {
    loading=false;
   }
   void Update(){if(Input.GetKeyDown(KeyCode.F5))show=!show;}
+  public static int DisableUnsupportedRenderers(GameObject root){
+   int skipped=0;
+   foreach(var renderer in root.GetComponentsInChildren<Renderer>(true)){
+    foreach(var mat in renderer.sharedMaterials){
+     if(mat&&mat.shader&&mat.shader.isSupported&&mat.shader.name!="Hidden/InternalErrorShader")continue;
+     string message="Avatar renderer skipped; loading continues: renderer="+renderer.name+", material="+(mat?mat.name:"<missing>")+", shader="+(mat&&mat.shader?mat.shader.name:"<missing>")+", graphics="+SystemInfo.graphicsDeviceType;
+     renderer.enabled=false;
+     var particles=renderer.GetComponent<ParticleSystem>();if(particles)particles.Stop(false,ParticleSystemStopBehavior.StopEmittingAndClear);
+     RuntimeStartup.RecordError(new Exception(message));Debug.LogWarning(message);skipped++;break;
+    }
+   }
+   return skipped;
+  }
   void OnGUI(){if(!show)return;GUILayout.BeginArea(new Rect(12,80,700,140),GUI.skin.box);GUILayout.Label("Avatar file (.tcap) / F5");path=GUILayout.TextField(path??"");GUI.enabled=!loading;if(GUILayout.Button("Load avatar"))StartCoroutine(Load());GUI.enabled=true;GUILayout.Label(error);GUILayout.EndArea();}
  }
 }

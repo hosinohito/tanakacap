@@ -1197,3 +1197,11 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：ユーザー提供の外部プロジェクトを読み取り、MSL/Ring Particles Shaderの旧include Assets/AudioLink/Shaders/AudioLink.cgincが欠落、AudioLink 1.4.0はPackages/com.llealloo.audiolink/Runtime/Shaders/AudioLink.cgincにあると確認。隔離コピーでincludeだけ補正しDirect3D11 shader.isSupported/Material.SetPass(0)/コンパイルエラー0を確認。AvatarShaderCompatibilityをExporterへ追加：旧include欠落かつ新include実在時のみ書出しscratch内へshader/materialを複製し参照補正。原本変更なし、警告へ記録、音声AudioLink入力の実装ではない。builds/fixes/parent-constraint/TanakaCapExporter.unitypackageを更新、第三者shader/includeは同梱していない。外部shaderのバイト不変を確認。results/unity-shader-compat.log（初回import順の一時CS0103は再importで解消、最終executeMethod/検査/export成功）。実アバターの再書出し/見た目は未確認。Playerの再ビルド不要、公開ZIPは未更新。
+
+
+2026-09-13：ユーザーがVRC相当の緩い継続動作を希望。マテリアル/シェーダーが非対応なら該当Rendererだけを無効化し、アバターのロード/追従は継続。粒子はそのParticleSystemのみ停止、子は停止しない。省略をエラーログへ保存。Exporterも欠落マテリアルを警告に変更、AudioLink補正コンパイル失敗時は元shaderを保持して継続。破損/形式違い/必須Humanoid不備は引き続き停止。すべてのVRCギミックや任意スクリプトの互換を意味しない。0.1.1-fixes4ビルド予定。
+
+ユーザーの診断タイミング質問へ回答：書出し成功時は.tcap.report.json、書出し自体が失敗した場合はUnity Console、本体読込時の省略は起動bat隣logs/player-errors.log。継続可能な警告件数やログを開くUIは未実装、ユーザーがログを確認する必要がある。fixes4はParticle Systemモジュール未有効のためコンパイル失敗、manifest追加後fixes5のUnityビルドと合成Renderer継続検査成功。
+
+
+2026-09-13：ユーザー指定でプラグイン完了ダイアログに確認事項件数とreport場所を開くボタン、失敗時に理由とUnity Console案内を追加。Python UIは起動bat隣のplayer-errors.logの新規レコードを読み取り、警告・継続中/エラーを色分けし対象とログパスを表示。スタック全文をUIへ重複表示しない。旧ログは起動時に飛ばし、分割書込・切詰め/ローテーションを扱う。使い方に書出しreport/Unity Console/本体ログの確認手順を追加。実Tk検査とログ追記/分割行/重複防止/切詰め検査成功。fixes5の検証済みPlayerに新UI/Exporterを合わせたfixes6を梱包中。
