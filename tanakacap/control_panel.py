@@ -175,7 +175,8 @@ class Session:
             if infer and frames:infer[infer.index('--frames')+1]=str(frames)
             self.infer=None
             if infer:
-                env=dict(os.environ,TANAKACAP_UI_PRECISION=c['precision'])
+                env=dict(os.environ,TANAKACAP_UI_PRECISION=c['precision'],
+                         PYTHONIOENCODING='utf-8',PYTHONUTF8='1')
                 self.infer=subprocess.Popen(infer,cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
                     text=True,encoding='utf-8',errors='replace',creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
                 process=self.infer

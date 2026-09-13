@@ -113,6 +113,17 @@ int main(int argc,char** argv) {
     std::cout << std::unitbuf;
     if(argc<2) { std::cerr << "Use inspect, capture, power VALUE, exposure VALUE FLAGS, restore POWER FLAGS EXPOSURE FLAGS\n"; return 2; }
     if(std::string(argv[1])=="--help") return 0;
+    // No COM initialization or device activation: native SDK ABI verification.
+    if(std::string(argv[1])=="--abi") {
+        std::cout << "{\"property_size\":" << sizeof(KSPROPERTY)
+                  << ",\"property_alignment\":" << alignof(KSPROPERTY)
+                  << ",\"procamp_size\":" << sizeof(KSPROPERTY_VIDEOPROCAMP_S)
+                  << ",\"value_offset\":" << offsetof(KSPROPERTY_VIDEOPROCAMP_S, Value)
+                  << ",\"flags_offset\":" << offsetof(KSPROPERTY_VIDEOPROCAMP_S, Flags)
+                  << ",\"capabilities_offset\":" << offsetof(KSPROPERTY_VIDEOPROCAMP_S, Capabilities)
+                  << "}\n";
+        return 0;
+    }
     HRESULT init=CoInitializeEx(nullptr,COINIT_MULTITHREADED);
     if(FAILED(init)) return 1;
     HRESULT startup=MFStartup(MF_VERSION);

@@ -44,3 +44,8 @@ CMSの25→30fpsは前のネイティブ診断で確認した結果で、新経�
 別PCの更新は`tanakacap/`全体を同じ場所へ上書き。Unity Player・モデル・runtime・私用ui-settings.jsonのコピーは不要。
 利用説明書も更新する場合は`docs/USER_GUIDE.md`を配布先の`使い方.md`へコピーする。
 次回リリースビルドは既存のソース同梱処理で新モジュールも入る。今回はZIPを作成しない。
+
+
+## Windows制御ABIの検証（2026-09-13）
+
+KSPROPERTYはLONGLONGを含むunionで8byte境界。KSPROPERTY_VIDEOPROCAMP_Sは40byteであり、36byteの要求は実機で0x8007007Aとなった。ctypesへ同じunionを実装し、診断helperの `--abi`（カメラを起動しない）とsizeof/offsetを照合する回帰検査を追加。60Hz適用成功と実速度の確認はユーザー再試験待ち。照明ONで17→25Hzという報告は暗所露出の影響を示唆する。
