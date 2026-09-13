@@ -38,8 +38,8 @@ def run(version,publishable=False):
             if p.is_file() and not any(part in excluded for part in relative.parts) and p.suffix not in ('.pyc','.pdb'):
                 copy(p,Path(destination)/relative)
     player=ROOT/'builds/release-player'
-    for name in ('TanakaCap.exe','UnityPlayer.dll','UnityCrashHandler64.exe'):copy(player/name,Path('builds/lab')/name)
-    for name in ('TanakaCap_Data','MonoBleedingEdge'):tree(player/name,Path('builds/lab')/name)
+    for name in ('TanakaCap.exe','UnityPlayer.dll','UnityCrashHandler64.exe'):copy(player/name,Path('app')/name)
+    for name in ('TanakaCap_Data','MonoBleedingEdge'):tree(player/name,Path('app')/name)
     copy(player/'TanakaCapExporter.unitypackage','プラグイン/TanakaCapExporter.unitypackage')
     tree(ROOT/'capture_lab','capture_lab',('__pycache__',))
     for name in ('tracking-settings.json','models/catalog.json','docs/ui-part-costs.json'):copy(ROOT/name,name)

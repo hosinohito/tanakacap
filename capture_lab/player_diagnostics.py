@@ -42,6 +42,12 @@ class PlayerDiagnostics:
                 if line.startswith('Avatar renderer skipped; loading continues:'):
                     result.append('【警告・継続中】一部の描画を省略しました。' + line.split(':', 1)[1][:1800])
                     result.append('確認先：元のUnityプロジェクトのマテリアル／シェーダー。詳細ログ：' + str(self.path))
+                elif line.startswith('Secondary parameter bounded; loading continues:'):
+                    result.append('【警告・継続中】カーブの範囲超過を補正し、揺れ物を継続しています。' + line.split(':', 1)[1][:1800])
+                    result.append('詳細ログ：' + str(self.path))
+                elif line.startswith(('Secondary chain skipped; loading continues:', 'Secondary motion disabled; loading continues:')):
+                    result.append('【警告・継続中】揺れ物の一部または全体を停止しました。' + line.split(':', 1)[1][:1800])
+                    result.append('確認先：書き出しレポートのPhysBone設定とカーブ。詳細ログ：' + str(self.path))
                 else:
                     result.append('【エラー】' + line[:1800])
                     result.append('詳細ログ：' + str(self.path))
