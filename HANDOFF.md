@@ -1,5 +1,8 @@
 # 引き継ぎ：現在の状態
 
+最新：ユーザーが最新版のビルドとGitHub公開を明示指示。release/config.jsonのpublication_approved=trueへ変更、0.1.0のUnityソース再ビルド・公開用梱包が完了。builds/releases/0.1.0のpart01/part02 ZIPとSHA256SUMS.txtがアップロード対象。12,918ファイル、各ZIPは2 GiB未満、CRC/ライセンス監査合格。最新USER_GUIDEの同梱一致確認。公開先remote未登録・GitHub未ログインのためリポジトリ指定と認証を依頼中。まだ公開成功と扱わない。公式GitHub CLI v2.100.0をtools/bin/github-cliへチェックサム照合して準備、実写動画/Git履歴の50MiB超blobなし。release/RELEASE_NOTES_0.1.0.mdが公開説明。
+
+
 2026-09-13：使い方にMA/VRCFury/キセテネ/AvatarTools別の書き出し準備とAAO併用設定を追加。ユーザー指定で全手順を複製プロジェクト内の処理とし、生成コピーを選択、原本へApplyしない。VRCFuryのSDK前処理/Test Copy置換、AAOの表情除去を公式資料・作者ソースで確認。EXPORT_TOOL_RESEARCH.mdに根拠と未検証を分離。実改変アバターの組合せ試験は未実施。review8は作成途中に追加されたこの説明書変更を含まず、次の.batビルドから自動同梱。
 
 

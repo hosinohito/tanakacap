@@ -7,7 +7,7 @@
 
 最新UIは「保存して開始」に統合。推論同期はFPS入力なしで受信に応じた可変出力、FPS入力は自由入力時だけ表示。プルダウンとラベル列の幅を固定。カメラ名選択、背景（黒/緑/青/マゼンタ）、実験タブのFP16/FP32等を追加。Unity側は統計・タイトルバー非表示、左ドラッグ移動、右ドラッグ上下、ホイール距離、Ctrl＋ホイールFOV、構図保存/リセット/Esc閉じを実装。認証復旧後のビルドと構図自動検査成功。再開情報はHANDOFF先頭。
 
-配布の実物監査は[RELEASE_LICENSE_AUDIT.md](docs/RELEASE_LICENSE_AUDIT.md)。現行モデルの商用利用・再配布条件は[3モード別の判定](docs/MODEL_LICENSE_DECISIONS.md)で確認済み。作者のライセンス宣言と原本SHAを固定した根拠はrelease/model-license-evidence.json、再照合はtools/collect_model_license_evidence.py。第三者通知・SHA検査をビルドへ接続し、SDKの不要なヘッダー類を除外。NVIDIA/FFmpeg/Unity Personalも[配布条件を確認済み](docs/RUNTIME_LICENSE_DECISIONS.md)。FFmpeg対応ソースの準備は `.\.venv\Scripts\python.exe tools/prepare_ffmpeg_sources.py`。約161 MBのソースも同梱するため上限超過時は連番ZIPへ分割します。公開ライセンス残件は解消しましたが、ZIPは最終出荷確認前のローカルレビュー用です。
+配布の実物監査は[RELEASE_LICENSE_AUDIT.md](docs/RELEASE_LICENSE_AUDIT.md)。現行モデルの商用利用・再配布条件は[3モード別の判定](docs/MODEL_LICENSE_DECISIONS.md)で確認済み。作者のライセンス宣言と原本SHAを固定した根拠はrelease/model-license-evidence.json、再照合はtools/collect_model_license_evidence.py。第三者通知・SHA検査をビルドへ接続し、SDKの不要なヘッダー類を除外。NVIDIA/FFmpeg/Unity Personalも[配布条件を確認済み](docs/RUNTIME_LICENSE_DECISIONS.md)。FFmpeg対応ソースの準備は `.\.venv\Scripts\python.exe tools/prepare_ffmpeg_sources.py`。約161 MBのソースも同梱するため上限超過時は連番ZIPへ分割します。公開ライセンス残件は解消済みです。公開対象は公開用ビルドのrelease-report.jsonに列挙されたZIPで、過去のローカルレビュー用ZIPとは区別してください。
 
 構図パネルは既定表示、Escで開閉します（構図ボタンは撤去）。上下・距離・FOVを保存/リセットできます。アバターウインドウは出力解像度に合わせて起動。Python UI右下の「終了」は推論/Playerの停止後に閉じます。自由入力・ウインドウ表示の選択肢には負荷軽減の説明を追加しています。
 
