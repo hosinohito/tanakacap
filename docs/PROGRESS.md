@@ -1214,3 +1214,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：0.1.1-fixes8完成。Unity検査/配布ランタイム/ライセンス/ZIP CRC検査成功。成果物 builds/releases/0.1.1-fixes8、展開済み TanakaCap/TanakaCap.bat。今回の範囲補正はPlayer側なので既存tcapを再書出しせず利用可能。部分更新はapp全体とcapture_lab全体を配置（旧builds/labはUIが参照しない）。GitHub未更新。実改変アバターの表示品質はユーザー確認待ち。
+
+
+2026-09-13：配布名のlab撤去不足を訂正。配布Pythonパッケージをtanakacapへ変更し、bat・UIからの推論子プロセス起動も同名に統一。開発ソース名capture_labは維持し、パッケージ名を固定せず起動できるようにする。配布フォルダーはappとtanakacap。fixes9を再梱包して検査する。

@@ -445,3 +445,5 @@ Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書�
 診断：書出しプラグインで確認事項とreport場所を案内し、操作UI下部では新しいPlayerログを警告・継続中/エラーとして色分け表示します。詳細手順は利用者向け「使い方」の「警告・エラーを確認する」を参照してください。
 
 配布ZIPでは再生アプリ一式を `app/` に配置する。開発用の `builds/lab/` とは区別し、UIは配布時に `app/TanakaCap.exe` を使用する。ローカル更新時もexeだけでなく `app/` 全体をコピーする。
+
+配布Pythonパッケージは `tanakacap/`。ビルド時に開発ソース `capture_lab/` を同名で配置し、配布batは `-m tanakacap.control_panel` を起動する。
