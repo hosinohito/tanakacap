@@ -3,14 +3,65 @@
 ## 導入
 
 1. 配布ZIPをダウンロードし、好きなフォルダーにすべて展開します。複数のZIPがある場合は、すべて同じ場所へ展開してください。
-2. 普段アバターを編集しているUnityプロジェクトを開きます。
+2. Unityを閉じ、普段のアバター用プロジェクトをフォルダーごと複製します。Unity Hubから**複製側**を開きます（Unity 2022.3.22f1）。以降は複製側だけで作業してください。
 3. `プラグイン/TanakaCapExporter.unitypackage` を開いて追加します。
-4. アバターの一番上のオブジェクトを選び、メニューの **TanakaCap → Export selected avatar** から保存します。
+4. 下の「着せ替えツール別の準備」を行い、**処理後のアバター**の一番上のオブジェクトを選びます。**TanakaCap → Export selected avatar** から、新しい名前で保存します。
 5. 展開先の `TanakaCap.bat` をダブルクリックします。
 
 NVIDIA RTX搭載のWindows PCが必要です。アバターはご自身で用意してください。書き出し時にエラーが出た場合は、表示された内容を確認してください。
 
 利用条件は配布フォルダー内の「ライセンス」を確認してください。
+
+## 着せ替えツール別の準備
+
+原本のプロジェクトには作業結果を戻さず、そのまま残してください。アバターだけの複製では素材を共有するため、上記のプロジェクト複製から始めます。Unityの再生ボタンは押さず、使用したツールの項目へ進んでください。
+
+### Modular Avatar（MA）
+
+1. 作業用プロジェクトでアバターの一番上を右クリックし、**Modular Avatar → Manual bake avatar** を選びます。版によっては **NDM Framework → Manual bake avatar** と表示されます。
+2. 新しく生成された、処理済みのコピーを選びます。元のアバターを選び直さないでください。
+3. 服・髪・顔が揃っていることを確認して、そのコピーをTanakaCapから書き出します。
+
+ベイク後にできた素材フォルダーは、書き出し完了まで残してください。ベイクは服などの組み立てを確定する操作です。[公式手順](https://modular-avatar.nadena.dev/ja/docs/manual-processing)
+
+### VRCFury（MAとの併用を含む）
+
+1. 作業用プロジェクトのアバターの一番上を選び、**Tools → VRCFury → Build an Editor Test Copy** を実行します。
+2. 生成された **VRCF Test Copy for …** を選び、服・髪が揃っていることを確認します。
+3. そのコピーをTanakaCapから書き出します。MAとの併用時も、まずこの処理を一度実行し、処理済みコピーへベイクを重ねないでください。
+
+同じアバターで再実行すると前のTest Copyが置き換わります。修正はベイク前の作業用アバターへ行い、改めてコピーを生成します。[提供元の処理実装](https://github.com/VRCFury/VRCFury/blob/2863a3fea5f2a4f36808a4b7dc8f7e8f106dbc0d/com.vrcfury.vrcfury/Editor-Avatars/Menu/VRCFuryTestCopyMenuItem.cs)
+
+### キセテネ
+
+1. 作業用プロジェクトで服の調整を終え、キセテネの **着せる** を押します。調整画面で重ねただけの状態では書き出さないでください。
+2. 服を着せ終えたアバターを選び、身体と服が揃っていることを確認します。
+3. そのアバターをTanakaCapから書き出します。MAやVRCFuryも使用している場合は、先に上記の処理も行います。
+
+[作者の手順](https://tomo-shi-vi.hateblo.jp/entry/kisetene)
+
+### AvatarTools（AvatarAssembler）
+
+1. 作業用プロジェクトで **AvatarTools → AvatarAssembler** を開き、身体と衣装を設定して結合を完了します（takecccc版では **Check → Assemble!**）。
+2. 結合後のアバターを選びます。結合前の身体や衣装単体は選ばないでください。
+3. そのアバターをTanakaCapから書き出します。MAやVRCFuryも使用している場合は、先に上記の処理も行います。
+
+[原作者の配布ページ](https://booth.pm/ja/items/1564788)／[takecccc版](https://github.com/takecccc/AvatarTools)
+
+### Avatar Optimizer（AAO）も使用している場合
+
+1. ベイク前の作業用アバターで、**AAO Trace And Optimize** の **BlendShapeを最適化する** をオフにします。旧版では **BlendShapeを自動的に固定・除去する** という名前です。**使われていないObjectを自動的に削除する** も、まずオフにしてください。
+2. **AAO Freeze BlendShape** を顔に設定している場合は、TanakaCapで動かす表情を固定対象から外します。元のプロジェクトの設定は変更しません。
+3. MAと同じ手動ベイクを実行します。VRCFuryも使う場合は、VRCFuryのTest Copy手順を使います。
+4. 処理済みコピーから書き出し、TanakaCapで眉・目・口が動くことを確認します。
+
+TanakaCapで使う表情やボーンが、最適化で取り除かれることを避けるための設定です。[手動処理](https://vpm.anatawa12.com/avatar-optimizer/ja/docs/tutorial/basic-usage/)／[最適化の設定](https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/trace-and-optimize/)
+
+### ツールを使わず着せ替えた場合・書き出し前の確認
+
+作業用プロジェクトで、身体・服・髪を含む完成したアバターの一番上を選んで書き出します。使いたい服を表示し、不要な服を非表示にしておいてください。VRChat内の衣装切り替えメニューやギミックは引き継がれません。
+
+**Unsupported component** と表示されたら、エラーに出たツールの処理が残っていないか確認してください。コンポーネントを一括削除して進めず、ツール名とエラーを控えてください。処理済みコピーの見た目や表情が壊れた場合は、ベイク前の作業用アバターへ戻って設定を見直し、新しいコピーを生成します。
 
 ## 使う
 

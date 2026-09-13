@@ -421,3 +421,5 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 左右眼は`batch_eyes=true`で1回の推論にまとめる。`-NoBatchEyes`で従来へ、`-BatchEyes`で明示指定。派生ONNXは初回にmodels内へ自動生成し原本を保持。Hの並行処理は計測で遅くなったためrevert済み。[結果](docs/FURTHER_OPTIMIZATION.md)。
 
 従来のPowerShell起動は`-RenderFps 30|60`（既定60）。操作UIは60/推論同期/30/自由入力と推論上限の連動に対応する。[UI](docs/CONTROL_PANEL.md)。従来batでは`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。
+
+着せ替え済みアバターの準備は[利用説明書](docs/USER_GUIDE.md#着せ替えツール別の準備)を参照。MA/VRCFury/キセテネ/AvatarToolsとAAO併用を記載し、すべて原本を残す複製プロジェクトで作業します。公式根拠と現行Exporterの制約は[調査記録](docs/EXPORT_TOOL_RESEARCH.md)。
