@@ -185,6 +185,9 @@ int main(int argc,char** argv) {
                 std::cout << "{\"capture\":{\"fps\":" << 119/seconds << ",\"timestamp_fps\":" << (lastStamp>firstStamp?119e7/(lastStamp-firstStamp):0)
                     << ",\"frames\":120,\"compressed_samples\":true,\"images_saved\":false}}\n";
             }
+            // SourceReader destruction may shut down the source. Restore while it is alive.
+            // The launcher still verifies/restores through a fresh source after every trial.
+            if(!controls.restore()) result=3;
         }
     } catch(const std::exception& e) { std::cerr << e.what() << "\n"; result=1; }
     MFShutdown(); CoUninitialize(); return result;
