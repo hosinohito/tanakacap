@@ -22,6 +22,6 @@
     "wheel",
     "pypdf"
   ],
-  "publication_approved": false,
+  "publication_approved": true,
   "open_license_items": []
 }
