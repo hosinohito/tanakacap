@@ -37,7 +37,11 @@ namespace TanakaCap.Editor {
      GameObjectUtility.RemoveMonoBehavioursWithMissingScript(t.gameObject);
     }
     foreach(var component in copy.GetComponentsInChildren<Component>(true)) {
-     if(component is Transform||component is Animator||component is SkinnedMeshRenderer||component is MeshRenderer||component is MeshFilter||component is UnityEngine.Animations.IConstraint)continue;
+     if(component is ParticleSystem particles){
+      warnings.Add("ParticleSystem preserved: "+AnimationUtility.CalculateTransformPath(particles.transform,copy.transform)+"; playOnAwake="+particles.main.playOnAwake+". Original Animator/VRChat menu/script triggers are not exported.");
+      continue;
+     }
+     if(component is Transform||component is Animator||component is SkinnedMeshRenderer||component is MeshRenderer||component is MeshFilter||component is ParticleSystemRenderer||component is UnityEngine.Animations.IConstraint)continue;
      string type=component.GetType().FullName;
      if(type=="TanakaCap.AvatarDriver"||type.StartsWith("VRC.")) {
       warnings.Add("Omitted: "+type+" at "+AnimationUtility.CalculateTransformPath(component.transform,copy.transform));
