@@ -566,3 +566,6 @@
 
 
 2026-09-13：通常Playerにエラー専用ログを追加（TanakaCap.exeと同じフォルダーのlogs/player-errors.log、1 MiB超で.previousへ世代交代、通常の追跡ログは増やさない）。RuntimeInitializeOnLoadMethodでアバター読込前から描画上限を適用、読込失敗時も指定60/30/自由入力を維持。推論同期の起動失敗時は60上限。マテリアルエラーにrenderer/material/shader/supported/GPU APIと例外詳細を記録。デモモーション中は推論モード/部位選択を隠す。0.1.1-fixes2をビルド予定、未検証。
+
+
+2026-09-13：ユーザー提供ログでMSL/Ring Particles Shaderのsupported=False/Direct3D11を確認。前回のログ未生成申告はログが無かったと確定せず、既存パスがbuilds/lab/logsだった点を案内。通常UIは--error-logで起動bat隣のlogs/player-errors.logを指定、起動時にファイル作成、ロード例外はコールバックを介さず直接保存。プレビューへログの絶対パス/保存失敗理由を表示。shader本体は手元になくプロジェクトパスを質問中、原因未確定・置換なし。UIのアバター選択を最上段、入力名をモーション入力へ変更。Tk実検査とPlayerの指定先直接ログ検証成功。0.1.1-fixes3をビルド中。

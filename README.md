@@ -435,4 +435,4 @@ PhysBoneとUnity Constraintが同じボーンを制御する場合、そのボ�
 Unity標準のParticleSystem/ParticleSystemRendererは設定を保持して書き出します。自動再生は元のplayOnAwakeに従い、VRChatメニュー等による起動は再現しません。この対応は修正版プラグインに含まれ、公開v0.1.0 ZIPには未反映です。
 
 
-エラーが出た場合は、本体の実行ファイル `TanakaCap.exe` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。
+エラーが出た場合は、起動用 `TanakaCap.bat` と同じフォルダーにある `logs` を開いてください。`player-errors.log` に描画アプリのエラーを保存します。古いログは `player-errors.log.previous` です。

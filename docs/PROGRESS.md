@@ -1189,3 +1189,8 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 ビルド状況訂正：0.1.1-fixesは中断要求時点ですでに完了していた。LocalAppData版なので今回の提供対象にせず、本体隣ログ版0.1.1-fixes2を別途作成中。UI実ウィジェットのデモ→録画表示復帰検査成功。欠損.tcapで実Playerを起動（実カメラなし）、60/30指定のloopHz最大60.003/30.002を確認。保存先変更後も60上限とbuilds/release-player/logs/player-errors.logのエラー記録成功。結果results/startup-error-check/{report,nearby-report}.json。
 
 0.1.1-fixes2完了：part01=2,084,962,845 bytes、part02=162,030,033 bytes、12,918ファイル。CRC/ライセンス/ランタイム検査成功。SHA256SUMS.txt作成。展開済み本体はbuilds/releases/0.1.1-fixes2/TanakaCap。通常UI起動で実行ファイル隣builds/lab/logs/player-errors.logへ描画エラーを保存。GitHub公開は行っていない。
+
+
+2026-09-13：ユーザー提供ログでMSL/Ring Particles Shaderのsupported=False/Direct3D11を確認。前回のログ未生成申告はログが無かったと確定せず、既存パスがbuilds/lab/logsだった点を案内。通常UIは--error-logで起動bat隣のlogs/player-errors.logを指定、起動時にファイル作成、ロード例外はコールバックを介さず直接保存。プレビューへログの絶対パス/保存失敗理由を表示。shader本体は手元になくプロジェクトパスを質問中、原因未確定・置換なし。UIのアバター選択を最上段、入力名をモーション入力へ変更。Tk実検査とPlayerの指定先直接ログ検証成功。0.1.1-fixes3をビルド中。
+
+0.1.1-fixes3ビルド完了。ZIP2本CRC/ライセンス/ランタイム検査成功、SHA256SUMS.txt作成。新しい保存経路とUI修正を同梱。shader問題は未解決、原本パスの回答待ち。GitHubは未更新。

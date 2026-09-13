@@ -32,6 +32,8 @@ def run():
                 def widgets(text):
                     return [w for w in descendants(window) if 'text' in w.keys() and str(w.cget('text'))==text]
                 assert widgets('保存して開始') and not widgets('保存して適用（実行中は再起動）')
+                assert int(widgets('アバター (.tcap)')[0].grid_info()['row'])==0
+                assert int(widgets('モーション入力')[0].grid_info()['row'])==2
                 assert widgets('終了')[0].pack_info()['side']=='right'
                 assert len(widgets('規定値'))==8
                 from tkinter import ttk, Canvas
