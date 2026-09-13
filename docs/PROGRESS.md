@@ -1268,3 +1268,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 
 
 2026-09-13：v0.1.1公開用ビルド成功。Unityはsandbox内ライセンスIPC待ちのため今回プロセス停止後、通常権限で再実行成功。Player/Exporterと表情・曲線境界・素材fallback・Constraint検査成功。配布原本/通知20件/モデルSHA/同梱Python/全ZIP CRC検査成功、license-auditは未解決・機械エラーとも空。12,923 files、ZIP part01=2,084,978,184 bytes、part02=162,030,920 bytes。builds/releases/0.1.1/release-report.jsonが公開対象。GitHub v0.1.1公開作業中。ユーザーは更新時に両ZIPを新しい同一フォルダーへ展開する。
+
+
+2026-09-13：GitHub Release v0.1.1公開完了：https://github.com/hosinohito/tanakacap/releases/tag/v0.1.1 。mainとタグはa3ad189。2添付ZIPともGitHub側state=uploaded・サイズ・SHA256がrelease-reportと一致、draft=false、published_at=2026-09-13T09:31:08Zを再照会で確認。作成HTTP502/公開HTTP500は操作自体が成立しており、重複作成せず状態再確認で完了判定。更新は両ZIPを新しい同一フォルダーへ展開しアバターを選択。旧録画/原本/モデル/保存デモはローカルに保持。整理で11ソースファイルと旧カメラexe/objを削除、現行実験機能は維持。

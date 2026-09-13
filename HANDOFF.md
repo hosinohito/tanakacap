@@ -1,3 +1,5 @@
+2026-09-13：GitHub Release v0.1.1公開完了：https://github.com/hosinohito/tanakacap/releases/tag/v0.1.1 。mainとタグはa3ad189。2添付ZIPともGitHub側state=uploaded・サイズ・SHA256がrelease-reportと一致、draft=false、published_at=2026-09-13T09:31:08Zを再照会で確認。作成HTTP502/公開HTTP500は操作自体が成立しており、重複作成せず状態再確認で完了判定。更新は両ZIPを新しい同一フォルダーへ展開しアバターを選択。旧録画/原本/モデル/保存デモはローカルに保持。整理で11ソースファイルと旧カメラexe/objを削除、現行実験機能は維持。
+
 2026-09-13：v0.1.1公開用ビルド成功。Unityはsandbox内ライセンスIPC待ちのため今回プロセス停止後、通常権限で再実行成功。Player/Exporterと表情・曲線境界・素材fallback・Constraint検査成功。配布原本/通知20件/モデルSHA/同梱Python/全ZIP CRC検査成功、license-auditは未解決・機械エラーとも空。12,923 files、ZIP part01=2,084,978,184 bytes、part02=162,030,920 bytes。builds/releases/0.1.1/release-report.jsonが公開対象。GitHub v0.1.1公開作業中。ユーザーは更新時に両ZIPを新しい同一フォルダーへ展開する。
 
 2026-09-13：ユーザーが修正後の実カメラ推論30Hz・処理約19msを確認。CMSの30fps入力に追従。プロジェクト整理・GitHub Release公開を指定。初期録画固定の単発検査9本（audit_latest_width/width_subbin/latest_controls/yaw_palm_mouth/face_clearance/elbow_face_failures、check_motion_revision、summarize_axis_revision/distance_revision）と新診断に置換済みcamera_modes.cpp/build-camera-probe.cmd、その生成exe/objを削除。現行コード/テスト/ランチャーの参照なしを確認。実験UI、再利用比較/検証、録画・モデル・デモ原本は維持。全297 tests成功。v0.1.1の最新ビルドと公開を進行中。
