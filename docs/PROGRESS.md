@@ -1166,3 +1166,7 @@ build-release.batを追加し、build-release.ps1を日時版名・原本検査�
 GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ、対象個人リポジトリ限定のfine-grained PATへ変更。トークン作成済み申告、非表示入力・Windows DPAPI保存用tools/set-release-token.ps1を用意。秘密値の受領/認証/公開はまだ未完了。
 
 公開先hosinohito/tanakacapを受領。public/size 0、限定PATでAPI書込権限を確認。ローカル配布ZIPのSHA256を再照合し一致。既存.github/workflows/release-build.yml登録に必要なWorkflows write追加を依頼、公開処理は未実行。
+
+## 2026-09-13 GitHub初回公開完了
+
+ユーザーの公開先指定とWorkflows権限追加を受け、hosinohito/tanakacapへmaster:mainとv0.1.0（0217817）をpush。Gitのsandbox TLS認証失敗は通常権限で解消。下書きにZIP2本とSHA256SUMS.txtをアップロード、全3件のGitHub digest/sizeをローカルと照合後公開。APIでdraft=false・published_at=2026-09-13T04:39:40Zを確認。https://github.com/hosinohito/tanakacap/releases/tag/v0.1.0 。実写/アバター原本/秘密トークンはコミット・アップロードしていない。ビルド済み品質の新たな実カメラ評価は実施していない。
