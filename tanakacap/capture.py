@@ -58,10 +58,11 @@ class Camera:
             if not cap.isOpened():
                 raise RuntimeError(f'Cannot open camera {index} with {backend}')
             requested_format=pixel_format or ('MJPG' if backend=='dshow' else None)
-            format_accepted=cap.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*requested_format)) if requested_format else None
             accepted = {'width': cap.set(cv2.CAP_PROP_FRAME_WIDTH, width),
                         'height': cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height),
                         'fps': cap.set(cv2.CAP_PROP_FPS, fps)}
+            # Size/rate negotiation can reset the subtype; select the format last.
+            format_accepted=cap.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*requested_format)) if requested_format else None
             self.metadata = {'index': index, 'backend': cap.getBackendName(),
                              'requested': [width, height, fps],
                              'reported': [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT),
@@ -69,6 +70,11 @@ class Camera:
                              'fourcc': int(cap.get(cv2.CAP_PROP_FOURCC)), 'requested_format':requested_format,
                              'format_accepted':format_accepted, 'exposure':cap.get(cv2.CAP_PROP_EXPOSURE),
                              'auto_exposure':cap.get(cv2.CAP_PROP_AUTO_EXPOSURE), 'settings_accepted': accepted}
+            actual_format=''.join(chr((self.metadata['fourcc'] >> (8*i)) & 255) for i in range(4))
+            self.metadata['actual_format']=actual_format
+            self.metadata['format_matches_request']=actual_format==requested_format if requested_format else None
+            if requested_format and actual_format!=requested_format:
+                print(f'WARNING: requested camera format {requested_format}, received {actual_format}. Format comparison is not valid.', flush=True)
             if self.metadata['reported'][:2] != [width, height]:
                 print(f'WARNING: requested {width}x{height}, received {self.metadata["reported"][:2]}. Check camera index.', flush=True)
             sequence = 0
