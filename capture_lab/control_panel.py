@@ -15,7 +15,8 @@ SETTINGS=ROOT/'ui-settings.json'
 MODES={'full':'全部 ON','face_head':'顔・頭（目線なし）','head_only':'頭のみ'}
 DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/lab/avatars/haolan.tcap'),
              mode='full',body=True,gaze=True,detector=True,rate='60',fps=60,width=1920,height=1080,
-             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp')
+             aa=True,preview=True,expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp',
+             brow_exaggeration=0.,eye_exaggeration=0.,eyelid_exaggeration=0.,mouth_exaggeration=0.)
 
 
 def validate(values):
@@ -27,7 +28,8 @@ def validate(values):
         value=float(data[key])
         if not math.isfinite(value) or value!=int(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} の整数を指定してください')
         data[key]=int(value)
-    for key,lo,hi in [('gamma',.25,4),('suppression',0,1),('emphasis',0,1),('gaze_gain',.5,6)]:
+    for key,lo,hi in [('gamma',.25,4),('suppression',0,1),('emphasis',0,1),('gaze_gain',.5,6),
+                      *[(k,0,1) for k in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration')]]:
         if data[key] is None and key in ('gamma','suppression'):continue
         value=float(data[key])
         if not math.isfinite(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} を指定してください')
@@ -61,6 +63,9 @@ def commands(config, port, status_port, player_pid=0):
             '--avatar',str(Path(c['avatar']).resolve()),'--render-fps',str(cap),'--output-width',str(c['width']),
             '--output-height',str(c['height']),'--expression-mode',c['expression'],'--mouth-corner-emphasis',str(c['emphasis']),
             '--gaze-gain',str(c['gaze_gain'])]
+    for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration'):
+        player+=['--'+key.replace('_','-'),str(c[key])]
+    if Path(c['avatar']).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve():player+=['--use-demo-shape-keys']
     if c['rate']=='sync':player+=['--render-sync']
     if not c['aa']:player+=['--no-edge-aa']
     if not c['preview']:player+=['--no-preview']
@@ -255,13 +260,17 @@ def main(test_hook=None):
     f=frames['表情']
     row(f,0,'表情方式','expression',['existing','auto-custom'])
     ttk.Label(f,text='既存キーは Perfect Sync → MMD → VRC の順に使用').grid(row=1,column=0,columnspan=2,sticky='w')
-    for index,key,label,lo,hi in [(2,'gamma','口角ガンマ',.25,4),(4,'suppression','開口時の口角上げ抑制',0,1),(6,'emphasis','口角の追加強調',0,1),(8,'gaze_gain','目線の感度',.5,6)]:
-        row(f,index,label,key)
+    exaggeration_widgets=[]
+    for index,key,label,lo,hi in [(2,'brow_exaggeration','眉の大げさ度',0,1),(4,'eye_exaggeration','目（目線）の大げさ度',0,1),
+                                 (6,'eyelid_exaggeration','まぶた（閉じ）の大げさ度',0,1),(8,'mouth_exaggeration','口の大げさ度',0,1),
+                                 (10,'gamma','口角ガンマ',.25,4),(12,'suppression','開口時の口角上げ抑制',0,1),(14,'emphasis','口角の追加強調',0,1),(16,'gaze_gain','目線の基準感度',.5,6)]:
+        entry=row(f,index,label,key)
         initial=variables[key].get()
         default=2 if key=='gamma' and variables['expression'].get()=='auto-custom' else .9 if key=='suppression' and variables['expression'].get()=='auto-custom' else 1 if key=='gamma' else 0
         slider=tk.DoubleVar(value=float(initial) if initial else default)
         scale=ttk.Scale(f,from_=lo,to=hi,variable=slider,command=lambda value,k=key:variables[k].set(f'{float(value):.3f}'))
         scale.grid(row=index+1,column=1,sticky='ew')
+        if key.endswith('_exaggeration'):exaggeration_widgets.append((key,entry,scale))
         def sync_slider(*args,k=key,v=slider):
             value=variables[k].get()
             if not value:value=(2 if k=='gamma' else .9) if variables['expression'].get()=='auto-custom' else (1 if k=='gamma' else 0)
@@ -269,8 +278,15 @@ def main(test_hook=None):
             except ValueError:pass
         variables[key].trace_add('write',sync_slider)
         variables['expression'].trace_add('write',sync_slider)
-    ttk.Button(f,text='口角をモード既定へ戻す',command=lambda:(variables['gamma'].set(''),variables['suppression'].set(''),variables['emphasis'].set('0'))).grid(row=10,column=1,sticky='w',pady=12)
-    ttk.Label(f,text='空欄はモード既定。通常: ガンマ1 / 抑制0 / 強調0。\n自動生成: ガンマ2 / 抑制0.9 / 強調0。\n対応する既存キーがあれば横寄せ・左右非対称も動きます。').grid(row=11,column=0,columnspan=2,sticky='w')
+    ttk.Button(f,text='口角をモード既定へ戻す',command=lambda:(variables['gamma'].set(''),variables['suppression'].set(''),variables['emphasis'].set('0'))).grid(row=18,column=1,sticky='w',pady=12)
+    ttk.Label(f,text='大げさ度: 0は追加強調なし、1は最大。適用すると再起動します。\n保存デモアバターは4項目とも常に最大です。\n口角の空欄はモード既定。対応キーがない動きは追加されません。').grid(row=19,column=0,columnspan=2,sticky='w')
+    def demo_strength_state(*args):
+        try:is_demo=Path(variables['avatar'].get()).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve()
+        except (OSError,ValueError):is_demo=False
+        for key,entry,scale in exaggeration_widgets:
+            if is_demo:variables[key].set('1')
+            entry.configure(state='disabled' if is_demo else 'normal');scale.configure(state='disabled' if is_demo else 'normal')
+    variables['avatar'].trace_add('write',demo_strength_state);demo_strength_state()
     messages=tk.Text(outer,height=3,font=('Yu Gothic UI',9),state='disabled');messages.pack(fill='x')
     buttons=ttk.Frame(outer);buttons.pack(fill='x',pady=(12,0))
     def config():return validate({k:(None if k in ('gamma','suppression') and v.get()=='' else v.get()) for k,v in variables.items()})

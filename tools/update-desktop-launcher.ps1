@@ -161,8 +161,9 @@ $taskAutoTest = Join-Path $taskDesktop 'tanakacap-test-auto-expressions.bat'
 [IO.File]::WriteAllText($taskAutoTest,$taskContents.Replace(' -Diagnose',' -ExpressionMode auto-custom -Diagnose'),[Text.Encoding]::Default)
 Write-Output $taskAutoTest
 $taskSavedDemo = Join-Path $taskDesktop 'tanakacap-demo-custom-brows.bat'
-$taskSavedExe = Join-Path $taskRoot 'builds/demos/haolan-custom-brows/TanakaCap.exe'
-[IO.File]::WriteAllText($taskSavedDemo,"@echo off`r`nstart `"`" `"$taskSavedExe`" --motion-demo -nolog`r`n",[Text.Encoding]::Default)
+$taskSavedExe = Join-Path $taskRoot 'builds/lab/TanakaCap.exe'
+$taskSavedAvatar = Join-Path $taskRoot 'builds/demos/haolan-custom-brows/avatars/haolan.tcap'
+[IO.File]::WriteAllText($taskSavedDemo,"@echo off`r`nstart `"`" `"$taskSavedExe`" --avatar `"$taskSavedAvatar`" --use-demo-shape-keys --motion-demo -nolog`r`n",[Text.Encoding]::Default)
 Write-Output $taskSavedDemo
 $taskAutoMotion = Join-Path $taskDesktop 'tanakacap-motion-auto-expressions.bat'
 $taskMotionScript = Join-Path $taskRoot 'run-motion-lab.ps1'

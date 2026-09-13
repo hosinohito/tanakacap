@@ -1062,3 +1062,13 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 ## 2026-09-13 — 眉振動対策なし/ありの比較動画
 
 ユーザー指定で同じ853packetと左右分割済みデモアバターを使い、眉の直接反映と可変追従を比較。PnP/gain2/4フレーム法と他の全制御は固定。入力ストリームのバイト一致を確認。tools/prepare_brow_follow_comparison.pyで準備し、results/avatar-videos/brow-followへ単体2本/横並び/顔アップを出力。各901描画frame、30.033秒、全デコード成功。顔アップは左brow-direct/右brow-adaptive。オフライン30fpsで実時間遅延ではない。実カメラ/実写表示/エージェント目視なし。眉倍率の比較とは別。通常設定の変更なし。
+
+## 2026-09-13 — 部位別の大げさ度スライダーと強調デモ比較
+
+ユーザー指定で眉/目線/まぶた閉じ/口の0〜1スライダーをUIへ追加。独立保存・Player引数・表示制御まで接続。0は現在基準への追加作用なし。眉1〜1.75倍、目線基準感度に1〜1.5倍、閉眼1〜1.8倍、口の開口/幅/丸め/左右口角/寄せ/弓形1〜1.7倍と既存口角強調max。中立と表示上限は維持。検出モデル/閾値/4フレーム処理は変更なし。まぶたは表示感度であり、まばたき見逃しの復元ではない。
+
+デモflagは4項目1固定、UIでも保存デモ選択時は1表示でスライダー無効。旧デモmotion batを最新Player＋保存デモ素材へ更新。固定デモ原本のハッシュ一致を確認。口寄せの不足キーを唇限定レシピで実行時補完しshiftL未マップを解消。既存TCキーは生成時にスキップし置き換えない。通常existingでの生成禁止は維持。
+
+269 Python tests、Tk入力/保存/適用、Unityの独立性/中立/上限/デモ強制の検査とビルド成功。初回の新クラスimport途中に一時CS0246が出たが最終ビルドは成功。口角入力にも強調倍率を加える最終修正で再ビルド・再動画化。途中版はresults/avatar-videos/facial-exaggeration-before-corner-gainへ保存。
+
+最終比較はresults/avatar-videos/facial-exaggeration。左normal=全追加強調0、右exaggerated=全1。同じ最新版・補完済みデモ・853packet・PnP・眉gain2・可変眉を固定。各901frame/30.033秒、単体2本/横並び/顔アップ、全デコード成功。入力/アバターハッシュ一致、実Playerログ0/1を確認。比較用の例外フラグはoffline render-replay限定。実カメラ/実写表示/エージェント目視なし。README/SPEC/HANDOFF/AGENTS/CONTROL_PANEL/FACIAL_EXAGGERATIONへ記録。
