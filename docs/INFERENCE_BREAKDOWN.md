@@ -60,3 +60,6 @@
 ## 2026-09-13 頭専用auto
 
 自動頭領域YuNetを追加した頭専用autoは同じ先頭930入力/900測定、単独/previewなし/ORT traceOFFでループ中央値8.601ms、領域3.828ms、姿勢2.339ms、decode1.892ms。900/900が追跡有効（精度の正解率ではない）。results/20260912T155231-635213Z-head-only/report.json。旧fixed3.177msとは機能が異なり、同時再測定ではない。上の既存full内訳は未変更。再現スクリプトはhead-only-fixedとhead-only-autoを分けるよう更新。通常構成の高速化はまだ実装せず、PERFORMANCE_OPTIONS.mdの案に対する優先順位指定待ち。
+
+
+2026-09-13：ユーザー指摘でUIの人物検出「負荷4割」を再監査。ui-part-costs.jsonは過去FP32/shared body-face/batch eyes測定の6.7679ms÷17.6735msを整数丸めした値。現在FP16/高速化後の値でもON/OFF削減率でもない。旧数値を現在構成に無条件適用した表示を訂正し、全3項目は負荷未計測と表示する。履歴数値は保持しvalid_for_current_configuration=falseを追加。人物検出の名称は人物範囲の自動検出へ明確化。推論処理は変更なし。別PCへはtanakacap/control_panel.pyとdocs/ui-part-costs.jsonを同じ相対パスへコピー。ZIP/Playerビルド不要。
