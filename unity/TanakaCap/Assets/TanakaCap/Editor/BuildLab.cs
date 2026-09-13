@@ -161,7 +161,7 @@ namespace TanakaCap.Editor
             new GameObject("Avatar Loader").AddComponent<AvatarPackageLoader>();
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(),"Assets/TanakaCap/Scenes/HaolanLab.unity");
             File.Copy("../../docs/PROCEDURAL_MOTION_LICENSE.txt","../../builds/lab/PROCEDURAL_MOTION_LICENSE.txt",true);
-            AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/lab/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+            AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/lab/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
             Directory.CreateDirectory("../../builds/lab");
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { "Assets/TanakaCap/Scenes/HaolanLab.unity" },

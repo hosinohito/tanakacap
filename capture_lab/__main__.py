@@ -3,6 +3,7 @@ from . import camera_display
 import argparse
 import importlib.metadata
 import json
+import os
 import platform
 import subprocess
 import time
@@ -471,7 +472,9 @@ def probe(args):
 def main(argv=None, *, inference_mode=None):
     # Internal hook for offline regression tools / a possible future UI.
     from .gpu_runner import DEFAULT_INFERENCE_MODE
-    inference_mode = inference_mode or DEFAULT_INFERENCE_MODE
+    precision=os.environ.get('TANAKACAP_UI_PRECISION','fp16')
+    if precision not in ('fp16','fp32'):raise ValueError('Invalid UI precision')
+    inference_mode = inference_mode or ('graph' if precision=='fp32' else DEFAULT_INFERENCE_MODE)
     if inference_mode not in ('run','binding','graph','graph-fp16'):
         raise ValueError('Unknown internal inference mode')
     parser = argparse.ArgumentParser(allow_abbrev=False, description='GPU capture evaluation (development only)')

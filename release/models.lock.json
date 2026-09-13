@@ -1,0 +1,9 @@
+{
+  "models/rtmw3d-x-384/model.onnx": "4a289c0e99d47eb595e99679d9d4a2d1def1b4241f9adcbafba44b9ff585ebcd",
+  "models/rtmw-l-384/model.onnx": "bd033156e5104c4f5d2edfe0453e02661e30a2f3da453ec93c8764d561b83054",
+  "models/yolox-m-human/model.onnx": "3dea6513388889f0fff4b77bf7a26013600321b9eb9ceb0e9a400a82572f5f23",
+  "models/iris-landmark.onnx": "e3c8ae73a21415e396688d655d5f1d9e1cb5a01b7ed19962de76c06458bfddcb",
+  "models/iris-landmark.LICENSE": "d7c9068d896188264b60827b8cd1e25fdb9f5b5cad0b1589e90b96c87729c404",
+  "models/head-region-yunet.onnx": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+  "models/head-mobilenetv3-small.onnx": "e8ae4d932b3d13221638fc72e171603e020c6da28b770753f76146867f40e190"
+}

@@ -1,12 +1,14 @@
 # 配布ライセンスの棚卸し
 
+最新（2026-09-13）：ユーザーが独自コードをMITに決定。ルートLICENSEとExporter用LICENSE.txtを追加。外部部品は各許諾を維持。build-release.ps1/RELEASE_BUILD.mdで必要部品・通知・モデルを選んでZIP化する環境を追加したが、NVIDIA DLL照合/モデル重み/Unity・Spout内部通知の最終監査は未完了。release/config.jsonで公開可のビルドを止め、ローカルレビュー用梱包は継続可能。旧「独自コード未決定」は本決定で更新。
+
 2026-09-13。対象は現在のWindows開発版と、将来のPlayer＋Unity変換プラグイン配布。**棚卸しであり、現在のbuildsフォルダーをそのまま公開できるという判定ではない。** ソースの許諾、モデル重みの許諾、同梱DLLの許諾を分ける。無料配布でも再配布条件は必要になる。
 
 ## 現在の部品と扱い
 
 | 部品 | 確認した条件・出所 | 配布時の扱い／残件 |
 |---|---|---|
-| TanakaCap独自コード | ルートの製品用ライセンスは未決定 | MIT等の許諾型を候補とするが、今回勝手に公開・再許諾しない。サードパーティ部分を自作扱いにしない |
+| TanakaCap独自コード | ユーザー指定でMIT、ルートLICENSE | Exporterにも同じ本文を同梱。外部部品を自作MITの対象として扱わない |
 | 自作デモモーション | 0BSD、`PROCEDURAL_MOTION_LICENSE.txt` | モーション単体は配布可能。アバターの許諾は別 |
 | Python 3.11 | PSF系の利用条件 | 埋め込み配布を選ぶ場合はPython本体のLICENSEと同梱ライブラリの通知を含める。開発venv丸ごと配布はしない |
 | ONNX Runtime GPU 1.30.0 | インストール済みwheelのMIT、ThirdPartyNotices等を収集 | MIT本文・同梱部品の通知を保存。NVIDIA DLLまでMITになるわけではない |

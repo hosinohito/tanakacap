@@ -25,6 +25,26 @@ def run():
     def hook(window,variables,session,actions):
         def check():
             try:
+                def descendants(parent):
+                    for child in parent.winfo_children():
+                        yield child
+                        yield from descendants(child)
+                def widgets(text):
+                    return [w for w in descendants(window) if 'text' in w.keys() and str(w.cget('text'))==text]
+                assert widgets('保存して開始') and not widgets('保存して適用（実行中は再起動）')
+                assert len(widgets('規定値'))==8
+                variables['source'].set('camera');window.update_idletasks()
+                assert not widgets('録画のパス')[0].grid_info()
+                variables['source'].set('video');window.update_idletasks()
+                assert widgets('録画のパス')[0].grid_info()
+                variables['rate'].set('60');window.update_idletasks()
+                assert not widgets('自由入力 fps / 同期時の上限')[0].grid_info()
+                variables['rate'].set('custom');window.update_idletasks()
+                assert widgets('自由入力 fps / 同期時の上限')[0].grid_info()
+                variables['preview'].set(False);window.update_idletasks()
+                assert not widgets('背景')[0].master.grid_info()
+                variables['preview'].set(True);window.update_idletasks()
+                assert widgets('背景')[0].master.grid_info()
                 variables['source'].set('video');variables['video'].set('recorded-only.avi')
                 variables['gamma'].set('1.7');variables['suppression'].set('.4');variables['fps'].set('37')
                 for key,value in [('brow_exaggeration',.2),('eye_exaggeration',.4),('eyelid_exaggeration',.6),('mouth_exaggeration',.8)]:variables[key].set(str(value))

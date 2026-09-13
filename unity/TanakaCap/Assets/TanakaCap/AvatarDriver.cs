@@ -58,7 +58,7 @@ namespace TanakaCap
         }
         public Animator animator;
         public int port = 39540;
-        public bool showStatus = true;
+        public bool showStatus = false;
         // HAOLAN 1.6: vrc.blink_* barely move. These author-provided shapes close each eye.
         public string leftBlinkShape = "ウィンク２";
         public string rightBlinkShape = "ウィンク２右";
@@ -80,7 +80,7 @@ namespace TanakaCap
         bool gazeEnabled=true;
         bool gazeIrisMode=true;
         float gazeGain=4f;
-        float mouthShiftDistance=.008f;
+        float mouthShiftDistance=.004f;
         bool legacyGazeResponse;
         SkinnedMeshRenderer gazeMesh;
         Transform leftEye,rightEye;
@@ -94,6 +94,11 @@ namespace TanakaCap
         Vector3 seatedHeadOffset,lastTorso;
         bool framedDistance=true;
         float initialHeadCameraY;
+        public void CameraFramingChanged(Vector3 cameraDelta){
+            if(!Camera.main)return;
+            initialHeadCameraY-=Vector3.Dot(cameraDelta,Camera.main.transform.up);
+            initialFaceDepth-=Vector3.Dot(cameraDelta,depthDirection);
+        }
         float mouth, mouthWidth,mouthRound,mouthSmile,blinkLeft, blinkRight;
         float mouthLeftCorner,mouthRightCorner,mouthBow,mouthShift;
         public float MouthCornerEmphasis { get; set; } = 0;
@@ -267,7 +272,7 @@ namespace TanakaCap
             bool demoShapes=Array.IndexOf(renderArgs,"--use-demo-shape-keys")>=0;
             exaggeration=FacialExaggeration.Parse(renderArgs,demoShapes);
             autoExpressions=expressionMode=="auto-custom" || demoShapes;
-            mouthShiftDistance=Array.IndexOf(Environment.GetCommandLineArgs(),"--legacy-mouth-shift-range")>=0?.004f:.008f;
+            mouthShiftDistance=Array.IndexOf(Environment.GetCommandLineArgs(),"--experimental-mouth-shift-8mm")>=0?.008f:.004f;
             if(autoExpressions){GenerateAutoMouthShapes();GenerateAutoGazeShapes();}
             if(autoExpressions)BrowShapeSplit.Generate(meshes,leftEye,rightEye,ExpressionClone);
             expressions=new FaceExpressions(transform,meshes,faceProfile,autoExpressions,cornerGains);
@@ -345,7 +350,6 @@ namespace TanakaCap
             if(videoMode)return;
             if (Input.GetKeyDown(KeyCode.F3)) SetObsMode(!obsMode);
             if (Input.GetKeyDown(KeyCode.F4)) gazeEnabled=!gazeEnabled;
-            if (Input.GetKeyDown(KeyCode.F1)) showStatus = !showStatus;
             if (Input.GetKeyDown(KeyCode.F2)) demo = !demo;
             if (Input.GetKeyDown(KeyCode.C) && current != null && current.torsoTracked && Time.unscaledTime-lastReceived<.3f)
                 torsoNeutral = new Vector3(current.torsoPitch,current.torsoYaw,current.torsoRoll);

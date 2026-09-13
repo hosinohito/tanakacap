@@ -10,11 +10,11 @@ def main():
     output=ROOT/'results/comparisons/mouth-shift-range'
     output.mkdir(parents=True,exist_ok=False)
     variants={}
-    for name,extra in [('shift-4mm',['--legacy-mouth-shift-range']),('shift-8mm',[])]:
+    for name,extra in [('shift-4mm',[]),('shift-8mm',['--experimental-mouth-shift-8mm'])]:
         folder=output/name;folder.mkdir()
         (folder/'replay.jsonl').write_bytes(data)
         variants[name]=dict(frames=len(data.splitlines()),expected_log=[
-            'TANAKACAP_BAKED_LIP_ONLY_OK: sign='+sign+' max='+('0.004' if extra else '0.008') for sign in ('-1','1')],player_args=[
+            'TANAKACAP_BAKED_LIP_ONLY_OK: sign='+sign+' max='+('0.008' if extra else '0.004') for sign in ('-1','1')],player_args=[
             '--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
             '--use-demo-shape-keys','--check-mouth-shift-isolation',*extra])
     report=dict(status='complete',variants=variants,packet_sha256=hashlib.sha256(data).hexdigest(),

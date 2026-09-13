@@ -1,5 +1,22 @@
 # 引き継ぎ：現在の状態
 
+2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
+
+
+## 2026-09-13 — 配布ビルド/UI刷新、Unity認証待ち
+
+最新依頼：Exporter、本体、UI、実行ライブラリ/モデル、簡潔な利用説明書、ライセンスをGitHub Release ZIPへ。MIT承認済み。口寄せ通常4mm復帰、8mmは実験。ユーザーが逐次指定したUIをcontrol_panel/ui_experimentsへ実装。実写非表示の機構は残し文言だけ削除。カメラはDirectShowのメタデータ列挙のみ（8機種、HD webcam-CMS-V43BKを確認）。実験タブのFP16/FP32は子プロセス環境変数で切替。部位負荷4/1/4割はFP32時代の同条件stage mean比率で、現在のFP16削減率ではない。
+
+描画UI最新：60/30時は自由入力非表示、説明は選択肢内。ウインドウON時だけ背景ラジオ「指定しない=黒、緑、青、マゼンタ」。Spout用カメラはclear維持。開始/適用は保存して開始へ統合。273 Python testsと実Tkモック起動/設定/条件表示テスト成功。利用者手順docs/USER_GUIDE.md、開発docs/RELEASE_BUILD.md。ControlPanelから実カメラを開く検証はしていない。
+
+Unity新コード：AvatarFraming（アバターpath別の上下/距離/FOV保存、reset、Esc閉じ、右ドラッグ上下、ホイール距離、CtrlホイールFOV）、AvatarWindow（タイトルバーなし/左ドラッグ移動）、統計初期OFFかつF1トグル撤去。構図ボタンから保存/リセット、F9でも開閉。AlphaOutputは背景色をpreviewだけへ、FOVはoutputへ同期、構図変更時は同期描画を更新。--framing-check <新規JSONパス>で位置/FOV/保存/リセットの自動チェックコード追加。ただし最新コードはUnity再ビルド未達成・実ウインドウ未検証。
+
+重大な停止点：build-release.ps1のUnity起動が最初ライセンスIPC失敗、その後通常権限でもNo valid Unity Editor license / Machine bindings don't match, Token not found in cache。ユーザーに現在ユーザーのHubライセンス確認を依頼済み。ユーザーから「Unity自体をビルドしているのか」と質問あり、TanakaCap.exeをUnity Editorで作るためEditor認証が必要、Personal条件内なら有料契約不要と説明した。認証情報の変更や回避はしていない。再試行連打せず復旧報告待ち。
+
+配布環境：build-release.ps1→新BuildRelease.Build（HAOLAN原本不要の空シーン、外部AvatarLoader）→tools/build_release.py（runtime再配置、lock一致依存、モデルSHA lock、通知/manifest、ZIP CRC、2GiB未満なら一つ）。手動Actions workflowも追加、実行未確認。現行builds/releases/0.1.0-review1は旧lab Playerでの**途中梱包試験**であり最新UI/Unity変更を全て含まない。13,101files/ZIP2,088,759,516bytes、CRC成功、単独ZIP可能。同梱Python/Tk/主要ライブラリ読込成功、別途results/portable-runtime-gazeで合成入力の虹彩CUDA1536node/CPU0を確認。頭/全体モデルや新規PCの全機能成功ではない。SDK/原本/録画/SAM/HaMeRは梱包しない。モデル/CUDA/Unity/Spoutの公開監査残件はrelease/config.json、Publishableビルドは未承認なら停止。公開/アップロード未実施。
+
+次：認証復旧後 .\build-release.ps1 -Version 0.1.0-review2（未作成なので使用可）、必要なら .\build-unity-lab.ps1 で普段のPlayerも更新。最新デモtcap+--framing-checkの保存/リセット、背景各色のpreviewとSpout alpha不変、枠なしドラッグ/Esc、UIからFP16/FP32録画経路を実検証。最終ZIPを同梱Python/Playerで録画起動して検査し、初回review1を完成品扱いしない。モデル/通知の公開監査は別残件。ログresults/unity-release-build.log。
+
 ## 2026-09-13 — 口寄せ8mmとフェーズ整理
 
 ユーザーが目線の改善を確認。生成口寄せキーを4→8mmへ倍増、入力1.7倍/唇14mm帯は維持。--legacy-mouth-shift-rangeで生成を4mmへ。デモ/auto-customの不足キーが対象で既存キーと凍結原本は維持。比較results/avatar-videos/mouth-shift-range-final/face-closeup.mp4、左4mm/右8mm、全強調/校正済み目線/同853packet。両方向のBakeで4mm/8mmと唇外・顎首不変を確認。初回mouth-shift-rangeはフラグ適用順の誤りで両側8mmになった無効比較。適用を生成前へ修正し、比較ツールに期待ログ検査を追加。口寄せの見た目は未評価。フェーズ一覧をdocs/IMPLEMENTATION_PHASES先頭で更新。

@@ -1,0 +1,40 @@
+name: Build release ZIP
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: New local review version (for example 0.1.0-review3)
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64, tanakacap-release]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          clean: false
+      - name: Prepare pinned runtime and local model cache
+        shell: pwsh
+        run: |
+          uv venv --python 3.11 .venv
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          uv pip sync --python .venv/Scripts/python.exe requirements-lab.lock.txt
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .venv/Scripts/python.exe tools/prepare_release_ci.py
+      - name: Build and verify
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: .\build-release.ps1 -Version $env:RELEASE_VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-review
+          compression-level: 0
+          path: |
+            builds/releases/${{ inputs.version }}/TanakaCap-*.zip
+            builds/releases/${{ inputs.version }}/release-report.json
+            builds/releases/${{ inputs.version }}/runtime-check.txt
+          if-no-files-found: error

@@ -1,0 +1,8 @@
+{
+  "asset_limit_bytes": 2147483648,
+  "models": ["rtmw3d-x-384", "rtmw-l-384", "yolox-m-human"],
+  "root_models": ["iris-landmark.onnx", "iris-landmark.LICENSE", "head-region-yunet.onnx", "head-mobilenetv3-small.onnx"],
+  "excluded_distributions": ["pytest", "pluggy", "iniconfig", "pygments", "colorama", "pip", "setuptools", "wheel", "pypdf"],
+  "publication_approved": false,
+  "open_license_items": ["NVIDIA DLLと再配布対象の照合・製品利用条件", "モデル重みごとの許諾の最終確認（頭専用を含む）", "Unity/Spout内部部品の出荷通知照合"]
+}
