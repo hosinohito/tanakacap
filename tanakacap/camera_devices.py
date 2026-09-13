@@ -35,15 +35,30 @@ def enumerate_cameras():
                 bagid=guid('55272A00-42CB-11CE-8135-00AA004BB851')
                 hr=call(moniker,9,c.c_void_p,c.c_void_p,c.c_void_p,c.POINTER(c.c_void_p))(moniker,None,None,c.byref(bagid),c.byref(bag))
                 name='カメラ '+str(len(found))
+                device_id=''
                 if hr>=0:
                     variant=c.create_string_buffer(24)
                     hr=call(bag,3,c.c_wchar_p,c.c_void_p,c.c_void_p)(bag,'FriendlyName',variant,None)
                     if hr>=0 and c.c_ushort.from_buffer(variant).value==8:
                         name=c.wstring_at(c.c_void_p.from_buffer(variant,8).value)
                     c.OleDLL('oleaut32').VariantClear(variant)
-                found.append(dict(index=len(found),name=name))
+                    variant=c.create_string_buffer(24)
+                    hr=call(bag,3,c.c_wchar_p,c.c_void_p,c.c_void_p)(bag,'DevicePath',variant,None)
+                    if hr>=0 and c.c_ushort.from_buffer(variant).value==8:
+                        device_id=c.wstring_at(c.c_void_p.from_buffer(variant,8).value)
+                    c.OleDLL('oleaut32').VariantClear(variant)
+                found.append(dict(index=len(found),name=name,device_id=device_id))
             finally:release(bag);release(moniker)
         return found
     finally:
         release(enum);release(device)
         if initialized:ole.CoUninitialize()
+
+
+def resolve_camera(index, device_id='', devices=None):
+    """A saved identity wins over an unstable enumeration index. Never select by name."""
+    devices=enumerate_cameras() if devices is None else devices
+    matches=[d for d in devices if d.get('device_id','').casefold()==device_id.casefold()] if device_id else [d for d in devices if d['index']==index]
+    if len(matches)!=1:
+        raise RuntimeError('選択したカメラが見つからないか識別できません。接続を確認し、UIでカメラを選び直してください。')
+    return matches[0]

@@ -18,8 +18,9 @@ def test_format_selected_after_size_and_rate(monkeypatch):
         def get(self, key): return values.get(key, -1)
         def getBackendName(self): return 'DSHOW'
         def read(self):
+            import numpy as np
             camera.stop.set()
-            return True, object()
+            return True, np.zeros((720,1280,3),dtype=np.uint8)
         def release(self): pass
 
     monkeypatch.setattr(cv, 'VideoCapture', lambda *args: Device())

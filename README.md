@@ -457,3 +457,5 @@ CMS-V43BKの取得診断は `tools/diagnostics/diagnose-camera.bat`（デスク�
 診断ツールの配置：継続利用するものは `tools/diagnostics/`、一時検証用ファイルはデスクトップの `tanakacap-tools/` に置く。プロジェクト直下には診断用batを追加しない。
 
 診断のビルド・復元・測定範囲は [診断ツール](tools/diagnostics/README.md) を参照。設定変更後は元設定へ復元し、復元できなければ停止する。
+
+カメラタブでちらつき防止・暗所補正・入力解像度/fps・転送形式・取得方式を設定できる。描画設定とは独立。制御の既定は変更しない。機種固有の根拠、設定復元、対応範囲と未検証事項は [カメラ互換性](docs/CAMERA_COMPATIBILITY.md) を参照。

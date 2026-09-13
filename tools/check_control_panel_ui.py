@@ -38,7 +38,12 @@ def run():
                 assert len(widgets('規定値'))==8
                 from tkinter import ttk, Canvas
                 notebook=next(w for w in descendants(window) if isinstance(w,ttk.Notebook))
-                notebook.select(3);window.geometry('770x730');window.update()
+                camera_tab=next(tab for tab in notebook.tabs() if notebook.tab(tab,'text')=='カメラ')
+                assert widgets('ちらつき防止') and widgets('暗所補正（自動露出時）')
+                variables['source'].set('camera');window.update_idletasks()
+                assert notebook.tab(camera_tab,'state')=='normal'
+                variables['camera_powerline'].set('60hz');variables['camera_lowlight'].set('fixed')
+                notebook.select(next(tab for tab in notebook.tabs() if notebook.tab(tab,'text')=='実験'));window.geometry('770x730');window.update()
                 pane=window.nametowidget(notebook.select())
                 canvas=next(w for w in descendants(pane) if isinstance(w,Canvas))
                 combo=next(w for w in descendants(pane) if isinstance(w,ttk.Combobox))
@@ -53,6 +58,7 @@ def run():
                 variables['source'].set('camera');window.update_idletasks()
                 assert not widgets('録画のパス')[0].grid_info()
                 variables['source'].set('video');window.update_idletasks()
+                assert notebook.tab(camera_tab,'state')=='disabled'
                 assert widgets('録画のパス')[0].grid_info()
                 variables['source'].set('motion');window.update_idletasks()
                 assert not widgets('推論モード')[0].grid_info()
@@ -92,6 +98,7 @@ def run():
                 assert len(session.started)==2 and session.started[-1]['mode']=='head_only'
                 saved=json.loads(panel.SETTINGS.read_text(encoding='utf-8'))
                 assert saved['source']=='video' and saved['gamma']==1.7
+                assert saved['camera_powerline']=='60hz' and saved['camera_lowlight']=='fixed'
             except Exception as exc:errors.append(repr(exc))
             def exit_buttons(parent):
                 for child in parent.winfo_children():

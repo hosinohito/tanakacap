@@ -16,7 +16,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .capture import Camera
+from .capture import Camera, camera_from_args
 from .inference import PersonDetector, SimCCModel
 from .person_region import PersonRegionTracker
 from .models import ROOT, catalog, fetch
@@ -175,7 +175,7 @@ def benchmark(args):
             report['detector'] = detector.identity
             region_tracker = PersonRegionTracker(detector, args.detector_interval)
         if args.source == 'camera':
-            camera = Camera(args.camera, args.width, args.height, args.fps, args.backend)
+            camera = camera_from_args(args)
             camera.__enter__()
             report['camera'] = camera.metadata
             print('Camera: '+json.dumps(camera.metadata),flush=True)
@@ -453,7 +453,7 @@ def benchmark(args):
 
 def probe(args):
     output = output_folder('camera')
-    with Camera(args.camera, args.width, args.height, args.fps, args.backend, getattr(args,'pixel_format',None)) as camera:
+    with camera_from_args(args) as camera:
         frames = []
         previous = -1
         for _ in range(args.frames):
@@ -492,8 +492,10 @@ def main(argv=None, *, inference_mode=None):
         sub.add_argument('--fps', type=int, default=30)
         sub.add_argument('--backend', choices=['dshow', 'msmf'], default='msmf')
         sub.add_argument('--frames', type=int, default=180)
-        if command == 'probe-camera':
-            sub.add_argument('--pixel-format',choices=['MJPG','YUY2'])
+        sub.add_argument('--pixel-format',choices=['auto','native','MJPG','YUY2','NV12'],default='auto')
+        sub.add_argument('--camera-id',default='')
+        sub.add_argument('--camera-powerline',choices=['keep','off','50hz','60hz'],default='keep')
+        sub.add_argument('--camera-lowlight',choices=['keep','fixed','variable'],default='keep')
         if command == 'benchmark':
             sub.add_argument('--no-log',action='store_true',help='No result files, snapshots or ORT profiling; bounded in-memory history')
             sub.add_argument('--no-ort-profile',action='store_true',help='Keep timing results but disable expensive ORT node traces')
