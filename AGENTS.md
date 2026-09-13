@@ -1,5 +1,10 @@
 # 作業開始時の指示
 
+2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。
+
+
+最新（2026-09-13）：配布はExporter/本体/UI/ライブラリ/モデル/利用説明書/ライセンスをRelease ZIPへ。単独2GiB未満ならまとめる。独自コードMIT決定、READMEは開発者向け・USER_GUIDEは簡潔な利用者向け。口寄せは4mmへ復帰。UI説明整理/カメラ名/実験タブFP16・FP32/規定値/保存して開始を指定。背景はウインドウON時のみ「指定しない=黒/緑/青/マゼンタ」、Spout透過不変。Unity統計・タイトルバーを消し左ドラッグ窓移動/右ドラッグ上下/ホイール距離/CtrlホイールFOV/保存リセット/Esc閉じ。実装とPython/UI検査は進んだが、Unityライセンス認証エラーで最終ビルド未完了。HANDOFF先頭が再開点。
+
 最新（2026-09-13）：ユーザーが目線改善を確認。生成口寄せキーの最大移動を4→8mmへ指定、デモ/auto-customの不足キー生成へ適用。唇限定/顎首不変を維持、--legacy-mouth-shift-rangeで4mm。既存キー/凍結原本は維持。比較mouth-shift-range-finalが正しく、初回mouth-shift-rangeは両側8mmとなった無効比較。フェーズ現状はIMPLEMENTATION_PHASES先頭表。
 
 最新（2026-09-13）：目線中立は観測可動範囲の中点。かつての腕長と同じ5秒10支持で横/縦の上下限を外側へだけ更新、縮小なし。両目有効時学習、欠測保持、起動ごと再取得。正面注視ボタン案は置換。docs/GAZE_RESPONSE.md先頭。録画再推論済み、表示品質は未確認。

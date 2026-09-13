@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using Klak.Spout;
 
@@ -9,9 +10,18 @@ namespace TanakaCap
     [DefaultExecutionOrder(1000)]
     public sealed class AlphaOutput : MonoBehaviour
     {
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr window,int command);
+        System.Collections.IEnumerator HidePreviewWindow(){
+            for(int i=0;i<60;i++){
+                var process=System.Diagnostics.Process.GetCurrentProcess();process.Refresh();var window=process.MainWindowHandle;process.Dispose();
+                if(window!=IntPtr.Zero){ShowWindow(window,0);yield break;}
+                yield return null;
+            }
+        }
         public SpoutResources resources;
         public Shader edgeShader;
         public Shader previewShader;
+        public void FramingChanged(){lastPacket=-1;}
         public int OutputWidth { get; private set; }=1920;
         public int OutputHeight { get; private set; }=1080;
         public bool PreviewVisible { get; private set; }=true;
@@ -37,6 +47,7 @@ namespace TanakaCap
             if(Array.IndexOf(startupArgs,"--ui-status-port")>=0)gameObject.AddComponent<UiStatusFeedback>();
             SharedPreview=Array.IndexOf(startupArgs,"--legacy-preview")<0;
             PreviewVisible=Array.IndexOf(startupArgs,"--no-preview")<0;
+            if(!PreviewVisible && Application.platform==RuntimePlatform.WindowsPlayer)StartCoroutine(HidePreviewWindow());
             int heightIndex=Array.IndexOf(startupArgs,"--output-height");
             if(heightIndex>=0)
             {
@@ -54,6 +65,19 @@ namespace TanakaCap
             if(OutputWidth>4096 || OutputWidth>SystemInfo.maxTextureSize || OutputHeight>SystemInfo.maxTextureSize)
                 throw new ArgumentException("Output dimensions exceed supported texture size");
             previewCamera=GetComponent<Camera>();
+            previewCamera.backgroundColor=Color.black;
+            int backgroundArg=Array.IndexOf(startupArgs,"--preview-background");
+            if(backgroundArg>=0){
+                if(backgroundArg+1>=startupArgs.Length)throw new ArgumentException("Preview background is missing");
+                switch(startupArgs[backgroundArg+1]){
+                    case "green":previewCamera.backgroundColor=Color.green;break;
+                    case "blue":previewCamera.backgroundColor=Color.blue;break;
+                    case "magenta":previewCamera.backgroundColor=Color.magenta;break;
+                    case "none":break;
+                    default:throw new ArgumentException("Unknown preview background");
+                }
+            }
+            if(!GetComponent<AvatarFraming>())gameObject.AddComponent<AvatarFraming>();
             previewMask=previewCamera.cullingMask;
             if(SharedPreview)
             {
@@ -107,6 +131,7 @@ namespace TanakaCap
             }
             if(outputCamera && texture && !quitting)
             {
+                outputCamera.fieldOfView=previewCamera.fieldOfView;
                 if(inferenceSync){
                     if(!syncDriver)syncDriver=FindObjectOfType<AvatarDriver>();
                     long sequence=syncDriver?syncDriver.ReceivedPackets:0;

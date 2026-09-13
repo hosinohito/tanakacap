@@ -1,0 +1,22 @@
+"""Existing reversible controls; no alternate model downloads."""
+OPTIONS={
+ 'head_pose_mode':('頭角度','pnp',{'pnp':'PnP（基準形状から推定）','size2d':'2D比率（顔の大きさから推定）','legacy':'従来2D','depth3d':'3D深度','pnp_depthmouth':'PnP・口に3D深度'}),
+ 'precision':('演算精度','fp16',{'fp16':'FP16','fp32':'FP32'}),
+ 'observation_mode':('観測の平均','overlap',{'overlap':'4フレーム（3平均を重複）','blocks':'6フレーム（3平均を分離）','direct':'2フレーム（平均なし）'}),
+ 'arm_depth_mode':('腕の奥行き','front_projection',{'front_projection':'投影長から前方へ復元','legacy':'従来推定'}),
+ 'shoulder_yaw_mode':('肩のヨー','face_ratio',{'face_ratio':'顔との比率','width_only':'肩幅のみ','legacy':'従来推定'}),
+ 'face_distance_filter':('顔距離の安定化','stable',{'stable':'安定化あり','legacy':'従来処理'}),
+ 'gaze_reference':('目線の基準','contour',{'contour':'目の輪郭','legacy':'切り出し領域'}),
+ 'gaze_calibration':('目線の範囲校正','on',{'on':'あり','off':'なし'}),
+ 'gaze_response':('目線の上限処理','soft',{'soft':'連続カーブ','legacy':'上限で停止'}),
+ 'head_follow':('頭の追従','fixed',{'fixed':'固定速度','adaptive':'動きに合わせた可変速度'}),
+ 'brow_follow':('眉の追従','adaptive',{'adaptive':'動きに合わせた可変速度','direct':'直接反映'}),
+ 'preprocess_mode':('画像の前処理','crop',{'crop':'切り出してから色変換','legacy':'全体を色変換'}),
+ 'batch_eyes':('左右目の推論','on',{'on':'まとめて処理','off':'個別処理'}),
+ 'detector_graph':('人物検出の高速化','on',{'on':'あり','off':'なし'}),
+ 'detector_interval':('人物検出の間隔','3',{'1':'毎観測','2':'2観測ごと','3':'3観測ごと'}),
+ 'face_distance_mode':('顔に合わせた接近','framed',{'framed':'構図を保って接近','seated':'着席の前傾','translate':'全体を移動','off':'動かさない'}),
+ 'gaze_render_mode':('目線の動かし方','iris',{'iris':'シェイプキー優先','bones':'眼ボーンのみ'}),
+ 'preview_path':('ウインドウ描画','shared',{'shared':'出力画像を共有','legacy':'別に描画'}),
+ 'mouth_shift_range':('独自口寄せの最大量','4',{'4':'4mm','8':'8mm'}),
+}

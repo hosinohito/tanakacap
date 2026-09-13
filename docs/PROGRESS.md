@@ -1092,3 +1092,15 @@ Unity Editor検査で微小交互入力低減、大入力の速い追従、微�
 ## 2026-09-13 — 口寄せ最大8mm比較とフェーズ一覧
 
 目線改善をユーザー確認。口寄せ生成の最大量を4mmから8mmへ変更し、唇支持/14mm帯/入力強調1.7倍は維持。既存キー/凍結原本は上書きしない。旧4mmフラグを追加。初回比較でフラグ適用が生成より後だったため両側8mmと検査ログで判明、生成前へ修正・再ビルド。比較ツールへ期待ログ検査を追加。正しい比較はresults/avatar-videos/mouth-shift-range-final、左4mm/右8mm、校正済み目線/全強調/同853packet。両方向Bakeで最大量と顎首/唇外不変に合格、各901frame/30.033秒と全デコード成功。初回mouth-shift-rangeは無効比較として残す。実カメラ/実写表示/目視なし。フェーズ現状をIMPLEMENTATION_PHASES先頭へ整理、README/SPEC/HANDOFF更新。
+
+
+## 2026-09-13 — Release ZIP/説明書分離/UIとUnityウインドウ操作
+
+ユーザー要求を逐次実装：MIT、口寄せ4mm、カメラ名選択と欄の出し分け、整数部位負荷、説明を選択肢へ移動、実験タブFP16/FP32等、項目別規定値、保存して開始。背景は最終指定の黒（指定しない）/緑/青/マゼンタ、previewだけに作用。Unity統計/タイトルバー非表示、左ドラッグ窓移動、右ドラッグ上下、ホイール距離、CtrlホイールFOV、保存reset/Esc閉じをコードへ追加。273 Python tests/実Tk検査成功、カメラはメタデータ列挙のみ。最終UnityビルドはライセンスIPCエラー・通常権限再試行でも有効ライセンスなしのため未完了。ユーザーのHub確認待ち。
+
+空シーンの製品ビルドと明示依存/モデル/通知/manifest/サイズ制限ZIPを整備、手動Actionsは未実行。旧Playerでの途中梱包review1は13,101files、2,088,759,516bytes、全ZIP CRC成功。同梱Python/Tk等読込と合成虹彩CUDA1536node/CPU0検査成功。最新変更を含む完成配布物ではない。HEADモデル等の許諾/CUDA再配布/Unity・Spout通知最終監査は未確定、公開操作なし。最新再開手順/ログはHANDOFF先頭、RELEASE_BUILD.md。
+
+
+## 2026-09-13 — Unity Hubログイン後のビルド復旧
+
+2026-09-13 認証復旧：ユーザーのUnity Hubログイン後、製品Playerと通常lab Playerのビルド成功。製品Player＋保存デモで外部アバター読込、構図上下/距離/FOV変更・保存・リセット、デモ描画の自動検査成功（results/release-framing-check/player.log）。実マウス操作/最新背景のSpout確認、新規PC導入は未検証。認証の追加操作は不要。ZIP作成はUTF-8 BOM対応と調査用pypdf除外を修正しreview4成功。builds/releases/0.1.0-review4、2,088,360,246 bytes、13,035 files、CRCと同梱Python読込成功。公開許諾監査は残りlocal-review-only。透過画像のalpha検査成功（OBS実受信ではない）、デスクトップbat更新済み。

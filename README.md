@@ -1,6 +1,8 @@
-# tanakacap
+# tanakacap — 開発者向け
 
-生成する独自口寄せキーの最大移動量は8mmです（デモ/auto-custom）。Player `--legacy-mouth-shift-range` で従来の4mm生成へ戻せます。作者の既存キーや保存済み原本は変更しません。
+生成する独自口寄せキーの最大移動量は4mmです。8mmはUI実験タブ、またはPlayer `--experimental-mouth-shift-8mm` で試せます。作者の既存キーや保存済み原本は変更しません。
+
+最新UIは「保存して開始」に統合。カメラ名選択、条件に応じた欄の表示、背景（黒/緑/青/マゼンタ）、実験タブのFP16/FP32等を追加。Unity側は統計・タイトルバー非表示、左ドラッグ移動、右ドラッグ上下、ホイール距離、Ctrl＋ホイールFOV、構図保存/リセット/Esc閉じを実装。最新Unityビルドはライセンス認証エラーで未検証。再開情報はHANDOFF先頭。
 
 目線の中立は、両目の観測範囲を5秒10支持で常時学習して決めます。範囲は縮めず起動ごとに再学習します。Python推論の `--no-gaze-range-calibration` で校正のみOFFにできます。
 
@@ -26,9 +28,11 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 
 **現在はHAOLAN 1.6向けの開発版。** 外部アバターの書き出し・読み込み、GPU推論、OBS透過受信、揺れ物を実装済み。汎用のVRC改変対応、本家PhysBoneとの動作一致、30分の安定性・OBS併用性能は未達成または未確認。仮想カメラ・コラボ送信・全身は後日の対象。重いゲームとの同時実行保証は要件に含めない。最新の評価は[HANDOFF.md](HANDOFF.md)、確定要件は[仕様書](docs/SPEC.md)を参照する。
 
+利用者向けの簡潔な導入・操作手順は [利用説明書](docs/USER_GUIDE.md)、配布ZIPの生成手順は [リリースビルド](docs/RELEASE_BUILD.md)。独自コードはMIT（LICENSE）、外部素材・モデル・ライブラリはそれぞれの許諾に従います。
+
 ## セットアップ済みの環境で起動する
 
-**操作用UIはデスクトップの`tanakacap.bat`から開く。** 入力・アバター・推論モード、描画60/推論同期/30/自由入力、Full HD/自由解像度、表情調整を選び、「開始」を押す。開くだけではカメラを起動しない。実写はUIにも表示しない。実行中の「保存して適用」は再起動で反映する。推論Hz・アバター描画fps・受信Hz、測定済み構成の相対負荷を表示する。[操作と計測条件](docs/CONTROL_PANEL.md)。
+**操作用UIはデスクトップの`tanakacap.bat`から開く。** 入力・アバター・推論モード、描画60/推論同期/30/自由入力、Full HD/自由解像度、表情調整を選び、「保存して開始」を押す。開くだけではカメラを起動しない。実写はUIにも表示しない。実行中の「保存して開始」は再起動で反映する。推論Hz・描画fpsを表示し、部位チェックに測定済みの時間比率を整数の「負荷N割」で表示する。[操作と計測条件](docs/CONTROL_PANEL.md)。
 
 ```powershell
 .\run-ui.ps1
@@ -64,7 +68,7 @@ UIにはPython標準のTk/ttkを使用する。`.venv/Scripts/pythonw.exe`とtki
 
 必要な場合に限り、`python -m capture_lab benchmark ...`または`python -m capture_lab.comparison_capture ...`へ上記を自分で付ける。比較撮影は未指定でも文字ガイドと録画が使える。頭専用の固定ROIは通常`--roi X Y W H`で数値指定する。実写を見ながらの矩形選択にも上記オプションが必要。録画由来の実写プレビューも同じ条件。アバターの表示・OBS透過出力とは別で、`-NoPreview`/F8はアバター側の設定。
 
-現在の既定は`-FaceSource body3d -HeadPoseMode pnp`。ピッチは固定3D顔型へのPnP当てはめを使う。2D比率のsize2dはUI「入力・推論」→「頭角度」で選べる任意試行として残す。口・眉の正面化は維持。頭のみモードは別モデル。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。
+現在の既定は`-FaceSource body3d -HeadPoseMode pnp`。ピッチは固定3D顔型へのPnP当てはめを使う。2D比率のsize2dはUI「実験」→「頭角度」で選べる任意試行として残す。口・眉の正面化は維持。頭のみモードは別モデル。[試行内容・比較動画・限界](docs/HEAD_SIZE_TRIAL.md)。
 
 顔方式は`run-avatar-lab.ps1 -FaceSource body3d`で体の推論結果を顔にも再利用し、`-FaceSource separate -HeadPoseMode pnp`で従来の別顔モデルへ戻す。設定ファイルの`face_source`も同名。通常のliveとtestはRTMW3D共有＋PnPピッチ/推定Zなし口輪郭。[顔モデル比較の記録](docs/FACE_SOURCE_TRIAL.md)。
 
