@@ -1,5 +1,7 @@
 # 引き継ぎ：現在の状態
 
+最新比較（2026-09-13）：results/avatar-videos/gaze-range/face-closeup.mp4、左range-off（範囲校正なし）/右range-on（あり）。同853虹彩観測・PnPゲート・強調最大デモ・soft応答を固定し、校正だけ比較。保存診断から再構成した校正ありpacketが前回推論と完全一致。各901描画frame/30.033秒、全デコード成功、目視未実施。tools/prepare_gaze_range_comparison.pyで再現。口寄せが弱いという追加質問へ、直近の変更なし・入力強調1.7倍/最大4mm維持と説明。今回は口の変更なし。
+
 ## 2026-09-13 — 目線範囲中心の常時校正
 
 ユーザー指定でかつての腕長と同じ5秒10支持で横/縦の観測範囲を拡張し、その中点を中立へ。capture_lab/gaze_range.py、IrisGazeの角度化/4フレーム前に接続。両目有効時だけ学習、片目は保存中心適用、欠測保持、起動ごと初期化、範囲縮小なし。倍率は範囲で割らない。Python --no-gaze-range-calibrationでOFF。272 tests、最新録画853frameのCUDA FP16再推論成功（595目線有効）、結果results/gaze-range。表示改善/動画確認は未実施。docs/GAZE_RESPONSE.md先頭参照。旧提案「正面注視校正」は本指定へ置換。
