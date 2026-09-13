@@ -32,6 +32,7 @@ def run():
                 def widgets(text):
                     return [w for w in descendants(window) if 'text' in w.keys() and str(w.cget('text'))==text]
                 assert widgets('保存して開始') and not widgets('保存して適用（実行中は再起動）')
+                assert widgets('終了')[0].pack_info()['side']=='right'
                 assert len(widgets('規定値'))==8
                 variables['source'].set('camera');window.update_idletasks()
                 assert not widgets('録画のパス')[0].grid_info()
@@ -72,7 +73,12 @@ def run():
                 saved=json.loads(panel.SETTINGS.read_text(encoding='utf-8'))
                 assert saved['source']=='video' and saved['gamma']==1.7
             except Exception as exc:errors.append(repr(exc))
-            actions['close']()
+            def exit_buttons(parent):
+                for child in parent.winfo_children():
+                    if 'text' in child.keys() and str(child.cget('text'))=='終了':yield child
+                    yield from exit_buttons(child)
+            next(exit_buttons(window)).invoke()
+            assert not session.running
         window.after(200,check)
         window.after(8000,actions['close'])
     panel.main(test_hook=hook)
