@@ -26,6 +26,21 @@ namespace TanakaCap.Editor {
     var child=new GameObject("UnconstrainedChild");child.transform.SetParent(bone.transform);
     Require(SecondaryMotionExporter.ShouldSimulate(child.transform,Vector3.up,"Bone/UnconstrainedChild",warnings),"Descendant must remain eligible for secondary motion");
     Require(position.sourceCount==1&&position.GetSource(0).sourceTransform==anchor.transform&&position.constraintActive,"Original constraint must stay intact");
+    var chainRoot=new GameObject("Chain");chainRoot.transform.SetParent(original.transform);
+    var accessory=new GameObject("Accessory");accessory.transform.SetParent(chainRoot.transform);accessory.transform.localPosition=Vector3.up;
+    var tip=new GameObject("Tip");tip.transform.SetParent(accessory.transform);tip.transform.localPosition=Vector3.up;
+    var roots=new System.Collections.Generic.HashSet<string>{"Chain","Chain/Accessory"};
+    var human=new System.Collections.Generic.HashSet<Transform>();
+    var outer=new SecondaryChain{root="Chain",endpointPosition=Vector3.up};
+    var inner=new SecondaryChain{root="Chain/Accessory",endpointPosition=Vector3.up};
+    var outerBones=SecondaryMotionExporter.CollectSegments(chainRoot.transform,original.transform,outer,roots,human,warnings);
+    var innerBones=SecondaryMotionExporter.CollectSegments(accessory.transform,original.transform,inner,roots,human,warnings);
+    Require(outerBones.Count==1&&outerBones[0].Item1==chainRoot.transform&&outerBones[0].Item2==Vector3.up,"Parent retains its segment to child boundary");
+    Require(innerBones.Count==2&&innerBones[0].Item1==accessory.transform&&innerBones[1].Item1==tip.transform,"Accessory retains its complete dedicated chain");
+    roots.Remove("Chain/Accessory");
+    Require(SecondaryMotionExporter.CollectSegments(chainRoot.transform,original.transform,outer,roots,human,warnings).Count==3,"Disabled/absent child PhysBone must not truncate parent");
+    outer.ignored=new[]{"Chain/Accessory"};
+    Require(SecondaryMotionExporter.CollectSegments(chainRoot.transform,original.transform,outer,roots,human,warnings).Count==1,"Authored ignore subtree must stay excluded");
     Debug.Log("TANAKACAP_SECONDARY_CONSTRAINT_CHECKS_OK");
    } finally {if(copy)UnityEngine.Object.DestroyImmediate(copy);UnityEngine.Object.DestroyImmediate(original);}
   }

@@ -1174,3 +1174,6 @@ GitHub認証はユーザーのOrganizationアクセス拒否意向に合わせ�
 ## 2026-09-13 Parent Constraint重複の書出し修正
 
 2026-09-13：公開版の書出しエラーPhysBone/Constraint overlap（FakeBonePositionsForOrnamentsPB/Fake_Furry_Hair_R.001、ユーザー確認Parent Constraint）を修正。競合するボーンはUnity Constraintに任せ、PhysBoneの回転対象だけから外す。子の走査は継続、競合しない子は揺れ対象として維持。末端でtail=0の偽重複は報告しない。原本とConstraintを削除・無効化しない。失う揺れはパス/型とともにreport警告へ明記。ソルバー/本体は変更なし。修正プラグイン：builds/fixes/parent-constraint/TanakaCapExporter.unitypackage。公開v0.1.0 ZIPは未更新。Unityコンパイル、親/位置/回転Constraintの除外・末端判定・子の適格性・複製内参照と原本維持の検査、梱包ソース確認成功。results/unity-exporter-constraint-fix.log。実アバターの書出し/見た目は未確認。
+
+
+2026-09-13：続くOverlapping PhysBone chains（イヤリングBone）に対応。全有効PhysBoneルートを事前収集し、親からの走査は別の子ルートで停止。子の専用設定を優先し、親のtailは子ルート位置を参照する。親→子の順でデータを作成、同一rootの既存first-wins警告は維持。二重登録の最終検査は残す。元のPhysBone/ignore設定は変更せず、境界変更をreport警告へ記録。Unityで実際のCollectSegmentsの親/子領域、子PBなし、ignoreを回帰検査し成功。results/unity-exporter-nested-physbone-fix.log。builds/fixes/parent-constraint/TanakaCapExporter.unitypackageを両修正入りに更新。PlayerとGitHub公開ZIPは未変更、実アバター再書出しは未確認。
