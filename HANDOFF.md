@@ -1,5 +1,8 @@
 # 引き継ぎ：現在の状態
 
+2026-09-13：使い方にMA/VRCFury/キセテネ/AvatarTools別の書き出し準備とAAO併用設定を追加。ユーザー指定で全手順を複製プロジェクト内の処理とし、生成コピーを選択、原本へApplyしない。VRCFuryのSDK前処理/Test Copy置換、AAOの表情除去を公式資料・作者ソースで確認。EXPORT_TOOL_RESEARCH.mdに根拠と未検証を分離。実改変アバターの組合せ試験は未実施。review8は作成途中に追加されたこの説明書変更を含まず、次の.batビルドから自動同梱。
+
+
 最新：build-release.batを追加。日時版名、原本/モデル/通知/NVIDIA/依存版チェック、UnityソースからPlayer/Exporter再ビルド、梱包とCRCまで一括。CheckOnlyは.bat経由で成功。通常権限でソースからUnity/Exporter再ビルド・review8 ZIP/CRC/監査成功（sandbox IPCは失敗後に通常権限で復旧）。原本は現フォルダーに揃い、AI生成不要。models/埋め込みPackages/対応ソースはGit外、外部Unity/Python環境は別途必要。docs/RELEASE_BUILD.mdとREADMEに保管対象を記載。
 
 

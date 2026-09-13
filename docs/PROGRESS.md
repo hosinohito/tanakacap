@@ -1150,3 +1150,8 @@ MODEL_LICENSE_DECISIONS.mdに3モード表、release/model-license-evidence.json
 build-release.batを追加し、build-release.ps1を日時版名・原本検査・個別ログ付きへ変更。check_release_inputs.pyでモデル/通知/対応ソース/NVIDIA DLL SHAとPython依存版、Unity素材を確認。全原本は現作業フォルダーに存在。AI生成不要だが、Git管理外models/Packages/対応ソースと外部Unity/Python環境は別途保管/準備が必要。README/RELEASE_BUILD/SPECへ反映。
 
 .bat -CheckOnly成功、原本不足の模擬検査でパス表示と拒否を確認。通常権限でUnityソースからPlayer/Exporter再ビルド、review8梱包成功。最初のsandbox試行はUnity licensing IPC拒否で失敗、通常権限で成功したためユーザーのライセンス再操作不要。review8は12,918ファイル、part01 2,084,961,325 bytes、part02 162,028,053 bytes、CRC/通知20/NVIDIA20/全binary194検査成功。results/unity-release-0.1.0-review8.log、builds/releases/0.1.0-review8/release-report.json参照。実カメラ未使用。追加着せ替えガイドはこのビルドの取り込み後に作成しておりreview8のZIPには未収録、次回ビルドから反映。
+
+
+## 2026-09-13 着せ替えツール別・非破壊の書き出し手順
+
+2026-09-13：使い方にMA/VRCFury/キセテネ/AvatarTools別の書き出し準備とAAO併用設定を追加。ユーザー指定で全手順を複製プロジェクト内の処理とし、生成コピーを選択、原本へApplyしない。VRCFuryのSDK前処理/Test Copy置換、AAOの表情除去を公式資料・作者ソースで確認。EXPORT_TOOL_RESEARCH.mdに根拠と未検証を分離。実改変アバターの組合せ試験は未実施。review8は作成途中に追加されたこの説明書変更を含まず、次の.batビルドから自動同梱。
