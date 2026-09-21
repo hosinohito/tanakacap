@@ -19,7 +19,7 @@ def sha(path):
         for block in iter(lambda:stream.read(1024*1024),b''):h.update(block)
     return h.hexdigest()
 
-def run(version,publishable=False):
+def run(version,publishable=False,zip_output=True):
     if not re.fullmatch(r'[0-9A-Za-z][0-9A-Za-z._-]{0,60}',version):raise ValueError('Invalid version')
     config=json.loads((ROOT/'release/config.json').read_text(encoding='utf-8'))
     model_lock=json.loads((ROOT/'release/models.lock.json').read_text(encoding='utf-8'))
@@ -104,6 +104,11 @@ def run(version,publishable=False):
     files=[p for p in sorted(stage.rglob('*')) if p.is_file() and '__pycache__' not in p.parts]
     manifest=[dict(path=p.relative_to(stage).as_posix(),size=p.stat().st_size,sha256=sha(p)) for p in files]
     m=stage/'manifest.json';m.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8');files.append(m)
+    if not zip_output:
+        report=dict(version=version,status='local-build',assets=[],directory=str(stage),files=len(files))
+        (output/'release-report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+        print(json.dumps(report,indent=2))
+        return
     def archive(path,entries):
         with zipfile.ZipFile(path,'w',zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=True) as z:
             for p in entries:z.write(p,Path('TanakaCap')/p.relative_to(stage))
@@ -131,4 +136,5 @@ def run(version,publishable=False):
     print(json.dumps(report,indent=2))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--version',required=True);p.add_argument('--publishable',action='store_true');a=p.parse_args();run(a.version,a.publishable)
+    p=argparse.ArgumentParser();p.add_argument('--version',required=True);p.add_argument('--publishable',action='store_true')
+    p.add_argument('--no-zip',action='store_true');a=p.parse_args();run(a.version,a.publishable,not a.no_zip)

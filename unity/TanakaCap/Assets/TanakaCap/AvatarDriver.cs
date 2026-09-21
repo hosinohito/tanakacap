@@ -78,7 +78,9 @@ namespace TanakaCap
         HeadClearance headClearance;
         string armCorrectionTrial="all";
         int headCorrectionCount,crossCorrectionCount,wristCorrectionCount,outwardCorrectionCount;
-        bool ArmCorrection(string name)=>armCorrectionTrial=="no-cross-body"?name!="cross-body":armCorrectionTrial=="all" || armCorrectionTrial==name;
+        readonly HashSet<string> disabledArmCorrections=new HashSet<string>();
+        bool ArmCorrection(string name)=>!disabledArmCorrections.Contains(name) &&
+            (armCorrectionTrial=="no-cross-body"?name!="cross-body":armCorrectionTrial=="all" || armCorrectionTrial==name);
         Arm left, right;
         SkinnedMeshRenderer[] meshes;
         bool demo;
@@ -314,6 +316,8 @@ namespace TanakaCap
             var args = Environment.GetCommandLineArgs();
             adaptiveHeadFollow=Array.IndexOf(args,"--adaptive-head-follow")>=0;
             adaptiveBrowFollow=Array.IndexOf(args,"--no-adaptive-brow-follow")<0;
+            foreach(var name in new[]{"head","cross-body","wrist-front","outward-elbow"})
+                if(Array.IndexOf(args,"--no-"+(name=="head"?"head-clearance":name))>=0)disabledArmCorrections.Add(name);
             int trialIndex=Array.IndexOf(args,"--diagnostic-arm-correction");
             if(trialIndex>=0)
             {
@@ -629,21 +633,13 @@ namespace TanakaCap
                     faceDistanceTracked=true,faceDistanceRatio=1,leftArmTracked=true,rightArmTracked=true,leftArmHeld=true,rightArmHeld=true};
                 for(int i=0;i<120;i++){lastReceived=Time.unscaledTime;LateUpdate();}
                 var neutralHead=head.position;
-                var localUpper=left.upper.localRotation;var localLower=left.lower.localRotation;
-                var relativeElbow=chest.InverseTransformPoint(left.lower.position);
                 current.faceDistanceRatio=.8f;
                 for(int i=0;i<120;i++){lastReceived=Time.unscaledTime;LateUpdate();}
                 float lateral=Mathf.Abs(transform.InverseTransformVector(head.position-neutralHead).x);
                 if(lateral>.005f)throw new Exception("Seated yaw redirects approach laterally: "+lateral);
-                if(Quaternion.Angle(localUpper,left.upper.localRotation)>.05f || Quaternion.Angle(localLower,left.lower.localRotation)>.05f ||
-                    Vector3.Distance(relativeElbow,chest.InverseTransformPoint(left.lower.position))>.001f)
-                    throw new Exception("Held elbow did not follow chest with local pose intact");
-                var cacheBefore=Quaternion.Inverse(right.lower.parent.rotation)*right.lowerUntwisted;
-                current.rightArmTracked=false;current.faceDistanceRatio=1;
-                for(int i=0;i<120;i++){lastReceived=Time.unscaledTime;LateUpdate();}
-                if(Quaternion.Angle(cacheBefore,Quaternion.Inverse(right.lower.parent.rotation)*right.lowerUntwisted)>.05f)
-                    throw new Exception("Unobserved forearm cache stayed in world frame");
-                Debug.Log("SEATED_COUPLING_OK yaw="+yaw+" lateral="+lateral+" held_elbow/local_cache");
+                // Arm loss now eases to desk pose; permanent local holding is obsolete.
+                // CheckArmRest covers relative palm holding and arm loss/recovery.
+                Debug.Log("SEATED_COUPLING_OK yaw="+yaw+" lateral="+lateral);
             }
             for(int i=0;i<bones.Length;i++)bones[i].localRotation=rotations[i];
             current=saved;lastReceived=received;probeDelta=delta;faceDistanceRatio=savedRatio;seatedLeanDegrees=savedLean;
@@ -1513,25 +1509,8 @@ namespace TanakaCap
                 }
             }
             Debug.Log("TANAKACAP_EXTENDED_FINGERS_OK");
-            foreach(bool isLeft in new[]{true,false})
-            {
-                var arm=isLeft?left:right;
-                var lowerLocal=arm.lower.localRotation;var handLocal=arm.hand.localRotation;
-                var upperLocal=arm.upper.localRotation;
-                var fingers=FingerAngles(arm);
-                var direction=new Vector3(isLeft?-.3f:.3f,.7f,.5f).normalized;
-                current=new TrackingPacket {tracked=true,body3d=true};lastReceived=Time.unscaledTime;
-                if(isLeft){current.leftUpperArmTracked=true;current.leftElbow=direction;current.leftOutOfView=true;}
-                else {current.rightUpperArmTracked=true;current.rightElbow=direction;current.rightOutOfView=true;}
-                for(int i=0;i<60;i++)LateUpdate();
-                if(Quaternion.Angle(upperLocal,arm.upper.localRotation)>.01f ||
-                   Quaternion.Angle(lowerLocal,arm.lower.localRotation)>.01f || Quaternion.Angle(handLocal,arm.hand.localRotation)>.01f)
-                    throw new Exception("Offscreen rollback failed to hold entire arm");
-                var after=FingerAngles(arm);
-                for(int i=0;i<fingers.Length;i++) if(Mathf.Abs(fingers[i]-after[i])>.01f)
-                    throw new Exception("Upper-only tracking changed fingers");
-            }
-            Debug.Log("TANAKACAP_OFFSCREEN_FULL_ARM_HOLD_OK");
+            // Permanent offscreen arm/finger holding was replaced by timed desk recovery.
+            // Its current regression coverage is CheckArmRest, not this old motion probe.
             current=new TrackingPacket {tracked=true,faceTracked=true,body3d=true,mouth=.6f,mouthRound=.8f,mouthSmile=.7f,
                 torsoTracked=true,torsoPitch=45,torsoYaw=70};lastReceived=Time.unscaledTime;
             for(int i=0;i<90;i++)LateUpdate();

@@ -1,4 +1,4 @@
-param([string]$Version='', [switch]$SkipUnity, [switch]$Publishable, [switch]$CheckOnly, [string]$Unity='C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Unity.exe')
+param([string]$Version='', [switch]$SkipUnity, [switch]$Publishable, [switch]$CheckOnly, [switch]$NoZip, [string]$Unity='C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Unity.exe')
 $ErrorActionPreference='Stop'
 Push-Location $PSScriptRoot
 $taskTranscript=$false
@@ -30,9 +30,10 @@ if(-not $SkipUnity){
 }
 $taskArgs=@('-X','utf8','tools/build_release.py','--version',$Version)
 if($Publishable){$taskArgs+='--publishable'}
+if($NoZip){$taskArgs+='--no-zip'}
 & '.\.venv\Scripts\python.exe' @taskArgs
 if($LASTEXITCODE){throw 'Release packaging failed'}
-Write-Host "Release ZIPs: $taskOutput"
+Write-Host "Build output: $taskOutput"
 Write-Host 'Use the assets listed in release-report.json. Nothing was uploaded.'
 } finally {
  if($taskTranscript){Stop-Transcript | Out-Null}

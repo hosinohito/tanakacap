@@ -10,6 +10,16 @@ namespace TanakaCap
 
         void ConfigureArmRotation(string[] args)
         {
+            int option=Array.IndexOf(args,"--arm-rotation");
+            if(option>=0)
+            {
+                if(option+1>=args.Length)throw new ArgumentException("Missing arm rotation mode");
+                string mode=args[option+1];
+                if(mode!="hinge" && mode!="hinge-90" && mode!="legacy")
+                    throw new ArgumentException("Unknown arm rotation mode");
+                legacyArmRotation=mode=="legacy";
+                armTwistLimit=mode=="hinge-90"?90:ForearmTwistLimit;
+            }
             int index=Array.IndexOf(args,"--diagnostic-arm-rotation");
             if(index>=0)
             {

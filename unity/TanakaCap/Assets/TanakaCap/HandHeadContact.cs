@@ -16,6 +16,13 @@ namespace TanakaCap
             wristHeadOnly=Array.IndexOf(args,"--diagnostic-wrist-head-only")>=0;
             if(wristHeadOnly && Array.IndexOf(args,"--render-replay")<0)
                 throw new ArgumentException("Wrist-only comparison requires offline replay");
+            int option=Array.IndexOf(args,"--hand-head-contact");
+            if(option>=0)
+            {
+                if(option+1>=args.Length || (args[option+1]!="hand" && args[option+1]!="wrist"))
+                    throw new ArgumentException("Hand head contact must be hand or wrist");
+                wristHeadOnly=args[option+1]=="wrist";
+            }
         }
 
         void CollectHandContacts(Arm arm,Quaternion inverseFrame,Vector3 center)

@@ -9,7 +9,7 @@ import socket
 import subprocess
 import threading
 import time
-from .ui_experiments import OPTIONS
+from .ui_experiments import OPTIONS, NUMERIC
 from .camera_modes import query_modes, default_fps, resolutions
 from .player_diagnostics import PlayerDiagnostics
 from .development_log import DevelopmentLog
@@ -38,6 +38,7 @@ DEFAULT=dict(source='camera',camera=1,video='',avatar=str(ROOT/'builds/player/av
              aa=True,preview=True,background='none',expression='existing',gamma=None,suppression=None,emphasis=0.,gaze_gain=4.,head_pose_mode='pnp',
              brow_exaggeration=0.,eye_exaggeration=0.,eyelid_exaggeration=0.,mouth_exaggeration=0.)
 DEFAULT.update({key:value[1] for key,value in OPTIONS.items()})
+DEFAULT.update({key:value[1] for key,value in NUMERIC.items()})
 
 
 def validate(values):
@@ -58,6 +59,7 @@ def validate(values):
     if not math.isfinite(value) or not 1<=value<=240:raise ValueError('camera_fps: 1〜240を指定してください')
     data['camera_fps']=int(value) if value.is_integer() else value
     for key,lo,hi in [('gamma',.25,4),('suppression',0,1),('emphasis',0,1),('gaze_gain',.5,6),
+                      *[(k,v[2],v[3]) for k,v in NUMERIC.items()],
                       *[(k,0,1) for k in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration')]]:
         if data[key] is None and key in ('gamma','suppression'):continue
         value=float(data[key])
@@ -74,6 +76,7 @@ def load_settings():
     values=DEFAULT.copy()
     tracking=json.loads((ROOT/'tracking-settings.json').read_text(encoding='utf-8'))
     values['head_pose_mode']=tracking.get('head_pose_mode','pnp')
+    for key in NUMERIC:values[key]=tracking.get(key,values[key])
     for key,source in [('gamma','mouth_corner_gamma'),('suppression','mouth_open_smile_suppression'),('emphasis','mouth_corner_emphasis'),('gaze_gain','gaze_gain')]:
         values[key]=tracking.get(source,values[key])
     if SETTINGS.exists():values.update(json.loads(SETTINGS.read_text(encoding='utf-8')))
@@ -105,6 +108,9 @@ def commands(config, port, status_port, player_pid=0):
         if c[key]==value:player+=[flag]
     for key,flag in [('gamma','--mouth-corner-gamma'),('suppression','--mouth-open-smile-suppression')]:
         if c[key] is not None:player += [flag,str(c[key])]
+    player += ['--arm-rotation',c['arm_rotation'],'--hand-head-contact',c['hand_head_contact']]
+    for key in ('head_clearance','cross_body','wrist_front','outward_elbow'):
+        if c[key]=='off':player += ['--no-'+key.replace('_','-')]
     if c['source']=='motion':return player+['--motion-demo'],None
     python=ROOT/'runtime/python.exe' if (ROOT/'runtime/python.exe').exists() else ROOT/'.venv/Scripts/python.exe'
     infer=[str(python),'-m',__package__,'benchmark','--source',c['source'],'--no-log',
@@ -126,7 +132,7 @@ def commands(config, port, status_port, player_pid=0):
                         ('shoulder_yaw_mode','face_ratio'),('gaze_reference','contour'),('preprocess_mode','crop'),
                         ('detector_interval',3),('detector_model','yolox-m-human')]:
         value=tracking.get(key,default)
-        if key in OPTIONS:value=c[key]
+        if key in OPTIONS or key in NUMERIC:value=c[key]
         if key in ('observation_block','observation_stride'):
             value=dict(overlap=(3,1),blocks=(3,3),direct=(1,1))[c['observation_mode']][0 if key=='observation_block' else 1]
         if key=='head_pose_mode':value=c['head_pose_mode']
@@ -135,6 +141,7 @@ def commands(config, port, status_port, player_pid=0):
     for key in ('batch_eyes','detector_graph'):
         if c[key]=='on':infer+=['--'+key.replace('_','-')]
     if c['gaze_calibration']=='off':infer+=['--no-gaze-range-calibration']
+    if c['body_peaks']=='integer':infer+=['--integer-body-peaks']
     infer+=['--body3d' if body else '--no-body']
     if c['mode']=='head_only':infer+=['--head-only','--head-roi-mode','auto']
     if c['mode']=='full' and c['gaze']:infer+=['--gaze']
@@ -277,8 +284,11 @@ def main(test_hook=None, *, auto_custom=False, recorded_test=False):
         canvas.bind('<Configure>',lambda event,c=canvas,i=item:c.itemconfigure(i,width=event.width))
         scroll_panes.append((pane,canvas))
         frames[name]=frame
+    costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))
+    mode_names={k:v.replace('（','（参考 約'+str(costs['modes'][k]['reference_multiple'])+'倍・',1)
+                if k in costs.get('modes',{}) else v for k,v in MODES.items()}
     display_names={'source':{'camera':'カメラ','video':'保存済み録画','motion':'デモモーション'},
-                   'mode':MODES,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力（推論上限をつけて負荷を軽減できます）'},
+                   'mode':mode_names,'rate':{'60':'60 fps','sync':'推論同期（結果が届くと更新）','30':'30 fps','custom':'自由入力（推論上限をつけて負荷を軽減できます）'},
                    'expression':{'existing':'既存キー優先','auto-custom':'自動独自キー（実験用）'}}
     display_names.update({key:value[2] for key,value in OPTIONS.items()})
     display_names.update(camera_powerline={'keep':'変更しない','off':'無効（照明によって縞が出る場合があります）','50hz':'50 Hz','60hz':'60 Hz'},
@@ -394,12 +404,11 @@ def main(test_hook=None, *, auto_custom=False, recorded_test=False):
         path=filedialog.askopenfilename(filetypes=[('TanakaCap avatar','*.tcap')])
         if path:variables['avatar'].set(path)
     ttk.Button(f,text='アバターを選択',command=avatar).grid(row=1,column=1,sticky='w')
-    row(f,6,'推論モード','mode',list(MODES))
+    row(f,6,'推論モード（負荷は頭のみ＝1）','mode',list(MODES))
     parts=ttk.Frame(f);parts.grid(row=8,column=0,columnspan=2,sticky='w',pady=12)
-    costs=json.loads((ROOT/'docs/ui-part-costs.json').read_text(encoding='utf-8'))
     for key,text in [('body','体・腕・指（顔と共有）'),('gaze','目線'),('detector','人物切り出し')]:
         reference=costs['parts'][key].get('reference_tenths')
-        load_text=('参考負荷 約'+str(reference)+'割') if reference is not None else '負荷未計測'
+        load_text=('既定構成の参考負荷 約'+str(reference)+'割') if reference is not None else '負荷未計測'
         ttk.Checkbutton(parts,text=text+'（'+load_text+'）',variable=variables[key]).pack(anchor='w',pady=4)
     def parts_state(*args):
         motion=variables['source'].get()=='motion'
@@ -414,6 +423,8 @@ def main(test_hook=None, *, auto_custom=False, recorded_test=False):
     variables['source'].trace_add('write',parts_state)
     variables['mode'].trace_add('write',parts_state);parts_state()
     for index,(key,(label,_,choices)) in enumerate(OPTIONS.items()):row(frames['実験'],index,label,key,list(choices))
+    for index,(key,(label,_,lo,hi)) in enumerate(NUMERIC.items(),len(OPTIONS)):
+        row(frames['実験'],index,f'{label}（{lo:g}〜{hi:g}）',key)
     f=frames['描画・OBS']
     row(f,0,'描画レート','rate',['60','sync','30','custom'])
     row(f,2,'自由入力 fps','fps')

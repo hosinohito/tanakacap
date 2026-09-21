@@ -1,4 +1,6 @@
-2026-09-21：肘の上腕従属回転・曲げ軸校正・伸び切り時軸保持・ねじりスカラー補間・掌だけ欠測時の相対保持を実装。通常は新方式±160。4条件6本の動画 results/avatar-videos/arm-rotation-coupled-final。左最大相対回転143→33度、右41→45度、張付きは残る。±90と無制限は診断のみ。詳細 docs/ARM_ROTATION_COUPLED.md。Playerビルド/軸取得/掌保持/欠測復帰/311 tests/動画デコード成功。次はユーザーの見た目評価。別PCは builds/player/ 全体を配布版app/へ。ZIPなし。
+2026-09-21：実験タブ棚卸し完了。肘3方式・頭接触範囲・4補正ON/OFF・小数/整数座標・頭眉口の3感度を追加（計10項目）。通常値不変、無制限ねじりは診断専用。旧固定FP32/固定録画ベンチ2本と永久欠測保持の古い検査を削除。現行UI設定で録画600観測×4構成、全ON平均18.29ms、顔頭13.76ms、頭のみ6.36ms。UI参考負荷4/1/4割、モード3/2/1倍。条件・限界はdocs/UI_EXPERIMENT_AUDIT.md。315 tests、実Tk、実Player回転/欠測復帰、新設定3組の録画起動、配布構成からの録画起動成功。最終ローカル成果物 builds/releases/0.1.3-ui-audit-final/TanakaCap/（ZIP/公開なし）。別PCへ同フォルダー全体＋利用する.tcap。直前開発版の部分更新ならtanakacap/・Player一式(app/)・docs/ui-part-costs.json・使い方.txt。test.bat更新済み。今後NoZipで展開構成だけビルド可能。肘の見た目評価は引き続きユーザー待ち。
+
+2026-09-21：肘の上腕従属回転・曲げ軸校正・伸び切り時軸保持・ねじりスカラー補間・掌だけ欠測時の相対保持を実装。通常は新方式±160。4条件6本の動画 results/avatar-videos/arm-rotation-coupled-final。左最大相対回転143→33度、右41→45度、張付きは残る。±90と無制限はこの時点で診断のみ（±90は上記UI更新で追加）。詳細 docs/ARM_ROTATION_COUPLED.md。Playerビルド/軸取得/掌保持/欠測復帰/311 tests/動画デコード成功。次はユーザーの見た目評価。別PCは builds/player/ 全体を配布版app/へ。ZIPなし。
 
 2026-09-21：利用説明書の原本を docs/user_guide.txt、配布名を 使い方.txt に変更。Markdown装飾をプレーンテキスト向けに整理し、ビルド・原本検査・現行文書の参照を更新。過去リリース実物は未変更、再ビルド/ZIPなし。別PCは docs/user_guide.txt を本体隣の使い方.txtへコピー。
 

@@ -1,28 +1,36 @@
 {
-  "source": "results/full-optimization-I-1789236444888274300/summary.json: batch.timings",
-  "scope": "RTX4090, recorded 900 observations, shared body/face, batch eyes, FP32 historical benchmark. Mean stage/read_to_send_ms, excluding decode/render/wait. Not savings from disabling a checkbox, nor a live FP16 measurement.",
-  "total_ms": 17.673496666830033,
+  "source": "results/ui-costs-current/summary.json",
+  "scope": "RTX 4090; current UI default FP16 (RTMW-L retains FP32), recorded 1280x720; Player configured Full HD 60, auto-custom, AA/window/Spout on; OBS receiver not verified. 30 warmup + 600 samples per run, full repeated. Inference unpaced. Stage service time excludes video read, pacing, render work and logging.",
+  "video_sha256": "c30e009dc3ca49a4c4439c65e442631c14887da82c375a762c017ac2311d19a6",
+  "total_ms": 18.28601316666512,
   "parts": {
     "body": {
-      "ms": 7.506031221742483,
-      "tenths": 4
+      "ms": 6.666928666697155,
+      "reference_tenths": 4
     },
     "gaze": {
-      "ms": 1.4723572218079224,
-      "tenths": 1
+      "ms": 1.3591246666722632,
+      "reference_tenths": 1
     },
     "detector": {
-      "ms": 6.767945222640669,
-      "tenths": 4,
-      "reference_tenths": 4,
-      "reference_estimate": {
-        "total_ms": 16.266755167588247,
-        "fraction": 0.4160599426814944,
-        "total_source": "results/comparisons/cuda-precision/report.json: variants.CUDA-FP16.pipeline_ms.mean",
-        "method": "Historical detector mean held constant / recorded FP16 full pipeline mean. Approximate reference only; detector also changed to split CUDA Graph / FP16, so this is not a current measured share or OFF savings."
-      }
+      "ms": 6.987879500056806,
+      "reference_tenths": 4
     }
   },
-  "valid_for_current_configuration": false,
-  "display_note": "Historical FP32 stage-time proportions; do not display as current load or toggle savings."
+  "modes": {
+    "full": {
+      "ms": 18.28601316666512,
+      "reference_multiple": 3
+    },
+    "face_head": {
+      "ms": 13.761802499908905,
+      "reference_multiple": 2
+    },
+    "head_only": {
+      "ms": 6.364323000016157,
+      "reference_multiple": 1
+    }
+  },
+  "valid_for_current_configuration": true,
+  "display_note": "Default full-mode stage shares, not checkbox OFF savings; experiments and devices change costs."
 }

@@ -41,6 +41,10 @@ def run():
                 assert widgets('終了')[0].pack_info()['side']=='right'
                 assert len(widgets('規定値'))==8
                 assert variables['expression'].get()=='auto-custom'
+                for key,value in [('arm_rotation','hinge-90'),('hand_head_contact','wrist'),('cross_body','off'),('body_peaks','integer')]:
+                    variables[key].set(value)
+                variables['head_pitch_gain'].set('2.2')
+                assert widgets('肘の回転') and widgets('頭への接触範囲')
                 for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration'):
                     variables[key].set('.37')
                     assert variables[key].get()=='.37'
@@ -69,9 +73,9 @@ def run():
                 assert notebook.tab(camera_tab,'state')=='disabled'
                 assert widgets('録画のパス')[0].grid_info()
                 variables['source'].set('motion');window.update_idletasks()
-                assert not widgets('推論モード')[0].grid_info()
+                assert not widgets('推論モード（負荷は頭のみ＝1）')[0].grid_info()
                 variables['source'].set('video');window.update_idletasks()
-                assert widgets('推論モード')[0].grid_info()
+                assert widgets('推論モード（負荷は頭のみ＝1）')[0].grid_info()
                 variables['rate'].set('60');window.update_idletasks()
                 assert not widgets('自由入力 fps')[0].grid_info()
                 variables['rate'].set('sync');window.update_idletasks()
@@ -96,6 +100,8 @@ def run():
                 assert variables['gamma'].get()=='1.7'
                 actions['start']();assert session.running
                 assert session.started[-1]['gamma']==1.7 and session.started[-1]['fps']==37
+                assert session.started[-1]['arm_rotation']=='hinge-90' and session.started[-1]['cross_body']=='off'
+                assert session.started[-1]['head_pitch_gain']==2.2
                 assert [session.started[-1][key] for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration')]==[.2,.4,.6,.8]
                 variables['mode'].set('head_only');actions['apply']()
                 assert not session.running

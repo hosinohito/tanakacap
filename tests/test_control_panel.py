@@ -102,3 +102,25 @@ def test_experiments_route_to_existing_runtime_and_background_only_for_preview()
     assert player[player.index('--preview-background')+1]=='green'
     for key in ui.OPTIONS:
         with pytest.raises(ValueError):ui.validate(dict(ui.DEFAULT,**{key:'unknown'}))
+
+
+def test_arm_experiments_are_independent_and_work_without_replay():
+    config=dict(ui.DEFAULT,arm_rotation='hinge-90',hand_head_contact='wrist',cross_body='off',body_peaks='integer')
+    player,infer=ui.commands(config,1,2)
+    assert player[player.index('--arm-rotation')+1]=='hinge-90'
+    assert player[player.index('--hand-head-contact')+1]=='wrist'
+    assert '--no-cross-body' in player and '--no-head-clearance' not in player
+    assert '--render-replay' not in player and '--integer-body-peaks' in infer
+    ordinary,_=ui.commands(ui.DEFAULT,1,2)
+    assert ordinary[ordinary.index('--arm-rotation')+1]=='hinge'
+    assert not any(flag in ordinary for flag in ('--no-head-clearance','--no-cross-body','--no-wrist-front','--no-outward-elbow'))
+
+
+@pytest.mark.parametrize('key',list(ui.NUMERIC))
+def test_numeric_experiments_validate_runtime_ranges_and_forward(key):
+    _,default,lo,hi=ui.NUMERIC[key]
+    for value in (lo,default,hi):
+        _,command=ui.commands(dict(ui.DEFAULT,**{key:value}),1,2)
+        assert float(command[command.index('--'+key.replace('_','-'))+1])==value
+    for value in (lo-.01,hi+.01,float('nan')):
+        with pytest.raises(ValueError):ui.validate(dict(ui.DEFAULT,**{key:value}))

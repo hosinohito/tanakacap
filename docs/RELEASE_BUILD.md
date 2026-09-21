@@ -1,5 +1,7 @@
 # 配布ZIPのビルド
 
+ZIP不要のローカル試験は `build-release.bat -NoZip -Version <未使用版名>`。通常と同じPlayer/Exporter/UI/依存/モデル/説明書/ライセンスを組み立て、原本・可搬Python・ライセンス監査・manifest作成まで行う。展開済み`builds/releases/<版名>/TanakaCap/`が成果物。ZIP生成と公開は行わない。
+
 開発者向け手順。利用者向けは [user_guide.txt](user_guide.txt) に分離する。
 
 このPCではプロジェクト直下の **build-release.batをダブルクリック**する。AIや手作業によるソース生成は不要。Unityでこのプロジェクトを開いている場合は先に閉じる。
