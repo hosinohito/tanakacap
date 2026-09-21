@@ -40,6 +40,10 @@ def run():
                 assert int(widgets('モーション入力')[0].grid_info()['row'])==2
                 assert widgets('終了')[0].pack_info()['side']=='right'
                 assert len(widgets('規定値'))==8
+                assert variables['expression'].get()=='auto-custom'
+                for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration'):
+                    variables[key].set('.37')
+                    assert variables[key].get()=='.37'
                 from tkinter import ttk, Canvas
                 notebook=next(w for w in descendants(window) if isinstance(w,ttk.Notebook))
                 camera_tab=next(tab for tab in notebook.tabs() if notebook.tab(tab,'text')=='カメラ')
@@ -113,7 +117,7 @@ def run():
         window.after(200,check)
         window.after(8000,actions['close'])
     with patch.object(panel,'load_settings',return_value={**panel.DEFAULT,'source':'camera','camera_id':'disconnected','video':str(mock_video)}),patch('tanakacap.camera_devices.enumerate_cameras',return_value=[]),patch.object(panel,'query_modes',side_effect=AssertionError('Unexpected camera activation')) as query:
-        panel.main(test_hook=hook,recorded_test=True)
+        panel.main(test_hook=hook,recorded_test=True,auto_custom=True)
         query.assert_not_called()
     assert not errors,errors
     (output/'widgets.json').write_text(json.dumps(dict(status='complete',scope='Real Tk start/apply/restart/settings; mocked processes, no camera')),encoding='utf-8')

@@ -27,7 +27,7 @@ def main():
             leftFingerTracked=[True]*5,leftFingerFlex=[0,25,30]+[35,65,45]*4)
         name='arm-without-face' if arm else 'palm-without-arm'
         path=output/(name+'.json');path.write_text(json.dumps(fixture),encoding='utf-8')
-        subprocess.run([sys.executable,str(ROOT/'tools/smoke_unity.py'),'--demo-avatar',
+        subprocess.run([sys.executable,str(ROOT/'tools/smoke_unity.py'),
                         '--packet-file',str(path),'--output',str(output/(name+'.png'))],check=True,cwd=ROOT)
     if args.synthetic_only:return
     video=args.video or next((ROOT/'results/comparison-takes').glob('*/camera.avi'))
@@ -35,7 +35,7 @@ def main():
     for mode in ('full','face_head','head_only'):
         session=Session();samples=[];messages=[];seen={};start=time.monotonic()
         config={**DEFAULT,'source':'video','video':str(video),'mode':mode,
-                'avatar':str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')}
+                'expression':'auto-custom','avatar':str(ROOT/'builds/player/avatars/haolan.tcap')}
         try:
             session.start(config,frames=args.frames)
             while time.monotonic()-start<120:

@@ -28,14 +28,14 @@ def main():
                     assert all(packet[k]==original['packet'].get(k,0.) for k in KEYS)
                     assert packet['browTracked']==original['packet']['browTracked']
                 line(stream,dict(packet=packet,dt=original['dt']))
-        variants[name]=dict(frames=len(baseline),player_args=['--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),'--use-demo-shape-keys'])
+        variants[name]=dict(frames=len(baseline),player_args=['--avatar',str(ROOT/'builds/player/avatars/haolan.tcap'),'--expression-mode','auto-custom'])
     a=[json.loads(x) for x in (output/'brow-1x/replay.jsonl').read_text().splitlines()]
     b=[json.loads(x) for x in (output/'brow-2x/replay.jsonl').read_text().splitlines()]
     for x,y in zip(a,b):
         assert x['dt']==y['dt']
         assert {k:v for k,v in x['packet'].items() if k not in KEYS}=={k:v for k,v in y['packet'].items() if k not in KEYS}
     dump(output/'report.json',dict(status='complete',variants=variants,
-        scope='Same 30-second recording and PnP controls, frozen demo avatar and current Player. Only brow gain changes from 1 to 2 after the same four-frame gate. All non-brow controls and times identical; blink unchanged.'))
+        scope='Same 30-second recording and PnP controls, frozen auto-custom avatar and current Player. Only brow gain changes from 1 to 2 after the same four-frame gate. All non-brow controls and times identical; blink unchanged.'))
     print('Verified:',len(a),'packets; only brow channels differ')
 
 if __name__=='__main__':main()

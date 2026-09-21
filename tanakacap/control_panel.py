@@ -94,7 +94,6 @@ def commands(config, port, status_port, player_pid=0):
             '--gaze-gain',str(c['gaze_gain'])]
     for key in ('brow_exaggeration','eye_exaggeration','eyelid_exaggeration','mouth_exaggeration'):
         player+=['--'+key.replace('_','-'),str(c[key])]
-    if Path(c['avatar']).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve():player+=['--use-demo-shape-keys']
     if c['rate']=='sync':player+=['--render-sync']
     else:player+=['--render-fps',str(cap)]
     if not c['aa']:player+=['--no-edge-aa']
@@ -243,7 +242,7 @@ def recorded_test_settings(settings):
     return settings
 
 
-def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
+def main(test_hook=None, *, auto_custom=False, recorded_test=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     window=tk.Tk();window.title('TanakaCap — コントロール');window.geometry('770x820');window.minsize(700,730)
@@ -254,7 +253,7 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
     try:settings=load_settings()
     except Exception as error:settings=DEFAULT.copy();messagebox.showerror('設定を読み込めません',str(error))
     if recorded_test:settings=recorded_test_settings(settings)
-    if demo_avatar:settings['avatar']=str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')
+    if auto_custom:settings.update(avatar=DEFAULT['avatar'],expression='auto-custom')
     variables={k:(tk.BooleanVar(value=v) if type(v) is bool else tk.StringVar(value='' if v is None else str(v))) for k,v in settings.items()}
     outer=ttk.Frame(window,padding=20);outer.pack(fill='both',expand=True)
     metrics=ttk.Label(outer,text='停止中',style='Metric.TLabel');metrics.pack(anchor='w',pady=8)
@@ -439,7 +438,6 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
     ttk.Label(f,text='OBS用のソースとしてSpoutを出力します。OBSにSpoutを導入し、ソース名TanakaCapを選んでください。Spoutを使用すると、透過出力が可能です。',wraplength=610).grid(row=9,column=0,columnspan=2,sticky='w',pady=20)
     f=frames['表情']
     row(f,0,'表情方式','expression',['existing','auto-custom'])
-    exaggeration_widgets=[]
     for index,key,label,lo,hi in [(2,'brow_exaggeration','眉の大げさ度',0,1),(4,'eye_exaggeration','目（目線）の大げさ度',0,1),
                                  (6,'eyelid_exaggeration','まぶた（閉じ）の大げさ度',0,1),(8,'mouth_exaggeration','口の大げさ度',0,1),
                                  (10,'gamma','口角ガンマ',.25,4),(12,'suppression','開口時の口角上げ抑制',0,1),(14,'emphasis','口角の追加強調',0,1),(16,'gaze_gain','目線の基準感度',.5,6)]:
@@ -447,7 +445,6 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
         def reset_value(k=key):
             value=DEFAULT[k]
             if k in ('gamma','suppression'):value=(2 if k=='gamma' else .9) if variables['expression'].get()=='auto-custom' else (1 if k=='gamma' else 0)
-            if k.endswith('_exaggeration') and Path(variables['avatar'].get()).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve():value=1
             variables[k].set(str(value))
         ttk.Button(f,text='規定値',command=reset_value).grid(row=index,column=2,padx=(8,0))
         initial=variables[key].get()
@@ -455,7 +452,6 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
         slider=tk.DoubleVar(value=float(initial) if initial else default)
         scale=ttk.Scale(f,from_=lo,to=hi,variable=slider,command=lambda value,k=key:variables[k].set(f'{float(value):.3f}'))
         scale.grid(row=index+1,column=1,sticky='ew')
-        if key.endswith('_exaggeration'):exaggeration_widgets.append((key,entry,scale))
         def sync_slider(*args,k=key,v=slider):
             value=variables[k].get()
             if not value:value=(2 if k=='gamma' else .9) if variables['expression'].get()=='auto-custom' else (1 if k=='gamma' else 0)
@@ -463,13 +459,6 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
             except ValueError:pass
         variables[key].trace_add('write',sync_slider)
         variables['expression'].trace_add('write',sync_slider)
-    def demo_strength_state(*args):
-        try:is_demo=Path(variables['avatar'].get()).resolve()==(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap').resolve()
-        except (OSError,ValueError):is_demo=False
-        for key,entry,scale in exaggeration_widgets:
-            if is_demo:variables[key].set('1')
-            entry.configure(state='disabled' if is_demo else 'normal');scale.configure(state='disabled' if is_demo else 'normal')
-    variables['avatar'].trace_add('write',demo_strength_state);demo_strength_state()
     messages=tk.Text(outer,height=10,font=('Yu Gothic UI',9),state='disabled');messages.pack(fill='x')
     messages.tag_configure('warning',foreground='#9a5700')
     messages.tag_configure('error',foreground='#b00020')
@@ -579,7 +568,7 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
 if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--demo-avatar',action='store_true',help='Select the preserved development demo avatar')
+    parser.add_argument('--auto-custom',action='store_true',help='Select the standard avatar with automatically generated expression keys')
     parser.add_argument('--recorded-test',action='store_true',help='Select saved video input, using the latest recording if needed')
     args=parser.parse_args()
-    main(demo_avatar=args.demo_avatar,recorded_test=args.recorded_test)
+    main(auto_custom=args.auto_custom,recorded_test=args.recorded_test)

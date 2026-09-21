@@ -5,6 +5,8 @@ $taskDesktop = [Environment]::GetFolderPath('Desktop')
 if (-not $taskDesktop) { throw 'Desktop path is unavailable' }
 $taskMainDesktop=[IO.Path]::GetFullPath($taskDesktop)
 $taskDesktop=Join-Path $taskMainDesktop 'tanakacap-tools'
+$taskRetiredDemo=Join-Path $taskDesktop 'tanakacap-demo-custom-brows.bat'
+if (Test-Path -LiteralPath $taskRetiredDemo -PathType Leaf) { Remove-Item -LiteralPath $taskRetiredDemo }
 if (-not (Test-Path -LiteralPath $taskDesktop)) { New-Item -ItemType Directory -Path $taskDesktop | Out-Null }
 # Only this project's known auxiliary launchers are moved. Main launchers stay visible.
 $taskAuxiliaryNames=@(
@@ -30,7 +32,7 @@ $taskUiTarget=Join-Path $taskMainDesktop 'tanakacap.bat'
 [IO.File]::WriteAllText($taskUiTarget,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`"`r`n",[Text.Encoding]::Default)
 $taskTarget = Join-Path $taskMainDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar.ps1'
-$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`" -DemoAvatar -RecordedTest`r`n"
+$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`" -AutoCustom -RecordedTest`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget
@@ -160,11 +162,6 @@ Write-Output $taskExpressionCompare
 $taskAutoTest = Join-Path $taskDesktop 'tanakacap-test-auto-expressions.bat'
 [IO.File]::WriteAllText($taskAutoTest,$taskContents.Replace(' -Diagnose',' -ExpressionMode auto-custom -Diagnose'),[Text.Encoding]::Default)
 Write-Output $taskAutoTest
-$taskSavedDemo = Join-Path $taskDesktop 'tanakacap-demo-custom-brows.bat'
-$taskSavedExe = Join-Path $taskRoot 'builds/player/TanakaCap.exe'
-$taskSavedAvatar = Join-Path $taskRoot 'builds/demos/haolan-custom-brows/avatars/haolan.tcap'
-[IO.File]::WriteAllText($taskSavedDemo,"@echo off`r`nstart `"`" `"$taskSavedExe`" --avatar `"$taskSavedAvatar`" --use-demo-shape-keys --motion-demo -nolog`r`n",[Text.Encoding]::Default)
-Write-Output $taskSavedDemo
 $taskAutoMotion = Join-Path $taskDesktop 'tanakacap-motion-auto-expressions.bat'
 $taskMotionScript = Join-Path $taskRoot 'run-motion.ps1'
 [IO.File]::WriteAllText($taskAutoMotion,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskMotionScript`" -ExpressionMode auto-custom`r`npause`r`n",[Text.Encoding]::Default)

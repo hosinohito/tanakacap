@@ -20,8 +20,8 @@ def main():
         status.bind(('127.0.0.1',0));status.setblocking(False)
         process=subprocess.Popen([str(ROOT/'builds/player/TanakaCap.exe'),'-batchmode','--render-sync',
             '--port',str(port),'--ui-status-port',str(status.getsockname()[1]),
-            '--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
-            '--use-demo-shape-keys','-logFile',str(out/'player.log')],creationflags=subprocess.CREATE_NO_WINDOW)
+            '--avatar',str(ROOT/'builds/player/avatars/haolan.tcap'),
+            '--expression-mode','auto-custom','-logFile',str(out/'player.log')],creationflags=subprocess.CREATE_NO_WINDOW)
         sender=LocalSender(port)
         report=[];sequence=0
         try:

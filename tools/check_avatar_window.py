@@ -36,11 +36,11 @@ def state(h):
 
 def main():
     output=ROOT/'results/window-sizing';output.mkdir(parents=True,exist_ok=True)
-    avatar=ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'
+    avatar=ROOT/'builds/player/avatars/haolan.tcap'
     assert avatar.is_file()
     reports=[]
     for width,height in [(960,540),(1920,1080)]:
-        p=subprocess.Popen([str(ROOT/'builds/release-player/TanakaCap.exe'),'-nolog','--avatar',str(avatar),'--motion-demo','--output-width',str(width),'--output-height',str(height),'--render-fps','60','--error-log',str(output/f'{width}-errors.log')])
+        p=subprocess.Popen([str(ROOT/'builds/release-player/TanakaCap.exe'),'-nolog','--avatar',str(avatar),'--expression-mode','auto-custom','--motion-demo','--output-width',str(width),'--output-height',str(height),'--render-fps','60','--error-log',str(output/f'{width}-errors.log')])
         try:
             deadline=time.monotonic()+30;h=None
             while time.monotonic()<deadline:

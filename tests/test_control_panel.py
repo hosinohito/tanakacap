@@ -92,11 +92,6 @@ def test_independent_exaggeration_arguments_and_validation(part):
         with pytest.raises(ValueError):ui.validate(dict(config,**{part+'_exaggeration':bad}))
 
 
-def test_demo_avatar_uses_demo_runtime():
-    player,_=ui.commands(dict(ui.DEFAULT,avatar=str(ui.ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')),40001,40002)
-    assert '--use-demo-shape-keys' in player
-
-
 def test_experiments_route_to_existing_runtime_and_background_only_for_preview():
     player,infer=ui.commands(dict(ui.DEFAULT,head_follow='adaptive',observation_mode='blocks',gaze_calibration='off',preview=False,background='green'),1,2)
     assert '--adaptive-head-follow' in player and '--preview-background' not in player

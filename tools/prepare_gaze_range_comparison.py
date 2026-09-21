@@ -48,8 +48,8 @@ def main():
         folder=output/name;folder.mkdir()
         (folder/'replay.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in rows),encoding='utf-8')
         variants[name]=dict(frames=len(rows),player_args=[
-            '--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
-            '--use-demo-shape-keys'])
+            '--avatar',str(ROOT/'builds/player/avatars/haolan.tcap'),
+            '--expression-mode','auto-custom'])
     report=dict(status='complete',variants=variants,calibrated_reproduction='exact',
         scope='Same 853 recorded iris observations with PnP validity gates, same head/body/expressions/timestamps. Left range-off; right supported range midpoint calibration. Both use current soft gaze response and maximum-exaggeration demo. Calibration starts empty. Offline playback, no raw imagery, not a latency measurement.')
     (output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')

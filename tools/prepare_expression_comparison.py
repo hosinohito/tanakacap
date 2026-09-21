@@ -31,13 +31,12 @@ def main():
             if packet['browTracked']:active+=1;values.append([packet[k] for k in KEYS])
             line(replay,dict(packet=packet,dt=1/30 if previous is None else row['time']-previous))
             previous=row['time'];count+=1
-    variants={'custom-demo':dict(player=str(ROOT/'builds/demos/haolan-custom-brows/TanakaCap.exe')),
-              'existing':{},'auto-custom':dict(player_args=['--expression-mode','auto-custom'])}
+    variants={'existing':{},'auto-custom':dict(player_args=['--expression-mode','auto-custom'])}
     for name in variants:
         folder=output/name;folder.mkdir()
         (folder/'replay.jsonl').write_bytes((output/'replay.jsonl').read_bytes())
         variants[name]['frames']=count
-    dump(output/'report.json',dict(status='complete',scope='Same saved FP16 observations and controls; only brow channels added once. Identical packets/timing for frozen custom demo, existing morphs and experimental auto-generated morphs. Renderer mapping comparison, not brow comparison or inference latency.',
+    dump(output/'report.json',dict(status='complete',scope='Same saved FP16 observations and controls; only brow channels added once. Identical packets/timing for existing morphs and experimental auto-generated morphs. Renderer mapping comparison, not brow comparison or inference latency.',
         source_sha256=sha256(source),variants=variants,brow_active=active,observations=count,
         brow_range=np.ptp(values,axis=0) if values else []))
     print(count,active,flush=True)

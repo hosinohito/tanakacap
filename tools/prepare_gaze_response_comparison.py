@@ -20,8 +20,8 @@ def main():
         folder.mkdir()
         (folder/'replay.jsonl').write_bytes(data)
         variants[name] = dict(frames=len(packets), player_args=[
-            '--avatar', str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
-            '--use-demo-shape-keys', *extra])
+            '--avatar', str(ROOT/'builds/player/avatars/haolan.tcap'),
+            '--expression-mode','auto-custom', *extra])
     report = dict(status='complete', variants=variants,
         packet_sha256=hashlib.sha256(data).hexdigest(),
         tracked=len(angles), total=len(packets),

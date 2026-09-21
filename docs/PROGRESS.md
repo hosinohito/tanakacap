@@ -1302,3 +1302,5 @@ Unity Hub操作後に認証復旧し通常Playerビルド成功。304 Python tes
 
 
 2026-09-21：UIの推論・描画・13部位更新速度をfpsへ統一。部位は実測平均間隔の逆数、内部intervalMs維持。処理時間ms/観測・ちらつきHzは別量として維持。瞼はデモの人工入力で片眼閉眼を画像確認。選択録画先頭900フレームの最大閉眼値は生左0.211/右0.245、フィルター後0.079/0.165。入力値の小ささと減衰を確認したが実写正解未確認のためモデルの取り逃がしは未確定。推定/フィルターは未変更。docs/EYELID_INPUT_AUDIT.mdとtools/diagnostics/audit_eyelids.py参照。306 tests・実Tk検査成功。Unity再ビルド不要、別PCはtanakacap/control_panel.pyを更新。
+
+2026-09-21：ユーザー指定でデモ専用アバター経路を削除。--use-demo-shape-keys/--demo-avatar/-DemoAvatarと強調固定、専用比較baselineを撤去。テストは通常haolan.tcapへauto-custom生成、既存キー/強調値の操作は通常処理。test.batは- AutoCustomではなく-AutoCustom -RecordedTestで録画UI起動。保存設定もauto-customへ。過去デモ原本/結果は保持、デモモーション入力は通常機能として維持。Player再ビルド、実Tk、人工入力/3モード録画成功。

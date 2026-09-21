@@ -1,4 +1,4 @@
-"""Identical packets and demo avatar; only adaptive eyebrow following changes."""
+"""Identical packets and auto-custom avatar; only adaptive eyebrow following changes."""
 import hashlib,json
 from pathlib import Path
 
@@ -15,8 +15,8 @@ def main():
         folder=output/name;folder.mkdir()
         (folder/'replay.jsonl').write_bytes(replay)
         variants[name]=dict(frames=frames,player_args=[
-            '--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),
-            '--use-demo-shape-keys','--check-brow-sides',*extra])
+            '--avatar',str(ROOT/'builds/player/avatars/haolan.tcap'),
+            '--expression-mode','auto-custom','--check-brow-sides',*extra])
     report=dict(status='complete',variants=variants,source=str(source),
         packet_sha256=hashlib.sha256(replay).hexdigest(),
         scope='Identical 30-second recording controls, PnP, brow gain 2, four-frame gate and independent demo eyebrow shapes. Left direct eyebrow transfer; right adaptive eyebrow following. Head/mouth/blink controls and render settings unchanged. Offline 30fps replay, not inference latency.')
