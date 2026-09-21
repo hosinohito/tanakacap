@@ -15,6 +15,16 @@ from .player_diagnostics import PlayerDiagnostics
 from .development_log import DevelopmentLog
 
 ROOT=Path(__file__).resolve().parents[1]
+PART_LABELS={'head':'頭','face_distance':'前後位置','mouth':'口','brows':'眉','eyelids':'まぶた','gaze':'目線',
+             'torso':'胴体','left_arm':'左腕','right_arm':'右腕','left_palm':'左掌','right_palm':'右掌',
+             'left_fingers':'左指','right_fingers':'右指'}
+
+def part_interval_text(part):
+    state=part.get('state')
+    if state=='valid':
+        interval=part.get('intervalMs',0)
+        return f'{interval:.0f} ms' if interval>0 else '計測中'
+    return {'lost':'未検出','held':'保持中','stale':'更新待ち','disabled':'OFF','error':'エラー'}.get(state,'—')
 def player_path():
     packaged=ROOT/'app/TanakaCap.exe'
     return packaged if packaged.is_file() else ROOT/'builds/player/TanakaCap.exe'
@@ -224,7 +234,7 @@ class Session:
         return {k:v for k,v in self.status.items() if now-self.last[k]<2 and self.running}
 
 
-def main(test_hook=None):
+def main(test_hook=None, *, demo_avatar=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     window=tk.Tk();window.title('TanakaCap — コントロール');window.geometry('770x820');window.minsize(700,730)
@@ -234,10 +244,17 @@ def main(test_hook=None):
     session=Session();pending=None;closing=False;was_running=False;last_error=''
     try:settings=load_settings()
     except Exception as error:settings=DEFAULT.copy();messagebox.showerror('設定を読み込めません',str(error))
+    if demo_avatar:settings['avatar']=str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')
     variables={k:(tk.BooleanVar(value=v) if type(v) is bool else tk.StringVar(value='' if v is None else str(v))) for k,v in settings.items()}
     outer=ttk.Frame(window,padding=20);outer.pack(fill='both',expand=True)
     metrics=ttk.Label(outer,text='停止中',style='Metric.TLabel');metrics.pack(anchor='w',pady=8)
     state=ttk.Label(outer,text='');state.pack(anchor='w')
+    part_panel=ttk.LabelFrame(outer,text='部位ごとの更新間隔');part_panel.pack(fill='x',pady=(6,0))
+    part_labels={}
+    for index,(key,label) in enumerate(PART_LABELS.items()):
+        widget=ttk.Label(part_panel,text=label+'：—',font=('Yu Gothic UI',9),width=18)
+        widget.grid(row=index//4,column=index%4,sticky='w',padx=5)
+        part_labels[key]=widget
     tabs=ttk.Notebook(outer);tabs.pack(fill='both',expand=True,pady=12)
     frames={};scroll_panes=[]
     for name in ('入力・推論','カメラ','描画・OBS','表情','実験'):
@@ -524,6 +541,9 @@ def main(test_hook=None):
             except Exception as e:messagebox.showerror('再起動できません',str(e))
         def number(kind,key):return f'{statuses[kind][key]:.1f}' if kind in statuses and key in statuses[kind] else '—'
         metrics.configure(text=f'推論 {number("inference","hz")} Hz    描画 {number("player","renderHz")} fps')
+        part_status={item['id']:item for item in statuses.get('player',{}).get('parts',[])} if running else {}
+        for key,widget in part_labels.items():
+            widget.configure(text=PART_LABELS[key]+'：'+part_interval_text(part_status.get(key,{})))
         if 'inference' in statuses and not last_error:state.configure(text=f'処理 {number("inference","busyMs")} ms/観測（入力・上限待機を除く）  /  '+('追跡中' if statuses['inference'].get('tracked') else '検出待ち'))
         elif running and not session.stopping and not last_error:state.configure(text='モーション再生中（推論なし）' if session.infer is None else '起動中 / 新しい推論データを待っています')
         lines=[]
@@ -541,4 +561,8 @@ def main(test_hook=None):
     tick();window.mainloop()
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--demo-avatar',action='store_true',help='Select the preserved development demo avatar')
+    main(demo_avatar=parser.parse_args().demo_avatar)

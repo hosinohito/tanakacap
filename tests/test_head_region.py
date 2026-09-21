@@ -65,7 +65,7 @@ def test_auto_loop_loss_packets_and_no_log(monkeypatch):
         def release(self): pass
     class Sender:
         def __init__(self,port): pass
-        def send(self,p): packets.append(p)
+        def send(self,p,**kwargs): packets.append(p)
         def close(self): pass
     def forbidden(*a,**k): raise AssertionError('Unexpected full model or log')
     for name in ('output_folder','SimCCModel','PersonDetector'):

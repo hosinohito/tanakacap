@@ -1,7 +1,8 @@
 import json
 import socket
 import numpy as np
-from tanakacap.retarget import LocalSender, packet_from_landmarks
+from tanakacap.retarget import packet_from_landmarks
+from tanakacap.partial_tracking import LocalSender
 
 
 def test_missing_landmarks_produce_safe_inactive_packet():
@@ -32,6 +33,8 @@ def test_loopback_transport_sends_json_without_image():
             sender.send(packet_from_landmarks(np.full((133,2),np.nan),np.zeros(133),2))
             data, address = receiver.recvfrom(4096)
             assert address[0] == '127.0.0.1'
-            assert json.loads(data)['sequence'] == 2
+            message=json.loads(data)
+            assert message['version'] == 2 and message['frameId'] == 2
+            assert all(part['state']=='lost' for part in message['parts'])
         finally:
             sender.close()

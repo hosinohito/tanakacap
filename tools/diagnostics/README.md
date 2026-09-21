@@ -30,3 +30,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 参照：
 - [Windowsのちらつき防止制御](https://learn.microsoft.com/en-us/windows-hardware/drivers/stream/ksproperty-videoprocamp-powerline-frequency)
 - [Media Foundationの形式選択と圧縮データ取得](https://learn.microsoft.com/en-us/windows/win32/medfound/processing-media-data-with-the-source-reader)
+
+`check_partial_tracking.py` は、デモアバターと人工入力で顔なしの腕・腕なしの掌/指を確認し、既存録画で3モードの部位更新間隔を検査します。カメラ不使用・実写表示なし。`--synthetic-only` で人工入力だけを検査できます。結果は `results/partial-tracking/`。

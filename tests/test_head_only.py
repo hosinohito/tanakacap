@@ -31,7 +31,7 @@ def test_head_only_never_loads_other_models_or_creates_logs(monkeypatch):
         def release(self): pass
     class Sender:
         def __init__(self,port): pass
-        def send(self,p): packets.append(p)
+        def send(self,p,**kwargs): packets.append(p)
         def close(self): pass
     monkeypatch.setattr(head_only,"HeadOnlyModel",Model)
     monkeypatch.setattr(head_only.cv2,"VideoCapture",lambda p:Video())

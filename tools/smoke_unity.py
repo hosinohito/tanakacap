@@ -9,11 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from tanakacap.retarget import LocalSender
+from tanakacap.partial_tracking import LocalSender
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--demo-avatar',action='store_true',help='Use the preserved expressive demo avatar')
     parser.add_argument('--motion-check',action='store_true',help='Also check actual bone rotation paths with synthetic trajectories')
     parser.add_argument('--expression-mode',choices=['existing','auto-custom'],default='existing')
     parser.add_argument('--mouth-corner-gamma',type=float)
@@ -46,6 +47,7 @@ def main():
         probe.bind(('127.0.0.1',0))
         test_port=probe.getsockname()[1]
     render_args=['--expression-mode',args.expression_mode]
+    if args.demo_avatar:render_args+=['--avatar',str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap'),'--use-demo-shape-keys']
     for key in ('mouth_corner_gamma','mouth_open_smile_suppression','mouth_corner_emphasis'):
         value=getattr(args,key)
         if value is not None:render_args+=['--'+key.replace('_','-'),str(value)]
@@ -73,6 +75,7 @@ def main():
                              leftElbow=dict(x=-.5,y=-.2,z=.3),leftWrist=dict(x=-.3,y=.3,z=1.))
             if fixture is not None:
                 controls=dict(fixture,sequence=sequence)
+            controls['inputReadTime']=time.perf_counter()
             if fixture is None:
                 controls.update(leftFingerTracked=[True]*5,rightFingerTracked=[True]*5,
                                 leftFingerFlex=[0,25,30]+[35,65,45]*4,rightFingerFlex=[0,20,25]+[20,40,30]*4)
@@ -129,6 +132,13 @@ def main():
         if fixture is None:
             for side, expected in [('left',[0,25,30]+[35,65,45]*4),('right',[0,20,25]+[20,40,30]*4)]:
                 assert all(abs(a-b)<1 for a,b in zip(actual[side+'FingerAngles'],expected)), actual
+        else:
+            for side in ('left','right'):
+                for finger,valid in enumerate(fixture.get(side+'FingerTracked',[])):
+                    if valid:
+                        expected=fixture[side+'FingerFlex'][finger*3:finger*3+3]
+                        measured=actual[side+'FingerAngles'][finger*3:finger*3+3]
+                        assert len(measured)==3 and all(abs(a-b)<1 for a,b in zip(measured,expected)),actual
         assert output.exists() and output.stat().st_size > (1000 if args.no_preview else 10000)
         print(f'Actual Unity receiver and rendering succeeded: {output}')
     finally:

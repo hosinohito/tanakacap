@@ -20,7 +20,8 @@ from .capture import Camera, camera_from_args
 from .inference import PersonDetector, SimCCModel
 from .person_region import PersonRegionTracker
 from .models import ROOT, catalog, fetch
-from .retarget import LocalSender, packet_from_landmarks, FaceFilter
+from .retarget import packet_from_landmarks, FaceFilter
+from .partial_tracking import LocalSender, FACE_PARTS, BODY_PARTS
 from .body3d import BodyRetarget
 from .arm_width import measure_arm_widths
 
@@ -260,10 +261,9 @@ def benchmark(args):
                         head_pose.update(points,scores,packet,(image.shape[1],image.shape[0]),**pose_extra)
                         timing["head_pose_ms"]=(time.perf_counter()-pose_start)*1000
                         timing["pipeline_ms"]+=timing["head_pose_ms"]
-                    if gaze:
-                        gaze.update(image,points,scores,packet,time.perf_counter())
-                        timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
-                        timing['pipeline_ms']+=timing['gaze_ms']
+                    # Iris eligibility uses the original head/face observation,
+                    # as before; running it later must not change its inputs.
+                    gaze_packet = dict(packet)
                     filter_start=time.perf_counter()
                     face_filter.update(packet,time.perf_counter())
                     timing['face_filter_ms']=(time.perf_counter()-filter_start)*1000
@@ -271,6 +271,10 @@ def benchmark(args):
                     face_distance.update(points,scores,packet,distance_start)
                     timing['face_distance_ms']=(time.perf_counter()-distance_start)*1000
                     timing['pipeline_ms']+=timing['face_distance_ms']
+                    packet['inputReadTime']=acquired
+                    send_start=time.perf_counter()
+                    sender.send(packet, FACE_PARTS, disabled=('face_distance',) if getattr(args, 'no_body', False) else ())
+                    timing['send_ms']=(time.perf_counter()-send_start)*1000
                     retarget_start=time.perf_counter()
                     if body_model:
                         packet = body_retarget.update(packet,body_xy,body_scores,
@@ -287,8 +291,16 @@ def benchmark(args):
                     packet['inputReadTime']=acquired
                     packet['inputSentTime']=time.perf_counter()
                     send_start=time.perf_counter()
-                    sender.send(packet)
-                    timing['send_ms']=(time.perf_counter()-send_start)*1000
+                    sender.send(packet, BODY_PARTS, disabled=BODY_PARTS if getattr(args, 'no_body', False) else ())
+                    timing['send_ms']+=(time.perf_counter()-send_start)*1000
+                    if gaze:
+                        gaze.update(image,points,scores,gaze_packet,time.perf_counter())
+                        packet.update({key:gaze_packet[key] for key in ('gazeTracked','gazeYaw','gazePitch')})
+                        timing['gaze_ms']=gaze.diagnostics['elapsed_ms']
+                        timing['pipeline_ms']+=timing['gaze_ms']
+                    send_start=time.perf_counter()
+                    sender.send(packet, ('gaze',), disabled=() if gaze else ('gaze',))
+                    timing['send_ms']+=(time.perf_counter()-send_start)*1000
                 done = time.perf_counter()
                 timing['read_to_send_ms']=(done-read_done)*1000
                 accounted=sum(timing.get(k,0.) for k in ('face_model_ms','detector_ms','body3d_ms','gaze_ms','head_pose_ms','landmark_controls_ms','face_filter_ms','face_distance_ms','retarget_ms','send_ms'))

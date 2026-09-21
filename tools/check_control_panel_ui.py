@@ -1,5 +1,7 @@
 """Exercise actual Tk widgets with a fake process backend: no camera or inference."""
 import json
+import traceback
+from unittest.mock import patch
 import sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
@@ -10,7 +12,7 @@ class FakeSession:
     def __init__(self):
         self.running=False;self.stopping=False;self.player=None;self.infer=None
         self.messages=queue.Queue();self.sock=self;self.started=[]
-    def poll(self):return {}
+    def poll(self):return {'player':{'parts':[{'id':'head','state':'valid','intervalMs':33.3},{'id':'left_arm','state':'held','intervalMs':33.3}]}} if self.running else {}
     def close(self):pass
     def stop(self):self.running=False
     def start(self,config):
@@ -92,14 +94,14 @@ def run():
                 variables['mode'].set('head_only');actions['apply']()
                 assert not session.running
                 window.after(500,finish)
-            except Exception as exc:errors.append(repr(exc));actions['close']()
+            except Exception as exc:errors.append(traceback.format_exc());actions['close']()
         def finish():
             try:
                 assert len(session.started)==2 and session.started[-1]['mode']=='head_only'
                 saved=json.loads(panel.SETTINGS.read_text(encoding='utf-8'))
                 assert saved['source']=='video' and saved['gamma']==1.7
                 assert saved['camera_powerline']=='60hz' and saved['camera_lowlight']=='fixed'
-            except Exception as exc:errors.append(repr(exc))
+            except Exception as exc:errors.append(traceback.format_exc())
             def exit_buttons(parent):
                 for child in parent.winfo_children():
                     if 'text' in child.keys() and str(child.cget('text'))=='終了':yield child
@@ -108,7 +110,8 @@ def run():
             assert not session.running
         window.after(200,check)
         window.after(8000,actions['close'])
-    panel.main(test_hook=hook)
+    with patch.object(panel,'load_settings',return_value={**panel.DEFAULT,'source':'video'}),patch('tanakacap.camera_devices.enumerate_cameras',return_value=[]),patch.object(panel,'query_modes',return_value=[]):
+        panel.main(test_hook=hook)
     assert not errors,errors
     (output/'widgets.json').write_text(json.dumps(dict(status='complete',scope='Real Tk start/apply/restart/settings; mocked processes, no camera')),encoding='utf-8')
     print('Tk controls: start, apply/restart, settings and close passed')

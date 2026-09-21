@@ -1,6 +1,4 @@
 """Conservative 2D diagnostic retargeting, not a solved 3D body/face model."""
-import json
-import socket
 
 import numpy as np
 from .mouth_detail import contour_controls
@@ -134,17 +132,3 @@ class FaceFilter:
                 continue
             packet.update(zip(keys,map(float,values)))
         return packet
-
-
-class LocalSender:
-    def __init__(self, port):
-        if not 1024 <= port <= 65535:
-            raise ValueError('Local UDP port must be 1024..65535')
-        self.target = ('127.0.0.1',port)
-        self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-
-    def send(self, packet):
-        self.socket.sendto(json.dumps(packet,allow_nan=False,separators=(',',':')).encode('utf-8'),self.target)
-
-    def close(self):
-        self.socket.close()

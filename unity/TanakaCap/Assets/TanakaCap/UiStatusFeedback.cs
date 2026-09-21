@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 namespace TanakaCap {
  public sealed class UiStatusFeedback:MonoBehaviour {
-  [Serializable] class Status { public string kind="player"; public float renderHz,receiveHz,loopHz; }
+  [Serializable] class Status { public string kind="player"; public float renderHz,receiveHz,loopHz; public PartStatus[] parts; }
   UdpClient client; IPEndPoint endpoint; AlphaOutput output; AvatarDriver driver;
   float previous;long renders,received,loops;long totalLoops;
   void Start(){
@@ -18,7 +18,7 @@ namespace TanakaCap {
    totalLoops++;if(!driver)driver=FindObjectOfType<AvatarDriver>();
    float now=Time.realtimeSinceStartup,elapsed=now-previous;if(elapsed<.5f)return;
    long current=driver?driver.ReceivedPackets:0;
-   var message=new Status{renderHz=(output.RenderedFrames-renders)/elapsed,receiveHz=(current-received)/elapsed,loopHz=(totalLoops-loops)/elapsed};
+   var message=new Status{parts=driver?driver.PartStatuses:null,renderHz=(output.RenderedFrames-renders)/elapsed,receiveHz=(current-received)/elapsed,loopHz=(totalLoops-loops)/elapsed};
    byte[] bytes=Encoding.UTF8.GetBytes(JsonUtility.ToJson(message));
    try{client.Send(bytes,bytes.Length,endpoint);}catch(SocketException){}
    previous=now;renders=output.RenderedFrames;received=current;loops=totalLoops;

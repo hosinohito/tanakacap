@@ -64,7 +64,10 @@ namespace TanakaCap
         public string rightBlinkShape = "ウィンク２右";
         UdpClient receiver;
         TrackingPacket current;
-        long lastSequence = -1;
+        readonly TrackingParts parts = new TrackingParts();
+        bool PartActive(string id,bool fallback) => !demo && !videoMode && parts.Owns(current) ? parts.Active(id,Time.unscaledTime) : fallback;
+        public PartStatus[] PartStatuses => parts.Status(Time.unscaledTime);
+        public long TrackingFrameRevision => parts.FrameRevision;
         float lastReceived = -100;
         public const float ForearmTwistLimit=160f;
         string error;
@@ -365,13 +368,11 @@ namespace TanakaCap
                 if (bytes.Length > 4096) continue;
                 try
                 {
-                    var packet = JsonUtility.FromJson<TrackingPacket>(Encoding.UTF8.GetString(bytes));
-                    if (packet == null || packet.version != 1 || !Finite(packet)) continue;
-                    // A sender may restart at sequence 0 after the old stream expires.
-                    if (packet.sequence <= lastSequence && Time.unscaledTime-lastReceived < 1) continue;
-                    lastSequence = packet.sequence;
+                    var update = JsonUtility.FromJson<TrackingUpdate>(Encoding.UTF8.GetString(bytes));
+                    double sourceClock=(double)System.Diagnostics.Stopwatch.GetTimestamp()/System.Diagnostics.Stopwatch.Frequency;
+                    if (!parts.Accept(update,Time.unscaledTime,sourceClock)) continue;
                     ReceivedPackets++;
-                    current = packet;
+                    current = parts.Snapshot(Time.unscaledTime);
                     lastReceived = Time.unscaledTime;
                 }
                 catch (ArgumentException) { }
@@ -396,7 +397,7 @@ namespace TanakaCap
 
         static bool ValidFingers(bool[] tracked,float[] flex)
         {
-            if(tracked==null && flex==null) return true; // older senders
+            if(tracked==null && flex==null) return true; // No finger targets in this pose.
             if(tracked==null || flex==null || tracked.Length!=5 || flex.Length!=15) return false;
             foreach(float v in flex) if(float.IsNaN(v) || float.IsInfinity(v) || v<0 || v>180) return false;
             return true;
@@ -412,6 +413,7 @@ namespace TanakaCap
         {
             if(videoMode && probeDelta<=0)return;
             if (!head) return;
+            if(!demo && !videoMode && parts.Owns(current))current=parts.Snapshot(Time.unscaledTime);
             float t = 1-Mathf.Exp(-FrameDelta*16);
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
             if(!live && !demo){DriveGaze(null,false,FrameDelta);return;} // Only gaze returns to center on loss.
@@ -421,7 +423,7 @@ namespace TanakaCap
                 mouth=.5f+.5f*Mathf.Sin(Time.time*3), leftBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16),
                 rightBlink=Mathf.Pow(Mathf.Max(0,Mathf.Sin(Time.time*2)),16) };
             if(demo && motionDemo)live=true;
-            if(framedDistance && faceDistanceEnabled && distanceEstablished && p.faceTracked && p.faceDistanceTracked)transform.position=rootRestPosition;
+            if(framedDistance && faceDistanceEnabled && distanceEstablished && p.faceDistanceTracked)transform.position=rootRestPosition;
             var leftParentBefore=left.lower.parent.rotation;
             var rightParentBefore=right.lower.parent.rotation;
             DriveFaceDistance(p,live,FrameDelta);
@@ -434,7 +436,7 @@ namespace TanakaCap
             torso = new Vector3(Mathf.Clamp(torso.x,-50,50),Mathf.Clamp(torso.y,-80,80),Mathf.Clamp(torso.z,-25,25));
             if(seated)torso.x=seatedLeanDegrees;
             float share = spine ? .65f : 1;
-            bool updateTorso=p.torsoTracked || (seated && p.faceTracked && p.faceDistanceTracked);
+            bool updateTorso=p.torsoTracked || (seated && p.faceDistanceTracked);
             var lowerTorso=torso*(1-share);
             if(seated)lowerTorso.x=torso.x;
             if (updateTorso && spine) spine.rotation = Quaternion.Slerp(spine.rotation,transform.rotation*TorsoRotation(lowerTorso,seated)*spineRootRest,t);
@@ -443,7 +445,7 @@ namespace TanakaCap
             // Otherwise interpolation starts from a stale world orientation.
             left.lowerUntwisted=left.lower.parent.rotation*Quaternion.Inverse(leftParentBefore)*left.lowerUntwisted;
             right.lowerUntwisted=right.lower.parent.rotation*Quaternion.Inverse(rightParentBefore)*right.lowerUntwisted;
-            bool headActive=p.headTracked || p.faceTracked;
+            bool headActive=PartActive("head",p.headTracked || p.faceTracked);
             var headTarget = transform.rotation * (headActive ? Quaternion.Euler(Mathf.Clamp(p.headPitch,-40,40),
                 Mathf.Clamp(p.headYaw,-60,60),Mathf.Clamp(p.headRoll,-35,35)) : Quaternion.identity) * headRootRest;
             // Face orientation is camera-relative: do not add torso rotation a second time.
@@ -456,15 +458,15 @@ namespace TanakaCap
             left.handBeforeSolve=left.hand.rotation; right.handBeforeSolve=right.hand.rotation;
             DriveArm(left,p.leftArmTracked && !p.leftArmHeld,p.leftElbow,p.leftWrist,true,t,p.leftWristInFront,p.leftUpperInFront,p.leftCrossBody);
             DriveArm(right,p.rightArmTracked && !p.rightArmHeld,p.rightElbow,p.rightWrist,false,t,p.rightWristInFront,p.rightUpperInFront,p.rightCrossBody);
-            DriveHand(left,p.leftArmTracked && !p.leftArmHeld && p.leftHandTracked,p.leftHandForward,p.leftHandNormal,t);
-            DriveHand(right,p.rightArmTracked && !p.rightArmHeld && p.rightHandTracked,p.rightHandForward,p.rightHandNormal,t);
-            DriveFingers(left,p.leftFingerTracked,p.leftFingerFlex);
-            DriveFingers(right,p.rightFingerTracked,p.rightFingerFlex);
-            if(p.faceTracked) mouth = Mathf.Lerp(mouth,Mathf.Clamp01(p.mouth),faceT);
-            if(p.faceTracked) mouthWidth = Mathf.Lerp(mouthWidth,Mathf.Clamp(p.mouthWidth,-1,1),faceT);
-            if(p.faceTracked) mouthRound = Mathf.Lerp(mouthRound,Mathf.Clamp01(p.mouthRound),faceT);
-            if(p.faceTracked) mouthSmile = Mathf.Lerp(mouthSmile,Mathf.Clamp01(p.mouthSmile),faceT);
-            if(p.faceTracked && p.mouthContourTracked)
+            DriveHand(left,p.leftHandTracked,p.leftHandForward,p.leftHandNormal,t);
+            DriveHand(right,p.rightHandTracked,p.rightHandForward,p.rightHandNormal,t);
+            if(PartActive("left_fingers",true))DriveFingers(left,p.leftFingerTracked,p.leftFingerFlex);
+            if(PartActive("right_fingers",true))DriveFingers(right,p.rightFingerTracked,p.rightFingerFlex);
+            if(PartActive("mouth",p.faceTracked)) mouth = Mathf.Lerp(mouth,Mathf.Clamp01(p.mouth),faceT);
+            if(PartActive("mouth",p.faceTracked)) mouthWidth = Mathf.Lerp(mouthWidth,Mathf.Clamp(p.mouthWidth,-1,1),faceT);
+            if(PartActive("mouth",p.faceTracked)) mouthRound = Mathf.Lerp(mouthRound,Mathf.Clamp01(p.mouthRound),faceT);
+            if(PartActive("mouth",p.faceTracked)) mouthSmile = Mathf.Lerp(mouthSmile,Mathf.Clamp01(p.mouthSmile),faceT);
+            if(PartActive("mouth",p.faceTracked) && p.mouthContourTracked)
             {
                 detailedMouth=true;
                 mouthLeftCorner=Mathf.Lerp(mouthLeftCorner,Mathf.Clamp(p.mouthLeftCorner,-1,1),faceT);
@@ -472,15 +474,15 @@ namespace TanakaCap
                 mouthBow=Mathf.Lerp(mouthBow,Mathf.Clamp01(p.mouthBow),faceT);
                 mouthShift=Mathf.Lerp(mouthShift,Mathf.Clamp(p.mouthShift,-1,1),faceT);
             }
-            if(p.faceTracked) blinkLeft = Mathf.Lerp(blinkLeft,Mathf.Clamp01(p.leftBlink),faceT);
-            if(p.faceTracked && p.browTracked){
+            if(PartActive("eyelids",p.faceTracked)) blinkLeft = Mathf.Lerp(blinkLeft,Mathf.Clamp01(p.leftBlink),faceT);
+            if(PartActive("brows",p.faceTracked && p.browTracked)){
                 browLeftInner=FollowBrow(browLeftInner,p.browLeftInner,FrameDelta,adaptiveBrowFollow);
                 browLeftOuter=FollowBrow(browLeftOuter,p.browLeftOuter,FrameDelta,adaptiveBrowFollow);
                 browRightInner=FollowBrow(browRightInner,p.browRightInner,FrameDelta,adaptiveBrowFollow);
                 browRightOuter=FollowBrow(browRightOuter,p.browRightOuter,FrameDelta,adaptiveBrowFollow);
             }
             expressions.ApplyBrows(exaggeration.BrowValue(browLeftInner),exaggeration.BrowValue(browLeftOuter),exaggeration.BrowValue(browRightInner),exaggeration.BrowValue(browRightOuter));
-            if(p.faceTracked) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
+            if(PartActive("eyelids",p.faceTracked)) blinkRight = Mathf.Lerp(blinkRight,Mathf.Clamp01(p.rightBlink),faceT);
             expressions.CornerGamma=MouthCornerGamma;expressions.OpenSmileSuppression=MouthOpenSmileSuppression;
             expressions.ApplyMouth(exaggeration.MouthValue(mouth),exaggeration.MouthValue(mouthWidth),exaggeration.MouthValue(mouthRound),exaggeration.MouthValue(detailedMouth?mouthLeftCorner:mouthSmile),
                 exaggeration.MouthValue(detailedMouth?mouthRightCorner:mouthSmile),exaggeration.MouthValue(mouthShift),exaggeration.MouthValue(mouthBow),Mathf.Max(MouthCornerEmphasis,exaggeration.Mouth));
@@ -515,7 +517,7 @@ namespace TanakaCap
 
         void DriveFaceDistance(TrackingPacket packet,bool live,float dt)
         {
-            if(!faceDistanceEnabled || !live || packet==null || !packet.faceTracked || !packet.faceDistanceTracked || initialFaceDepth<=0)return;
+            if(!faceDistanceEnabled || !live || packet==null || !packet.faceDistanceTracked || initialFaceDepth<=0)return;
             float requested=seatedDistance?Mathf.Clamp(packet.faceDistanceRatio,.34f,2.86f):Mathf.Clamp(packet.faceDistanceRatio,.75f,1.5f);
             faceDistanceRatio=Mathf.Lerp(faceDistanceRatio,requested,1-Mathf.Exp(-Mathf.Max(0,dt)*22));
             distanceEstablished=true;
@@ -531,7 +533,7 @@ namespace TanakaCap
 
         void ApplyFaceFraming(TrackingPacket packet,bool live)
         {
-            if(!framedDistance || !faceDistanceEnabled || !distanceEstablished || !live || !packet.faceTracked || !packet.faceDistanceTracked || !Camera.main)return;
+            if(!framedDistance || !faceDistanceEnabled || !distanceEstablished || !live || !packet.faceDistanceTracked || !Camera.main)return;
             var camera=Camera.main.transform;
             float wantedDepth=initialFaceDepth*Mathf.Clamp(faceDistanceRatio,.5f,2f);
             float actualDepth=Vector3.Dot(head.position-camera.position,depthDirection);
@@ -700,7 +702,7 @@ namespace TanakaCap
 
         void DriveGaze(TrackingPacket packet,bool live,float dt)
         {
-            bool valid=gazeEnabled && live && packet!=null && packet.faceTracked && packet.gazeTracked;
+            bool valid=gazeEnabled && live && packet!=null && packet.gazeTracked;
             var target=valid?FacialExaggeration.GazeTarget(new Vector2(packet.gazeYaw,packet.gazePitch),gazeGain*exaggeration.EyeGain,legacyGazeResponse):(gazeEnabled?CameraGazeTarget():Vector2.zero);
             gazeAngles=Vector2.Lerp(gazeAngles,target,1-Mathf.Exp(-Mathf.Max(0,dt)*(valid?22f:2f)));
             if(gazeAngles.sqrMagnitude<.0001f)gazeAngles=Vector2.zero;

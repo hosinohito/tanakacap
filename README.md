@@ -1,5 +1,7 @@
 # tanakacap — 開発者向け
 
+開発版（2026-09-21）は部位別通信へ更新しています。PythonとPlayerを同時に更新し、`build-player.ps1`でPlayerをビルドしてください。旧通信の互換モードはありません。`tanakacap-test.bat`はデモアバター選択済みのUIを開きます。設計・検査は[部位別更新](docs/PARTIAL_TRACKING_DESIGN.md)を参照。
+
 配布版：[GitHub Releases](https://github.com/hosinohito/tanakacap/releases/latest)。part01とpart02の両ZIPを同じ場所へ展開してください。利用者向けの導入・操作は[使い方](docs/USER_GUIDE.md)を参照してください。
 
 **配布ビルド：プロジェクト直下の `build-release.bat` をダブルクリック。** 原本確認からUnity/Exporterの再ビルド、ZIP作成・検査まで実行します。版名は日時で自動作成、ログはresults、成果物はbuilds/releases。必要な原本とバックアップ対象は[ビルド手順](docs/RELEASE_BUILD.md)を参照。Git管理外のmodels・埋め込みPackages・対応ソースもこの作業フォルダー内に揃っています。Unity EditorとPython環境は別途必要です。

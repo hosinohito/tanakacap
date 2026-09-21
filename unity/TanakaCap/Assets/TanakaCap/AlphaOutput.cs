@@ -135,7 +135,7 @@ namespace TanakaCap
                 outputCamera.fieldOfView=previewCamera.fieldOfView;
                 if(inferenceSync){
                     if(!syncDriver)syncDriver=FindObjectOfType<AvatarDriver>();
-                    long sequence=syncDriver?syncDriver.ReceivedPackets:0;
+                    long sequence=syncDriver?syncDriver.TrackingFrameRevision:0;
                     bool motion=Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-demo")>=0;
                     if(!motion && sequence==lastPacket && Time.unscaledTime-lastOutput<.1f)return;
                     lastPacket=sequence;

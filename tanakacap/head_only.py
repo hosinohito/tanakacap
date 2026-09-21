@@ -13,7 +13,7 @@ import onnxruntime as ort
 from .models import ROOT, sha256
 from .inference import provider_summary
 from .motion_gate import DirectionGate
-from .retarget import LocalSender
+from .partial_tracking import LocalSender, PART_FIELDS
 from .capture import Camera, camera_from_args
 from .head_region import HeadRegionDetector, HeadRegionTracker
 
@@ -158,7 +158,8 @@ def run(args):
                               inputReadTime=acquired, inputSentTime=time.perf_counter())
                 if filtered is not None:
                     packet.update(zip(("headPitch", "headYaw", "headRoll"), map(float, filtered)))
-                if sender: sender.send(packet)
+                if sender:
+                    sender.send(packet, disabled=set(PART_FIELDS)-{'head'})
                 timing.update(frame=index, input_wait_read_ms=(read_done-start)*1000,
                               head_region_ms=region_ms, roi=roi,
                               region_state='paused' if paused else tracker.state if automatic else 'fixed',
