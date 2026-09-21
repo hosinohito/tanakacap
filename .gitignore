@@ -44,3 +44,6 @@ unity/**/Assets/TanakaCapExport-*.meta
 
 # Runtime error logs next to the launcher.
 /logs/
+
+# Local working notes.
+/memo.txt

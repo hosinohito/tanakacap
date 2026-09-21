@@ -1,3 +1,5 @@
+2026-09-21：memo.txtを読んで追跡依存・欠測保持・肩ヨーを調査。memoは未追跡だったため.gitignoreへ/memo.txt追加（実体保持）。調査結果はローカルresults/tracking-audit-20260921.md。通常front_projectionの顔尺度無効時に腕更新を飛ばす条件を確認。欠測は従来指定どおり姿勢保持。肩比率の合成入力では顔10%拡大・肩固定で約16.88度の誤ヨーが出る条件を確認（実人物原因確定ではない）。推論/Player挙動は変更なし、実カメラ/実写表示なし、部分送信は未実装。調査要求であり自然姿勢復帰等を採用済みにしない。
+
 2026-09-13：説明書更新版v0.1.3公開完了。https://github.com/hosinohito/tanakacap/releases/tag/v0.1.3 。ソース/タグ6b29c79。-SkipUnityで検証済み0.1.2本体を再利用し、原本/ライセンス/同梱Python/ZIP CRC検査成功。同梱使い方.mdはdocs/USER_GUIDE.mdとSHA一致。12924 files、part01=2084980594 bytes、part02=162031064 bytes。GitHub側の両ZIPサイズ/SHA256一致、draft=false/latest=v0.1.3、公開2026-09-13T10:12:37Z確認。0.1.2利用者は説明書だけ更新可、新規導入は両ZIPを同じフォルダーへ展開する。
 
 2026-09-13：ユーザーが保存したbuilds/releases/0.1.2/TanakaCap/使い方.mdの追記をdocs/USER_GUIDE.mdへ反映。プロジェクト複製は必須ではなく原本保護の推奨と明記し、以降は複製を使う手順と説明。ログ/構図の重複を統合、モーション入力名と操作順を現UIへ合わせ、カメラ設定・更新を見出し整理。旧同梱ファイルは変更せず保持。文書のみ変更のv0.1.3を-SkipUnity -Publishableで作成中（検証済み0.1.2 Player/Exporter再利用）。公開指示は継続。
