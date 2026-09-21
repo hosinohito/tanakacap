@@ -4,7 +4,7 @@ ZIP不要のローカル試験は `build-release.bat -NoZip -Version <未使用�
 
 開発者向け手順。利用者向けは [user_guide.txt](user_guide.txt) に分離する。
 
-このPCではプロジェクト直下の **build-release.batをダブルクリック**する。AIや手作業によるソース生成は不要。Unityでこのプロジェクトを開いている場合は先に閉じる。
+環境準備後はプロジェクト直下の **build-release.batをダブルクリック**する。AIや手作業によるソース生成は不要。Unityでこのプロジェクトを開いている場合は先に閉じる。
 
 素材/SHA/依存版の確認→Unity PlayerとExporterをソースからビルド→同梱・監査・ZIP分割・CRC検査を行う。版名は日時から自動生成し、既存リリースを上書きしない。最後に保存先を表示し、画面はキーを押すまで閉じない。GitHubへのアップロードはしない。
 
@@ -20,16 +20,16 @@ ZIP不要のローカル試験は `build-release.bat -NoZip -Version <未使用�
 | assets-source/licenses/opencv-ffmpeg-sources.zip | 配布に添付する対応ソース。Git管理外、固定版から再作成可能 |
 | release / docs / tracking-settings.json / requirements.lock.txt | 通知原文・ライセンス・設定・手順・依存版。Git管理 |
 
-この作業フォルダーには上記が揃っている。**Git cloneだけではモデルや埋め込みパッケージは復元されない**。移行・バックアップ時はそれらも保管する。アバター原本や過去の比較動画・既存Playerは、通常の配布ビルドの入力ではない。
+**Git cloneだけではモデルや埋め込みパッケージは復元されない**。移行・バックアップ時はそれらも保管する。アバター原本や過去の比較動画・既存Playerは、通常の配布ビルドの入力ではない。
 
-外部ツールは認証済みUnity 2022.3.22f1 PersonalとPython 3.11環境が必要。現在の.venvはインストール済みPythonを参照するため、そのフォルダーだけを別PCへコピーしてビルド環境になるとは限らない。別PCではREADMEのuv/lock手順で再構成する。今回の.batはその導入やUnity認証を勝手に変更しない。
+外部ツールは認証済みUnity 2022.3.22f1 PersonalとPython 3.11環境が必要。現在の.venvはインストール済みPythonを参照するため、そのフォルダーだけを別PCへコピーしてビルド環境になるとは限らない。別PCでは[開発環境](DEVELOPMENT.md)のuv/lock手順で再構成する。今回の.batはその導入やUnity認証を勝手に変更しない。
 
 認証済みUnity 2022.3.22f1（現在Personal）、lockどおりの開発venv、同梱対象モデルが必要。公開Playerは `BuildRelease.Build` で空のシーンから作り、原本アバター/検証動画/VRChat SDKを配布へ含めない。ExporterはUnitypackageとして同時生成。Playerのビルドは `builds/release-player`、梱包結果は `builds/releases/<version>`。既存バージョンは上書きせず、新しい版名を渡す。`-SkipUnity` は既存release-playerを使用する。
 
 ## ZIPの内容
 
 - `プラグイン/TanakaCapExporter.unitypackage`：利用者のVRCSDK環境にインポート。
-- `builds/player`：製品Player。開発時の相対パス互換を維持した内部配置で、アバターは埋め込まない。
+- `app`：製品Player一式。アバターは埋め込まない。
 - `tanakacap`：推論/制御/UI、`runtime`：再配置可能なPython・標準Tk・lockから選んだ実行ライブラリ。
 - `models`：通常全身/顔専用/頭専用/虹彩/人物検出の必要モデル。SAM/HaMeR/MANO等の比較専用モデルは除外。
 - `TanakaCap.bat`：UI起動。利用者によるPythonやpipの操作は不要。

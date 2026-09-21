@@ -1,3 +1,14 @@
+# 再開時の入口
+
+会話履歴がない別のCodexインスタンスも、[AGENTS](AGENTS.md) → この文書の冒頭 → 作業に関係する[SPEC](docs/SPEC.md)・機能仕様 → [PROGRESS末尾](docs/PROGRESS.md)の順で確認する。同日中の記録もあるため日付だけでなく記載順・後続訂正を確認し、古い「未実装」「公開なし」を現在の状態として扱わない。
+
+- 開発環境・モデル取得・ビルド・起動・検証の共通手順は[DEVELOPMENT](docs/DEVELOPMENT.md)。READMEは公開入口へ変更した。
+- 現在の配布版はv0.1.4。以下の公開記録が旧ビルドの公開状態を更新する。今回の文書整理ではアプリ・設定・ビルド成果物を変更していない。
+- 次の機能作業はユーザー指示に従う。肘回転の見た目評価は未確定で、[比較条件・結果](docs/ARM_ROTATION_COUPLED.md)と以下の記録を引き継ぐ。未採用の方式を独断で採用しない。
+- ローカルの素材・録画・比較結果は以下の該当記録を参照。別環境には存在しない場合がある。Git管理外の素材を公開資料へ添付しない。
+
+## 現在の状態と直近の作業
+
 2026-09-21：v0.1.4公開完了（https://github.com/hosinohito/tanakacap/releases/tag/v0.1.4）。0.1.3-ui-audit-finalの個人設定は保持し、新規0.1.4へ標準設定で梱包。実写・アバター・個人設定なしを全Git履歴と公開ZIPで監査。ユーザー承認で旧HaolanLabシーン/metadataを履歴から除去しmain/既存4タグを書換。詳細docs/RELEASE_PRIVACY.md。公開タグfb1604e、part01/02のサイズ/SHAはGitHubと一致、Latest/draft=false確認。別PCは両ZIPを同じ新規フォルダーへ展開して自分の.tcapを選択。旧プラグインから変更なし。ローカル成果物builds/releases/0.1.4、元設定とGitバックアップは公開していない。
 
 2026-09-21：実験タブ棚卸し完了。肘3方式・頭接触範囲・4補正ON/OFF・小数/整数座標・頭眉口の3感度を追加（計10項目）。通常値不変、無制限ねじりは診断専用。旧固定FP32/固定録画ベンチ2本と永久欠測保持の古い検査を削除。現行UI設定で録画600観測×4構成、全ON平均18.29ms、顔頭13.76ms、頭のみ6.36ms。UI参考負荷4/1/4割、モード3/2/1倍。条件・限界はdocs/UI_EXPERIMENT_AUDIT.md。315 tests、実Tk、実Player回転/欠測復帰、新設定3組の録画起動、配布構成からの録画起動成功。最終ローカル成果物 builds/releases/0.1.3-ui-audit-final/TanakaCap/（ZIP/公開なし）。別PCへ同フォルダー全体＋利用する.tcap。直前開発版の部分更新ならtanakacap/・Player一式(app/)・docs/ui-part-costs.json・使い方.txt。test.bat更新済み。今後NoZipで展開構成だけビルド可能。肘の見た目評価は引き続きユーザー待ち。
