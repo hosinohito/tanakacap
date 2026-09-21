@@ -1,3 +1,5 @@
+2026-09-21：掌・指の頭回避を通常ONで実装。骨長・握り方・手世界回転を保ちIKで手全体を移す。録画129補正、最大31.25mm、点の残差0。比較 results/avatar-videos/hand-head-contact。肘調査では旧方式でも±160度へ張付く、左21.967秒に143.44度の相対回転。原因切分け・限界・次案は docs/HAND_HEAD_CONTACT.md。回転制限や体横断の通常採否は変更していない。別PCへ builds/player/ 全体（配布版app/）。ZIPなし。
+
 2026-09-21：ユーザー指定で旧経路の内側手前方補正を完全削除、残りは通常ONを維持。詳細 docs/ARM_CORRECTION_ISOLATION.md。指や掌への頭回避は案のみ、実装指示待ち。別PC更新は tanakacap/body3d.py・body_geometry.py と builds/player/全体（配布版app/）。旧比較動画は保持。ZIPなし。
 
 2026-09-21：頭回避を頭形状から推定した楕円体の最寄り表面へ置換。撮影済み30秒を同一推論で補正単独比較し、12本を results/avatar-videos/arm-corrections-final へ生成済み。体横断補正の差が大きく、頭回避は今回0回。詳細・未検証・再実行は docs/ARM_CORRECTION_ISOLATION.md。通常補正の採否は頭方式以外未変更。次は動画のユーザー評価。別PCへ builds/player/ 全体（配布版 app/）。ZIPなし。

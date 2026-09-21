@@ -173,3 +173,7 @@ $taskCameraDiagnostic=Join-Path $taskDesktop 'tanakacap-diagnose-camera.bat'
 $taskDiagnosticScript=Join-Path $taskRoot 'tools/diagnostics/diagnose-camera.bat'
 [IO.File]::WriteAllText($taskCameraDiagnostic,"@echo off`r`ncall `"$taskDiagnosticScript`"`r`n",[Text.Encoding]::Default)
 Write-Output $taskCameraDiagnostic
+
+$taskHandVideos = Join-Path $taskRoot 'results\avatar-videos\hand-head-contact'
+$taskHandVideoBat = Join-Path $taskDesktop 'tanakacap-compare-hand-head.bat'
+[IO.File]::WriteAllText($taskHandVideoBat,"@echo off`r`nstart `"`" `"$taskHandVideos`"`r`n",[Text.Encoding]::Default)

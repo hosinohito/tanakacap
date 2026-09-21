@@ -78,7 +78,7 @@ namespace TanakaCap
         HeadClearance headClearance;
         string armCorrectionTrial="all";
         int headCorrectionCount,crossCorrectionCount,wristCorrectionCount,outwardCorrectionCount;
-        bool ArmCorrection(string name)=>armCorrectionTrial=="all" || armCorrectionTrial==name;
+        bool ArmCorrection(string name)=>armCorrectionTrial=="no-cross-body"?name!="cross-body":armCorrectionTrial=="all" || armCorrectionTrial==name;
         Arm left, right;
         SkinnedMeshRenderer[] meshes;
         bool demo;
@@ -170,6 +170,7 @@ namespace TanakaCap
             public Quaternion[] rest = new Quaternion[3];
             public Vector3[] axes = new Vector3[3];
             public Vector3[] directions = new Vector3[3];
+            public Vector3 tipLocal;
         }
 
         Finger[] MakeFingers(bool isLeft, Vector3 inward)
@@ -190,6 +191,11 @@ namespace TanakaCap
                     var previous=j>0?finger.bones[j-1]:null;
                     Vector3 direction=next?next.position-bone.position:previous?bone.position-previous.position:Vector3.zero;
                     finger.directions[j]=bone.InverseTransformDirection(direction.normalized);
+                    if(j==2)
+                    {
+                        var tip=bone.childCount>0?bone.GetChild(0):null;
+                        finger.tipLocal=tip?bone.InverseTransformPoint(tip.position):bone.InverseTransformVector(direction*.7f);
+                    }
                     finger.rest[j]=bone.localRotation;
                     if(f!=0 && direction.sqrMagnitude>1e-10f)
                     {
@@ -311,7 +317,7 @@ namespace TanakaCap
                 if(Array.IndexOf(args,"--render-replay")<0 || trialIndex+1>=args.Length)
                     throw new ArgumentException("Arm correction trial requires offline render replay");
                 armCorrectionTrial=args[trialIndex+1];
-                if(Array.IndexOf(new[]{"none","head","cross-body","wrist-front","outward-elbow"},armCorrectionTrial)<0)
+                if(Array.IndexOf(new[]{"none","head","cross-body","wrist-front","outward-elbow","no-cross-body"},armCorrectionTrial)<0)
                     throw new ArgumentException("Unknown arm correction trial");
                 Debug.Log("TANAKACAP_ARM_CORRECTION_TRIAL "+armCorrectionTrial);
             }
@@ -328,6 +334,7 @@ namespace TanakaCap
             faceDistanceEnabled=Array.IndexOf(args,"--no-face-distance")<0;
             seatedDistance=Array.IndexOf(args,"--face-distance-translate")<0;
             framedDistance=seatedDistance && Array.IndexOf(args,"--face-distance-seated")<0;
+            ConfigureHandContact(args);
             gazeIrisMode=Array.IndexOf(args,"--gaze-bones")<0;
             int gazeGainArg=Array.IndexOf(args,"--gaze-gain");
             legacyGazeResponse=Array.IndexOf(args,"--legacy-gaze-response")>=0;
@@ -962,6 +969,7 @@ namespace TanakaCap
                     var values=arm.fingerTransition.Apply(targets,rests,fingersValid,Observed(side+"_fingers",fingersValid,ref arm.fingerSeen),now);
                     for(int f=0;f<5;f++)for(int j=0;j<3;j++)if(arm.fingers[f].bones[j])arm.fingers[f].bones[j].localRotation=values[f*3+j];
                 }
+                ClearHandFromHead(arm);
             }
         }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace TanakaCap
 {
-    // A fitted, rotating proxy, not mesh contact or finger collision simulation.
+    // A fitted, rotating proxy used for wrist and sampled rigid-hand clearance.
     public sealed class HeadClearance
     {
         public Vector3 centerLocal,radii;
@@ -60,6 +60,40 @@ namespace TanakaCap
 
         public static float Level(Vector3 point,Vector3 axes)
         {return point.x*point.x/(axes.x*axes.x)+point.y*point.y/(axes.y*axes.y)+point.z*point.z/(axes.z*axes.z);}
+
+        // A common displacement preserves the grasp. Sequential nearest-surface
+        // projections are a bounded local solution, not a global mesh solver.
+        public static Vector3 HandTranslation(IList<Vector3> points,Vector3 axes,float thickness)
+        {
+            var expanded=axes+Vector3.one*thickness;
+            var offset=Vector3.zero;
+            for(int iteration=0;iteration<16;iteration++)
+            {
+                var deepest=Vector3.zero;
+                foreach(var point in points)
+                {
+                    var p=point+offset;
+                    if(Level(p,expanded)>=1)continue;
+                    var delta=Project(p,expanded)-p;
+                    if(delta.sqrMagnitude>deepest.sqrMagnitude)deepest=delta;
+                }
+                if(deepest.sqrMagnitude<1e-10f)break;
+                offset+=deepest;
+            }
+            return offset;
+        }
+
+        public static void MoveHand(Transform upper,Transform lower,Transform hand,Vector3 displacement)
+        {
+            var a=lower.position-upper.position;var b=hand.position-lower.position;
+            var rotation=hand.rotation;
+            var pole=Vector3.ProjectOnPlane(a,a+b).normalized;
+            AvatarDriver.SolveArm(a,b,a.magnitude,b.magnitude,ref pole,out var u,out var l,
+                targetOverride:hand.position+displacement-upper.position);
+            upper.rotation=Quaternion.FromToRotation(a,u)*upper.rotation;
+            lower.rotation=Quaternion.FromToRotation(hand.position-lower.position,l)*lower.rotation;
+            hand.rotation=rotation;
+        }
 
         public static Vector3 Project(Vector3 point,Vector3 axes,float margin=.002f)
         {

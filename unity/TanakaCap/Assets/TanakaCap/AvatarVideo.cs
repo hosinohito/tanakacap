@@ -14,6 +14,8 @@ namespace TanakaCap
         [Serializable] class VideoArmPose
         {
             public Vector3 leftElbow,leftWrist,rightElbow,rightWrist;
+            public float leftTwist,rightTwist,leftRequestedTwist,rightRequestedTwist,leftElbowTwist,rightElbowTwist;
+            public Quaternion leftUpperRotation,leftLowerRotation,rightUpperRotation,rightLowerRotation;
         }
         [Serializable] class VideoReport
         {
@@ -24,6 +26,9 @@ namespace TanakaCap
             public Vector3 headProxyRadii;
             public int headCorrections,crossBodyCues,wristFrontClamps,outwardElbowCues;
             public VideoArmPose[] armPoses;
+            public bool wristHeadOnly;
+            public int handHeadCorrections;
+            public float maximumHandHeadShift,maximumHandHeadResidual;
         }
         bool TryStartVideo(string[] args)
         {
@@ -116,8 +121,12 @@ namespace TanakaCap
                         // Unity refreshes skinned meshes once per engine frame.
                         // Manual Camera.Render calls inside one frame reuse stale skinning.
                         yield return null;
-                        if(armCorrectionTrial!="all")armPoses.Add(new VideoArmPose {leftElbow=left.lower.position,leftWrist=left.hand.position,
-                            rightElbow=right.lower.position,rightWrist=right.hand.position});
+                        armPoses.Add(new VideoArmPose {leftElbow=left.lower.position,leftWrist=left.hand.position,
+                            rightElbow=right.lower.position,rightWrist=right.hand.position,
+                            leftTwist=left.twist,rightTwist=right.twist,leftRequestedTwist=left.requestedTwist,rightRequestedTwist=right.requestedTwist,
+                            leftElbowTwist=ElbowAxialTwist(left),rightElbowTwist=ElbowAxialTwist(right),
+                            leftUpperRotation=left.upper.localRotation,leftLowerRotation=left.lower.localRotation,
+                            rightUpperRotation=right.upper.localRotation,rightLowerRotation=right.lower.localRotation});
                         camera.Render();RenderTexture.active=target;
                         pixels.ReadPixels(new Rect(0,0,1280,720),0,0,false);
                         var bytes=pixels.GetRawTextureData();
@@ -131,7 +140,8 @@ namespace TanakaCap
                     File.WriteAllText(output+".json",JsonUtility.ToJson(new VideoReport {source=input,output=output,frames=frames,packets=rows.Count,duration=frames/30.0,
                         armCorrection=armCorrectionTrial,headProxyRadii=headClearance.radii,headCorrections=headCorrectionCount,
                         crossBodyCues=crossCorrectionCount,wristFrontClamps=wristCorrectionCount,outwardElbowCues=outwardCorrectionCount,
-                        armPoses=armPoses.ToArray()},true));
+                        wristHeadOnly=wristHeadOnly,handHeadCorrections=handHeadCorrections,maximumHandHeadShift=maximumHandHeadShift,
+                        maximumHandHeadResidual=maximumHandHeadResidual,armPoses=armPoses.ToArray()},true));
                     Debug.Log("TANAKACAP_VIDEO_OK "+output);
                 }
                 finally
