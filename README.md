@@ -258,6 +258,8 @@ batのカメラ番号1が合わない環境では、まず`run-avatar.ps1 -Camer
 
 `tracking-settings.json`を変更したら再起動する。既定の肩ヨーは`face_ratio`、腕奥行きは`front_projection`、観測平均は3フレーム・stride 1。変更前の値を残して比較する。
 
+肩ヨーの`face_ratio`は顔肩比の共通短縮を連続補正し、正面付近の感度を緩和する。[計算・検証・限界](docs/SHOULDER_CONTINUOUS_CORRECTION.md)を参照。
+
 ## 描画品質と解像度
 
 口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。操作UIの「表情」タブでも変更できる。[詳細](docs/EXPRESSION_PORTABILITY.md)。

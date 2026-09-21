@@ -1,4 +1,4 @@
-"""Image-only shoulder-width yaw magnitude with a face/shoulder ambiguity gate.
+"""Image-only shoulder yaw with continuous face/shoulder projection correction.
 
 The ratio detects changed projection, not metric lean depth. Elbow-based yaw sign
 is intentionally supplied by the existing caller, never inferred from width.
@@ -61,9 +61,12 @@ class ShoulderProjection:
             self.pending.clear()
         gap_ratio=gap/self.reference[0]
         pitch_delta=abs(pitch-self.reference[2])
-        # Symmetric guard: an altered gap can be leaning, nodding, shrugging,
-        # or detector movement. Do not label any of them as measured lean.
-        ambiguous=not .85<=gap_ratio<=1.15 or pitch_delta>15 or abs(yaw)>25
+        # Gap changes now correct width continuously, rather than freezing as
+        # soon as the face moves closer. Large/poorly fitted geometry remains
+        # ambiguous: a nod, shrug or occlusion cannot be solved from these ratios.
+        residual=float(face_details.get('residual',0.))
+        ambiguous=(not .5<=gap_ratio<=1.15 or pitch_delta>15 or abs(yaw)>25
+                   or lateral>.2 or not np.isfinite(residual) or residual>.08)
         learn=(.94<=gap_ratio<=1.06 and pitch_delta<8 and abs(yaw)<12
                and lateral<.08 and .92<=face_size/self.reference[3]<=1.08)
         while self.width_samples and now-self.width_samples[0][0]>5:self.width_samples.popleft()
@@ -79,9 +82,23 @@ class ShoulderProjection:
         if guard and ambiguous:
             self.details['status']='held_projection_ambiguous'
             return self.angle
-        ratio=width/self.width
+        raw_ratio=width/self.width
+        # Both normalized widths shrink when the face grows without equivalent
+        # shoulder growth. Remove their common factor; never learn a narrower
+        # frontal reference. This is a projection heuristic, not measured depth.
+        # Correct common shrinkage only. Inverting gap growth would invent yaw
+        # during head movement even when the shoulder/face width did not shrink.
+        correction=1/min(1.,gap_ratio) if guard else 1.
+        ratio=raw_ratio*correction
+        self.details.update(raw_width_ratio=raw_ratio,correction_factor=correction,
+                            width_ratio=ratio)
         # acos is very sensitive near frontal. Five percent is an experimental
         # image-width dead zone, not a measured camera error distribution.
-        self.angle=float(min(80,np.degrees(np.arccos(np.clip(ratio/.95,0,1)))))
+        angle=float(min(80,np.degrees(np.arccos(np.clip(ratio/.95,0,1)))))
+        if guard:
+            # Avoid acos' sharp onset just outside the frontal dead zone.
+            blend=float(np.clip((.95-ratio)/.10,0,1))
+            angle*=blend*blend*(3-2*blend)
+        self.angle=angle
         self.details.update(status='width_observed',width_ratio=ratio)
         return self.angle
