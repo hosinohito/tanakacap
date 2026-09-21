@@ -1,3 +1,5 @@
+2026-09-21：肘の上腕従属回転・曲げ軸校正・伸び切り時軸保持・ねじりスカラー補間・掌だけ欠測時の相対保持を実装。通常は新方式±160。4条件6本の動画 results/avatar-videos/arm-rotation-coupled-final。左最大相対回転143→33度、右41→45度、張付きは残る。±90と無制限は診断のみ。詳細 docs/ARM_ROTATION_COUPLED.md。Playerビルド/軸取得/掌保持/欠測復帰/311 tests/動画デコード成功。次はユーザーの見た目評価。別PCは builds/player/ 全体を配布版app/へ。ZIPなし。
+
 2026-09-21：利用説明書の原本を docs/user_guide.txt、配布名を 使い方.txt に変更。Markdown装飾をプレーンテキスト向けに整理し、ビルド・原本検査・現行文書の参照を更新。過去リリース実物は未変更、再ビルド/ZIPなし。別PCは docs/user_guide.txt を本体隣の使い方.txtへコピー。
 
 2026-09-21：掌・指の頭回避を通常ONで実装。骨長・握り方・手世界回転を保ちIKで手全体を移す。録画129補正、最大31.25mm、点の残差0。比較 results/avatar-videos/hand-head-contact。肘調査では旧方式でも±160度へ張付く、左21.967秒に143.44度の相対回転。原因切分け・限界・次案は docs/HAND_HEAD_CONTACT.md。回転制限や体横断の通常採否は変更していない。別PCへ builds/player/ 全体（配布版app/）。ZIPなし。

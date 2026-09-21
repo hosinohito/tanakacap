@@ -27,6 +27,8 @@ namespace TanakaCap
             public int headCorrections,crossBodyCues,wristFrontClamps,outwardElbowCues;
             public VideoArmPose[] armPoses;
             public bool wristHeadOnly;
+            public string armRotation;
+            public float twistLimit;
             public int handHeadCorrections;
             public float maximumHandHeadShift,maximumHandHeadResidual;
         }
@@ -140,6 +142,7 @@ namespace TanakaCap
                     File.WriteAllText(output+".json",JsonUtility.ToJson(new VideoReport {source=input,output=output,frames=frames,packets=rows.Count,duration=frames/30.0,
                         armCorrection=armCorrectionTrial,headProxyRadii=headClearance.radii,headCorrections=headCorrectionCount,
                         crossBodyCues=crossCorrectionCount,wristFrontClamps=wristCorrectionCount,outwardElbowCues=outwardCorrectionCount,
+                        armRotation=legacyArmRotation?"legacy":"hinge",twistLimit=float.IsInfinity(armTwistLimit)?-1:armTwistLimit,
                         wristHeadOnly=wristHeadOnly,handHeadCorrections=handHeadCorrections,maximumHandHeadShift=maximumHandHeadShift,
                         maximumHandHeadResidual=maximumHandHeadResidual,armPoses=armPoses.ToArray()},true));
                     Debug.Log("TANAKACAP_VIDEO_OK "+output);

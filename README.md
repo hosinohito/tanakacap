@@ -470,3 +470,5 @@ CMS-V43BKの取得診断は `tools/diagnostics/diagnose-camera.bat`（デスク�
 カメラタブは機器の対応一覧からfps・解像度・形式を選択します。初回は60fps優先（未対応なら60以下の最大）。カメラタブを開くか開始すると機器に照会し、ネット検索や映像表示はしません。検査は `tools/diagnostics/check_camera_modes_ui.py`（模擬デバイスのみ）。
 
 掌・指の頭回避と肘の回転診断は[検証手順](docs/HAND_HEAD_CONTACT.md)を参照。デスクトップの `tanakacap-tools/tanakacap-compare-hand-head.bat` で比較動画フォルダーを開ける。
+
+肘の曲げと前腕のねじりを分けた回転方式は[仕様・比較手順](docs/ARM_ROTATION_COUPLED.md)を参照。`tanakacap-tools/tanakacap-compare-arm-rotation.bat` で旧方式との比較と可動限界の比較を開ける。

@@ -271,6 +271,7 @@ namespace TanakaCap.Editor
                 if(Mathf.Abs(AvatarDriver.ExpressiveCorner(input,0)-input*Mathf.Abs(input))>.00001f)
                     throw new Exception("Signed corner gamma endpoints/sign/small-input suppression failed");
             HeadClearanceChecks.Run();
+            ArmRotationFrameChecks.Run();
             foreach(float sign in new[]{-1f,1f})foreach(float yaw in new[]{-35f,0,35f})
             {
                 var rot=Quaternion.Euler(0,yaw,0);var normal=rot*Vector3.forward;

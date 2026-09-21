@@ -72,6 +72,13 @@ namespace TanakaCap
             float moved=Vector3.Distance(start,arm.hand.position);
             if(moved>.00001f)
             {
+                if(!legacyArmRotation)
+                {
+                    var rotation=arm.hand.rotation;
+                    ApplyArmFrame(arm,transform.InverseTransformDirection(arm.lower.position-arm.upper.position).normalized,
+                        transform.InverseTransformDirection(arm.hand.position-arm.lower.position).normalized,1,true,false);
+                    arm.hand.rotation=rotation;
+                }
                 handHeadCorrections++;
                 maximumHandHeadShift=Mathf.Max(maximumHandHeadShift,moved);
                 var axis=(arm.hand.position-arm.lower.position).normalized;

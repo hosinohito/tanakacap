@@ -177,3 +177,7 @@ Write-Output $taskCameraDiagnostic
 $taskHandVideos = Join-Path $taskRoot 'results\avatar-videos\hand-head-contact'
 $taskHandVideoBat = Join-Path $taskDesktop 'tanakacap-compare-hand-head.bat'
 [IO.File]::WriteAllText($taskHandVideoBat,"@echo off`r`nstart `"`" `"$taskHandVideos`"`r`n",[Text.Encoding]::Default)
+
+$taskArmRotationVideos = Join-Path $taskRoot 'results\avatar-videos\arm-rotation-coupled-final'
+$taskArmRotationBat = Join-Path $taskDesktop 'tanakacap-compare-arm-rotation.bat'
+[IO.File]::WriteAllText($taskArmRotationBat,"@echo off`r`nstart `"`" `"$taskArmRotationVideos`"`r`n",[Text.Encoding]::Default)

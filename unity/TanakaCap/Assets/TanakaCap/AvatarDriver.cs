@@ -160,6 +160,8 @@ namespace TanakaCap
             public float requestedTwist;
             public Quaternion handBeforeSolve;
             public Finger[] fingers;
+            public ArmRotationFrame rotationFrame;
+            public ScalarPoseTransition twistTransition=new ScalarPoseTransition();
             public PoseTransition armTransition=new PoseTransition(),palmTransition=new PoseTransition(),fingerTransition=new PoseTransition();
             public float armSeen=float.NegativeInfinity,palmSeen=float.NegativeInfinity,fingerSeen=float.NegativeInfinity;
         }
@@ -290,6 +292,7 @@ namespace TanakaCap
             if (spine == chest) spine = null;
             if (spine) {spineRest = spine.localRotation;spineRootRest=Quaternion.Inverse(transform.rotation)*spine.rotation;}
             seatedHeadOffset=transform.InverseTransformVector(head.position-(spine?spine:chest).position);
+            ConfigureArmRotation(renderArgs);
             left = MakeArm(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand);
             right = MakeArm(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand);
             meshes = GetComponentsInChildren<SkinnedMeshRenderer>(true);
@@ -381,6 +384,8 @@ namespace TanakaCap
             }
             arm.upperDirection = arm.upper.InverseTransformDirection(arm.lower.position - arm.upper.position).normalized;
             arm.lowerDirection = arm.lower.InverseTransformDirection(arm.hand.position - arm.lower.position).normalized;
+            arm.rotationFrame=ArmRotationFrame.Fit(animator,transform,arm.upper,arm.lower,arm.hand,arm.upperDirection,arm.lowerDirection,isLeft);
+            Debug.Log("TANAKACAP_ELBOW_AXIS "+(isLeft?"left":"right")+" "+arm.rotationFrame.source);
             return arm;
         }
 
@@ -935,6 +940,11 @@ namespace TanakaCap
                 Quaternion upperBase=transform.rotation*arm.upperRootRest,lowerBase=transform.rotation*arm.lowerRootRest;
                 Quaternion upperDesk=Quaternion.FromToRotation(upperBase*arm.upperDirection,transform.TransformDirection(upperDirection))*upperBase;
                 Quaternion lowerDesk=Quaternion.FromToRotation(lowerBase*arm.lowerDirection,transform.TransformDirection(lowerDirection))*lowerBase;
+                if(!legacyArmRotation)
+                {
+                    arm.rotationFrame.Rest(upperDirection,lowerDirection,out var deskUpper,out var deskLower);
+                    upperDesk=transform.rotation*deskUpper;lowerDesk=transform.rotation*deskLower;
+                }
                 var armTarget=new[]{arm.upper.localRotation,Quaternion.Inverse(arm.upper.rotation)*arm.lowerUntwisted};
                 var armRest=new[]{Quaternion.Inverse(arm.upper.parent.rotation)*upperDesk,Quaternion.Inverse(upperDesk)*lowerDesk};
                 var palmTarget=new[]{arm.hand.localRotation,Quaternion.AngleAxis(arm.twist,Vector3.forward)};
@@ -951,10 +961,15 @@ namespace TanakaCap
                 var palmRest=new[]{handDesk,Quaternion.AngleAxis(deskTwist,Vector3.forward)};
                 float now=poseClock;
                 var blendedArm=arm.armTransition.Apply(armTarget,armRest,armValid,Observed(side+"_arm",armValid,ref arm.armSeen),now);
-                var blendedPalm=arm.palmTransition.Apply(palmTarget,palmRest,palmValid,Observed(side+"_palm",palmValid,ref arm.palmSeen),now);
+                float palmObserved=Observed(side+"_palm",palmValid,ref arm.palmSeen);
+                // If only the palm is missing, retain its parent-relative pose.
+                // Whole-arm loss still uses the existing desk transition.
+                bool palmPoseValid=palmValid || (!legacyArmRotation && armValid);
+                float scalarTwist=legacyArmRotation?arm.twist:arm.twistTransition.Apply(arm.twist,Mathf.Clamp(deskTwist,-armTwistLimit,armTwistLimit),palmPoseValid,palmObserved,now);
+                var blendedPalm=arm.palmTransition.Apply(palmTarget,palmRest,palmPoseValid,palmObserved,now);
                 arm.upper.localRotation=blendedArm[0];
                 arm.lowerUntwisted=arm.upper.rotation*blendedArm[1];
-                arm.twist=Mathf.DeltaAngle(0,blendedPalm[1].eulerAngles.z);
+                arm.twist=legacyArmRotation?Mathf.DeltaAngle(0,blendedPalm[1].eulerAngles.z):Mathf.Clamp(scalarTwist,-armTwistLimit,armTwistLimit);
                 arm.lower.rotation=Quaternion.AngleAxis(arm.twist,arm.lowerUntwisted*arm.lowerDirection)*arm.lowerUntwisted;
                 arm.hand.localRotation=blendedPalm[0];
                 if(arm.fingers!=null)
@@ -997,15 +1012,8 @@ namespace TanakaCap
             if(wristInFront && clearTarget.z<.015f)wristCorrectionCount++;
             if(outwardBehind)outwardCorrectionCount++;
             SolveArm(a,b,arm.upperLength,arm.lowerLength,ref arm.pole,out var upperDirection,out var lowerDirection,wristInFront,upperInFront,crossBody,bodyForward,faceCollision?(Vector3?)clearTarget:null,outwardBehind);
-            Quaternion upperBase = transform.rotation*arm.upperRootRest;
-            Quaternion upperTarget = Quaternion.FromToRotation(upperBase*arm.upperDirection,transform.TransformDirection(upperDirection))*upperBase;
-            arm.upper.rotation = Quaternion.Slerp(arm.upper.rotation,upperTarget,t);
-            Quaternion lowerBase = transform.rotation*arm.lowerRootRest;
-            Quaternion lowerTarget = Quaternion.FromToRotation(lowerBase*arm.lowerDirection,transform.TransformDirection(lowerDirection))*lowerBase;
-            // A fixed authored reference avoids moving the rotation limit's
-            // center when the elbow plane flips or its hemisphere history changes.
-            arm.lowerUntwisted = Quaternion.Slerp(arm.lowerUntwisted,lowerTarget,t);
-            arm.lower.rotation = Quaternion.AngleAxis(arm.twist,arm.lowerUntwisted*arm.lowerDirection)*arm.lowerUntwisted;
+            if(!legacyArmRotation)ApplyArmFrame(arm,upperDirection,lowerDirection,t);
+            else ApplyLegacyArmFrame(arm,upperDirection,lowerDirection,t);
             // Interpolation from an old backward pose must not violate a newly
             // confirmed front constraint. Project to the solved feasible pose.
             if(outwardBehind || (wristInFront && transform.InverseTransformVector(arm.hand.position-arm.upper.position).z<0) ||
@@ -1013,9 +1021,8 @@ namespace TanakaCap
                 (crossBody>0 && (Vector3.Dot(transform.InverseTransformVector(arm.lower.position-arm.upper.position),bodyForward)<.06f*crossBody ||
                  Vector3.Dot(transform.InverseTransformVector(arm.hand.position-arm.upper.position),bodyForward)<.06f*crossBody)))
             {
-                arm.upper.rotation=upperTarget;
-                arm.lowerUntwisted=lowerTarget;
-                arm.lower.rotation=Quaternion.AngleAxis(arm.twist,lowerTarget*arm.lowerDirection)*lowerTarget;
+                if(!legacyArmRotation)ApplyArmFrame(arm,upperDirection,lowerDirection,1,true,false);
+                else ApplyLegacyArmFrame(arm,upperDirection,lowerDirection,1);
             }
         }
 
@@ -1118,7 +1125,7 @@ namespace TanakaCap
                 // No accumulated revolutions: unwrap relative to the displayed,
                 // bounded joint, not a hidden unconstrained integrator.
                 arm.requestedTwist=UnwrapTwist(arm.twist,arm.twist,raw);
-                desiredTwist=SelectForearmTwist(arm.twist,raw);
+                desiredTwist=legacyArmRotation?SelectForearmTwist(arm.twist,raw):ResolveArmTwist(arm.twist,raw);
             }
             else desiredTwist=arm.twist;
             arm.twist=Mathf.MoveTowards(arm.twist,desiredTwist,900*FrameDelta);
@@ -1329,6 +1336,19 @@ namespace TanakaCap
         void CheckArmRest()
         {
             probeDelta=1f/60;
+            if(!legacyArmRotation)
+            {
+                var palmLost=new TrackingPacket {tracked=true,leftArmTracked=true,rightArmTracked=true,
+                    leftElbow=new Vector3(-.3f,-.8f,.1f),leftWrist=new Vector3(-.2f,-.7f,.8f),
+                    rightElbow=new Vector3(.3f,-.8f,.1f),rightWrist=new Vector3(.2f,-.7f,.8f)};
+                left.twist=40;left.twistTransition=new ScalarPoseTransition();left.palmTransition=new PoseTransition();
+                var handLocal=left.hand.localRotation;
+                for(int i=0;i<120;i++)DriveArmsWithLoss(palmLost,true);
+                if(Mathf.Abs(left.twist-40)>.01f || Quaternion.Angle(handLocal,left.hand.localRotation)>.05f)
+                    throw new Exception("Palm-only loss did not retain relative pose");
+                Debug.Log("TANAKACAP_PALM_RELATIVE_HOLD_OK");
+            }
+            left.twistTransition=new ScalarPoseTransition();right.twistTransition=new ScalarPoseTransition();
             left.armTransition=new PoseTransition();left.palmTransition=new PoseTransition();left.fingerTransition=new PoseTransition();
             right.armTransition=new PoseTransition();right.palmTransition=new PoseTransition();right.fingerTransition=new PoseTransition();
             var p=new TrackingPacket {tracked=true,leftArmTracked=true,rightArmTracked=true,
@@ -1368,6 +1388,8 @@ namespace TanakaCap
             var untwisted=new[]{left.lowerUntwisted,right.lowerUntwisted};var twists=new[]{left.twist,right.twist};float clock=poseClock;
             left.armTransition=new PoseTransition();left.palmTransition=new PoseTransition();left.fingerTransition=new PoseTransition();
             right.armTransition=new PoseTransition();right.palmTransition=new PoseTransition();right.fingerTransition=new PoseTransition();
+            var scalarTransitions=new[]{left.twistTransition,right.twistTransition};
+            left.twistTransition=new ScalarPoseTransition();right.twistTransition=new ScalarPoseTransition();
             var savedGaze=gazeAngles;
             var savedPosition=transform.position;
             float savedMouth=mouth,savedWidth=mouthWidth,savedRound=mouthRound,savedSmile=mouthSmile,savedLeft=blinkLeft,savedRight=blinkRight;
@@ -1392,6 +1414,7 @@ namespace TanakaCap
             left.armTransition=transitions[0];left.palmTransition=transitions[1];left.fingerTransition=transitions[2];
             right.armTransition=transitions[3];right.palmTransition=transitions[4];right.fingerTransition=transitions[5];
             left.lowerUntwisted=untwisted[0];right.lowerUntwisted=untwisted[1];left.twist=twists[0];right.twist=twists[1];poseClock=clock;
+            left.twistTransition=scalarTransitions[0];right.twistTransition=scalarTransitions[1];
             gazeAngles=savedGaze;DriveGaze(null,false,0);
             return true;
         }
