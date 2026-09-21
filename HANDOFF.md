@@ -1,3 +1,5 @@
+2026-09-21：ユーザー指定で旧経路の内側手前方補正を完全削除、残りは通常ONを維持。詳細 docs/ARM_CORRECTION_ISOLATION.md。指や掌への頭回避は案のみ、実装指示待ち。別PC更新は tanakacap/body3d.py・body_geometry.py と builds/player/全体（配布版app/）。旧比較動画は保持。ZIPなし。
+
 2026-09-21：頭回避を頭形状から推定した楕円体の最寄り表面へ置換。撮影済み30秒を同一推論で補正単独比較し、12本を results/avatar-videos/arm-corrections-final へ生成済み。体横断補正の差が大きく、頭回避は今回0回。詳細・未検証・再実行は docs/ARM_CORRECTION_ISOLATION.md。通常補正の採否は頭方式以外未変更。次は動画のユーザー評価。別PCへ builds/player/ 全体（配布版 app/）。ZIPなし。
 
 2026-09-21：腕の前方・頭回避補正を全体整理するため、ユーザー撮影待ち。ユーザー説明では旧来の体への重なりの原因はUnity側でZを無視していた処理。新録画で現行のClearFace半径18cm、CrossBody、front_projection、手首前方制限等を段階比較する。補正自体はまだ変更していない。既存tanakacap-face-capture.batを30秒・動作案内なしで使用。録画側のcamera=1/MSMF固定を撤去し、通常UI保存のDevicePath・取得方式・解像度・fps・形式・照明設定を引き継ぐ。16関連テスト成功、実カメラは起動していない。保存先results/comparison-takes/<日時>/camera.avi、実写非表示・Git除外を維持。別PC更新はtanakacap/comparison_capture.pyとrun-comparison.ps1、カメラ選択はそのPCのUIで保存。Player/ZIPなし。

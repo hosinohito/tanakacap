@@ -20,12 +20,13 @@ def test_observed_front_shoulder_width_is_neutral_not_nominal_width():
 
 
 @pytest.mark.parametrize('side,wrist',[('left',9),('right',10)])
-def test_inward_visible_hand_including_above_head_stays_front(side,wrist):
+def test_legacy_inward_hand_no_longer_forces_front_including_above_head(side,wrist):
     xy,s,z,ds=body();xy[wrist]=[200,30];z[wrist]=.3
     assert visible_hand_inward(xy,s,side)
     tracker=BodyRetarget()
     for i in range(20):p=tracker.update(packet(),xy,s,z,ds,now=i*.05,image_size=(640,480))
-    assert p[side+'ArmTracked'] and p[side+'Wrist']['z']>0
+    assert p[side+'ArmTracked'] and p[side+'Wrist']['z']<0
+    assert not p.get(side+'WristInFront',False) and not p.get(side+'UpperInFront',False)
     s[wrist]=0
     assert not visible_hand_inward(xy,s,side)
 

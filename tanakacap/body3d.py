@@ -17,7 +17,7 @@ from .visibility import screen_visibility
 from .face_scale import FaceScale
 from .arm_scale import ArmScale
 from .torso_yaw import elbow_yaw, elbow_agreement, shoulder_yaw_magnitude, ShoulderWidthReference
-from .body_geometry import DepthAssist, visible_in_front_of_torso, constrain_front_arm, visible_hand_inward, cross_body_amount
+from .body_geometry import DepthAssist, visible_hand_inward, cross_body_amount
 
 
 class BodyRetarget:
@@ -84,7 +84,7 @@ class BodyRetarget:
             self.torso_motion.reset()
             # Accepted lengths are session maxima: never shorten on detection loss.
             for assist in self.depth_assist.values():
-                assist.previous=None; assist.front_count=0; assist.time=None
+                assist.previous=None; assist.time=None
             self.palms=PalmFilter(self.block_size,self.stride)
             self.fingers=FingerTracker(self.block_size,self.stride)
             return packet
@@ -336,14 +336,7 @@ class BodyRetarget:
             self.arm_modes[side]=mode
             self.diagnostics[side+'_mode']=mode
             if mode=='model':
-                inward=visible_hand_inward(xy,scores,side)
-                if not inward:
-                    assist=self.depth_assist[side]
-                    assist.front_count=0;assist.last_front=None;assist.front_active=False
-                front=inward or visible_in_front_of_torso(xy,scores,side,nominal_width=.36/self.scale)
-                self.diagnostics[side+'_inward_front']=inward
-                self.diagnostics[side+'_front_overlap']=front
-                bones,cue=self.depth_assist[side].update(a,b,now,front_visible=front,learn_lengths=learn_lengths)
+                bones,cue=self.depth_assist[side].update(a,b,now,learn_lengths=learn_lengths)
                 a,b=bones
                 self.diagnostics[side+'_depth_mode']=cue
                 self.diagnostics[side+'_automatic_lengths']=self.depth_assist[side].lengths.value.tolist()
@@ -359,14 +352,6 @@ class BodyRetarget:
                     continue
             if side in self.previous and mode=='model':
                 values = filter_arm(self.previous[side],values,dt)
-            # The temporal filter must not reintroduce a forbidden depth branch.
-            if mode=='model' and (self.depth_assist[side].front_active or visible_hand_inward(xy,scores,side)):
-                assist=self.depth_assist[side]
-                bones=constrain_front_arm(np.stack([values[0],values[1]-values[0]])*.36,assist.upper_forward)/.36
-                values=np.stack([bones[0],bones.sum(axis=0)])
-                packet[side+'WristInFront']=True
-                packet[side+'UpperInFront']=assist.upper_forward
-                self.diagnostics[side+'_front_constraint']=True
             self.previous[side] = values
             self.diagnostics[side]='ok'
             packet[side+'ArmTracked'] = True

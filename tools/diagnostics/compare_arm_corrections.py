@@ -32,7 +32,6 @@ def main():
               ('01-head','head','1 Base + nearest head surface'),
               ('02-cross-body','cross-body','2 Base + cross-body clearance'),
               ('03-wrist-front','wrist-front','3 Base + wrist front clamp'),
-              ('04-legacy-front','legacy-front','4 Legacy front - inactive in this path'),
               ('05-outward-elbow','outward-elbow','5 Base + posterior elbow selection')]
     controls=args.output.with_name(args.output.name+'-controls');controls.mkdir(exist_ok=False)
     descriptions={}
@@ -45,7 +44,6 @@ def main():
         source_frames=len(rows),active_arm_observations={s:len(p) for s,p in active.items()},
         scope='One correction enabled at a time on identical recorded controls and auto-custom avatar. '
               'FrontProjection remains active including its shoulder-front endpoint branch. Manual calibration prior remains implemented but is not exercised by this automatic capture. '
-              'Legacy inward/front model branch is bypassed by FrontProjection and is identical to base. '
               'Posterior elbow selection is an additional displayed-pose correction also disabled in base. '
               'No raw camera images. No ground truth or live latency claim.')
     (controls/'report.json').write_text(json.dumps(info,indent=2),encoding='utf-8')
@@ -64,7 +62,6 @@ def main():
                          for p in rendered[name]['armPoses']])
     base=poses('00-base');assert len(base)==rendered['00-base']['frames']
     pose_errors={name:float(np.max(np.abs(poses(name)-base))) for name,_,_ in variants}
-    assert pose_errors['04-legacy-front']<1e-5,'Inactive legacy changed arm bones'
     rendered['max_arm_bone_difference_metres']=pose_errors
     for name,policy,label in variants[1:]:
         output=args.output/('compare-'+name+'.mp4')

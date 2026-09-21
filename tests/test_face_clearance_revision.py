@@ -11,7 +11,6 @@ def test_crossing_constraint_is_zero_immediately_when_observed_outside():
         p=tracker.update(packet(),xy,s,z,ds,now=i*.03)
         if p['leftArmTracked']:
             assert p['leftCrossBody']==0
-            assert not tracker.depth_assist['left'].front_active
 
 
 def test_frontal_reference_can_recover_from_initial_width_error_using_face_scale():

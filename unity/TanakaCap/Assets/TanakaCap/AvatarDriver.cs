@@ -311,7 +311,7 @@ namespace TanakaCap
                 if(Array.IndexOf(args,"--render-replay")<0 || trialIndex+1>=args.Length)
                     throw new ArgumentException("Arm correction trial requires offline render replay");
                 armCorrectionTrial=args[trialIndex+1];
-                if(Array.IndexOf(new[]{"none","head","cross-body","wrist-front","outward-elbow","legacy-front"},armCorrectionTrial)<0)
+                if(Array.IndexOf(new[]{"none","head","cross-body","wrist-front","outward-elbow"},armCorrectionTrial)<0)
                     throw new ArgumentException("Unknown arm correction trial");
                 Debug.Log("TANAKACAP_ARM_CORRECTION_TRIAL "+armCorrectionTrial);
             }
