@@ -1,10 +1,12 @@
 """Check Git history and release ZIPs for private captures, avatars and user settings."""
 import argparse
+import hashlib
 import io
 import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tarfile
 import zipfile
 
@@ -30,7 +32,7 @@ def audit_history(ref):
 
 
 def audit_zip(path):
-    failures=[];images=[]
+    failures=[];images=[];runtime_images=[]
     with zipfile.ZipFile(path) as z:
         for name in z.namelist():
             p=Path(name);rel='/'.join(p.parts[1:])
@@ -38,7 +40,11 @@ def audit_zip(path):
             if p.suffix.lower() in PRIVATE_SUFFIXES or rel.startswith(('results/','logs/','avatars/')):
                 failures.append(name)
             if p.suffix.lower() in ('.png','.jpg','.jpeg','.webp','.gif'):
-                images.append(name)
+                original=Path(sys.base_prefix)/rel.removeprefix('runtime/')
+                if (rel.startswith('runtime/tcl/') and original.is_file() and
+                    hashlib.sha256(z.read(name)).digest()==hashlib.sha256(original.read_bytes()).digest()):
+                    runtime_images.append(name)
+                else:images.append(name)
             if p.name=='ui-settings.json':
                 data=json.loads(z.read(name))
                 if data!={'avatar':'avatars/avatar.tcap','camera':0}:failures.append(name+': non-default settings')
@@ -51,7 +57,8 @@ def audit_zip(path):
                                 failures.append(name+': '+asset)
         bad=z.testzip()
         if bad:failures.append('CRC '+bad)
-    return dict(path=str(path),forbidden=failures,images_to_review=images)
+    return dict(path=str(path),forbidden=failures,images_to_review=images,
+                python_tcl_images_matching_installed_original=runtime_images)
 
 
 def main():
