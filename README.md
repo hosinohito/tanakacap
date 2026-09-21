@@ -33,7 +33,7 @@ UIの「表情」で眉・目線・まぶた・口の大げさ度を個別に0�
 
 頭の固定速度／可変速度の比較は`tanakacap-compare-head-follow.bat`、または`results/avatar-videos/head-follow/face-closeup.mp4`（左が従来）。試行Player引数は`--adaptive-head-follow`、通常起動は従来の固定追従を維持。[比較条件](docs/HEAD_FOLLOW_COMPARISON.md)。
 
-顔・頭・表情の検証録画はデスクトップの`tanakacap-face-capture.bat`（30秒で自動終了）。動作案内なし、実写画面・音声なしで保存する。保存先は`results/comparison-takes/<日時>/`。直接起動は`run-comparison.ps1 -Mode capture -Profile face-head`。既存の全身用撮影は従来どおり。
+顔・頭・表情・腕の検証録画はデスクトップの`tanakacap-face-capture.bat`（30秒で自動終了）。通常UIで保存したカメラと取得設定を使う。動作案内なし、実写画面・音声なしで保存する。保存先は`results/comparison-takes/<日時>/`。直接起動は`run-comparison.ps1 -Mode capture -Profile face-head`。既存の全身用撮影は従来どおり。
 
 Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出力するWindows用プロジェクト。Unity Editorの書き出しプラグインと、外部アバターファイルを読み込む専用Unityアプリで構成する。
 

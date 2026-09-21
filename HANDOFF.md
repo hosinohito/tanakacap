@@ -1,3 +1,5 @@
+2026-09-21：腕の前方・頭回避補正を全体整理するため、ユーザー撮影待ち。ユーザー説明では旧来の体への重なりの原因はUnity側でZを無視していた処理。新録画で現行のClearFace半径18cm、CrossBody、front_projection、手首前方制限等を段階比較する。補正自体はまだ変更していない。既存tanakacap-face-capture.batを30秒・動作案内なしで使用。録画側のcamera=1/MSMF固定を撤去し、通常UI保存のDevicePath・取得方式・解像度・fps・形式・照明設定を引き継ぐ。16関連テスト成功、実カメラは起動していない。保存先results/comparison-takes/<日時>/camera.avi、実写非表示・Git除外を維持。別PC更新はtanakacap/comparison_capture.pyとrun-comparison.ps1、カメラ選択はそのPCのUIで保存。Player/ZIPなし。
+
 2026-09-21：肩ヨー①共通短縮の連続補正②不確かな区間の保持③正面感度緩和をface_ratioへ実装。仕様・結果・限界はdocs/SHOULDER_CONTINUOUS_CORRECTION.md。317 tests、5187観測で肩ヨー以外のpacket一致、録画3モード起動成功。接近区間のヨー95%点18.74→0度、ただし胴体ひねり中央値14.04→0.17度で過抑制の可能性あり、見た目未確認。学習の最大幅比/短縮禁止は不変。瞬きの件は対象外。test.bat更新済み。別PCは直前開発版のtanakacap/shoulder_projection.pyだけ更新、Unity再ビルド/ZIP/公開なし。次はユーザーの見た目評価。
 
 2026-09-21：ユーザー指定でAGENTS.mdを継続的な作業ルールと文書参照に整理。重複した時系列報告・撤回済み設定を除去。今後、完了報告は一律に全仕様書へ複製せず担当文書を更新する。旧AGENTS全文はGitコミット1a41bb9で参照可能。実装・設定・成果物は変更なし。

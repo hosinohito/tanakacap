@@ -64,11 +64,27 @@ class TakeWriter:
             self.meta['timeline_sha256']=sha256(self.path/'frames.jsonl')
         self.save()
 
-def record(camera_index=1,profile='body'):
+def camera_options(camera_index=None):
+    """Reuse the UI's selected device without opening or enumerating cameras."""
+    path=ROOT/'ui-settings.json'
+    saved=json.loads(path.read_text(encoding='utf-8-sig')) if path.is_file() else {}
+    device_id=saved.get('camera_id','') if camera_index is None else ''
+    index=int(saved.get('camera',0)) if camera_index is None else camera_index
+    if index<0 and not device_id:
+        raise ValueError('通常UIで録画に使うカメラを選択して保存してください。')
+    return dict(index=index,device_id=device_id,width=int(saved.get('camera_width',1280)),
+                height=int(saved.get('camera_height',720)),fps=float(saved.get('camera_fps',30)),
+                backend=saved.get('camera_backend','dshow'),pixel_format=saved.get('camera_format','auto'),
+                powerline=saved.get('camera_powerline','keep') if camera_index is None else 'keep',
+                lowlight=saved.get('camera_lowlight','keep') if camera_index is None else 'keep')
+
+
+def record(camera_index=None,profile='body'):
     import tkinter as tk
     from tkinter import messagebox
     settings=json.loads((ROOT/'tracking-settings.json').read_text())
     stages=PROFILES[profile];duration=sum(stage[1] for stage in stages)
+    options=camera_options(camera_index)
     window=tk.Tk();window.title('TanakaCap モデル比較用 撮影');window.geometry('960x730')
     title=tk.StringVar(value='カメラを準備しています');hint=tk.StringVar(value='開始ボタンを押すまでは映像を保存しません。音声は録音しません。')
     tk.Label(window,textvariable=title,font=('Yu Gothic UI',21,'bold')).pack(pady=8)
@@ -94,7 +110,7 @@ def record(camera_index=1,profile='body'):
     tk.Button(window,text='中断',command=lambda:finish()).pack()
     window.protocol('WM_DELETE_WINDOW',close)
     try:
-        camera=Camera(camera_index);camera.__enter__()
+        camera=Camera(**options);camera.__enter__()
         title.set('撮影待機' if profile=='face-head' else 'おなか〜頭、左右の手が映る位置へ')
         def tick():
             nonlocal take,started,countdown,last_sequence
@@ -109,7 +125,7 @@ def record(camera_index=1,profile='body'):
                         if frame is None:raise RuntimeError('カメラから画像が届いていません。')
                         if shutil.disk_usage(ROOT).free<30*1024**3:raise RuntimeError('撮影には30GB以上の空きが必要です')
                         path=ROOT/'results'/'comparison-takes'/datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S-%fZ')
-                        take=TakeWriter(path,list(frame.image.shape[1::-1]),30,settings,camera.metadata,profile)
+                        take=TakeWriter(path,list(frame.image.shape[1::-1]),options['fps'],settings,camera.metadata,profile)
                         started=frame.acquired;countdown=None;last_sequence=-1
                 if frame is not None and frame.sequence!=last_sequence:
                     if take:
@@ -131,7 +147,7 @@ def record(camera_index=1,profile='body'):
         if camera:camera.__exit__()
 
 def main():
-    parser=argparse.ArgumentParser(allow_abbrev=False);camera_display.add_argument(parser);parser.add_argument('--camera',type=int,default=1)
+    parser=argparse.ArgumentParser(allow_abbrev=False);camera_display.add_argument(parser);parser.add_argument('--camera',type=int)
     parser.add_argument('--profile',choices=list(PROFILES),default='body')
     args=parser.parse_args();record(args.camera,args.profile)
 if __name__=='__main__':main()

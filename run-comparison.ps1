@@ -4,7 +4,7 @@ Push-Location $PSScriptRoot
 try {
     if ($Mode -eq 'capture') {
         Write-Host 'モデル比較用の元カメラ映像を撮影します。開始ボタンを押すまでは保存しません。'
-        & '.\.venv\Scripts\python.exe' -m tanakacap.comparison_capture --camera 1 --profile $Profile
+        & '.\.venv\Scripts\python.exe' -m tanakacap.comparison_capture --profile $Profile
     } else {
         if (-not $Take) {
             $taskTakes=@()

@@ -1,3 +1,5 @@
+現行の短時間録画（2026-09-21）：デスクトップの `tanakacap-face-capture.bat` は30秒・動作案内なし。腕補正の整理にも同じ録画入口を使う。通常UIで保存したカメラDevicePathと取得設定を引き継ぐ。録画UIを開くとカメラ準備、開始ボタン後3秒で保存開始。実写は表示せず、音声は録音しない。保存先は `results/comparison-takes/<日時>/camera.avi`、撮影情報は同じ場所の `take.json` と `frames.jsonl`。
+
 # 共通映像によるモデル比較：撮影準備
 
 更新（2026-09-12）：実撮影済み。HaMeRはMANO受領後に独立CUDA推論と指だけの固定補正比較まで検証した。ライブ接続は未実装。最新結果はdocs/HAMER_COMPARISON.md参照。以下の撮影準備時点の「HaMeR未実行」「ユーザー撮影待ち」はこの更新で置き換える。SAMも受領し生CUDA推論まで検証済み。身体補正接続は未完了で、docs/SAM_INITIAL_VALIDATION.md参照。
