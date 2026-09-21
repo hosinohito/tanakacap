@@ -208,6 +208,13 @@ namespace TanakaCap
             return result;
         }
 
+        public static float FingerFollowAmount(float errorDegrees,float dt)
+        {
+            // Smooth small residual motion without delaying deliberate large bends.
+            float weight=Mathf.SmoothStep(0,1,Mathf.InverseLerp(3,15,Mathf.Abs(errorDegrees)));
+            return 1-Mathf.Exp(-Mathf.Max(0,dt)*Mathf.Lerp(6,60,weight));
+        }
+
         void DriveFingers(Arm arm, bool[] valid, float[] flex)
         {
             if(valid==null || flex==null || arm.fingers==null) return;
@@ -221,7 +228,8 @@ namespace TanakaCap
                     if(!bone || finger.axes[j].sqrMagnitude<.5f) continue;
                     float limit=f==0?(j==0?0:j==1?50:65):(j==0?80:j==1?110:90);
                     var target=finger.rest[j]*Quaternion.AngleAxis(Mathf.Clamp(flex[f*3+j],0,limit),finger.axes[j]);
-                    bone.localRotation=Quaternion.Slerp(bone.localRotation,target,1-Mathf.Exp(-60*FrameDelta));
+                    bone.localRotation=Quaternion.Slerp(bone.localRotation,target,
+                        FingerFollowAmount(Quaternion.Angle(bone.localRotation,target),FrameDelta));
                 }
             }
         }
