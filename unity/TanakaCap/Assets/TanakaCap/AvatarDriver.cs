@@ -75,6 +75,10 @@ namespace TanakaCap
         Quaternion headRest, chestRest, spineRest, headRootRest, chestRootRest, spineRootRest;
         Vector3 torsoNeutral;
         Vector3 faceCenterLocal;
+        HeadClearance headClearance;
+        string armCorrectionTrial="all";
+        int headCorrectionCount,crossCorrectionCount,wristCorrectionCount,outwardCorrectionCount;
+        bool ArmCorrection(string name)=>armCorrectionTrial=="all" || armCorrectionTrial==name;
         Arm left, right;
         SkinnedMeshRenderer[] meshes;
         bool demo;
@@ -283,6 +287,8 @@ namespace TanakaCap
             left = MakeArm(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand);
             right = MakeArm(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand);
             meshes = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            headClearance=HeadClearance.Fit(transform,head,leftEye,rightEye,meshes);
+            Debug.Log("TANAKACAP_HEAD_PROXY source="+headClearance.source+" radii="+headClearance.radii.ToString("F4"));
             int expressionIndex=Array.IndexOf(renderArgs,"--expression-mode");
             string expressionMode=expressionIndex<0?"existing":expressionIndex+1<renderArgs.Length?renderArgs[expressionIndex+1]:"";
             if(expressionMode!="existing" && expressionMode!="auto-custom")throw new ArgumentException("--expression-mode must be existing or auto-custom");
@@ -299,6 +305,16 @@ namespace TanakaCap
             var args = Environment.GetCommandLineArgs();
             adaptiveHeadFollow=Array.IndexOf(args,"--adaptive-head-follow")>=0;
             adaptiveBrowFollow=Array.IndexOf(args,"--no-adaptive-brow-follow")<0;
+            int trialIndex=Array.IndexOf(args,"--diagnostic-arm-correction");
+            if(trialIndex>=0)
+            {
+                if(Array.IndexOf(args,"--render-replay")<0 || trialIndex+1>=args.Length)
+                    throw new ArgumentException("Arm correction trial requires offline render replay");
+                armCorrectionTrial=args[trialIndex+1];
+                if(Array.IndexOf(new[]{"none","head","cross-body","wrist-front","outward-elbow","legacy-front"},armCorrectionTrial)<0)
+                    throw new ArgumentException("Unknown arm correction trial");
+                Debug.Log("TANAKACAP_ARM_CORRECTION_TRIAL "+armCorrectionTrial);
+            }
             MouthCornerGamma=ReadExpressionOption(args,"--mouth-corner-gamma",autoExpressions?2:1,.25f,4);
             MouthOpenSmileSuppression=ReadExpressionOption(args,"--mouth-open-smile-suppression",autoExpressions?.9f:0,0,1);
             Debug.Log("TANAKACAP_CORNER_OPTIONS gamma="+MouthCornerGamma+" suppression="+MouthOpenSmileSuppression);
@@ -952,6 +968,9 @@ namespace TanakaCap
         void DriveArm(Arm arm, bool valid, Vector3 elbow, Vector3 wrist, bool isLeft, float t, bool wristInFront=false, bool upperInFront=false,float crossBody=0)
         {
             if(!valid) return;
+            wristInFront &= ArmCorrection("wrist-front");
+            upperInFront &= ArmCorrection("wrist-front");
+            if(!ArmCorrection("cross-body"))crossBody=0;
             // Position is already filtered at capture cadence. Keep only a short
             // render interpolation; face/torso and wrist constraints stay separate.
             if(valid) t=1-Mathf.Exp(-FrameDelta*36);
@@ -961,11 +980,14 @@ namespace TanakaCap
             if (a.sqrMagnitude < .002f || b.sqrMagnitude < .002f) return;
             var bodyForward=transform.InverseTransformDirection(chest.rotation*Quaternion.Inverse(chestRootRest)*Vector3.forward).normalized;
             var target=a.normalized*arm.upperLength+b.normalized*arm.lowerLength;
-            var center=transform.InverseTransformVector(head.TransformPoint(faceCenterLocal)-arm.upper.position);
-            var clearTarget=ClearFace(target,center,.18f);
+            var clearTarget=ArmCorrection("head")?ClearHead(target,arm.upper.position):target;
             bool faceCollision=(target-clearTarget).sqrMagnitude>.0000001f;
-            bool outwardBehind=!wristInFront && crossBody<=0 && (isLeft?-1:1)*wrist.x>.035f &&
+            bool outwardBehind=ArmCorrection("outward-elbow") && !wristInFront && crossBody<=0 && (isLeft?-1:1)*wrist.x>.035f &&
                 target.y<.12f && Vector3.Dot(target,bodyForward)<-.025f;
+            if(faceCollision)headCorrectionCount++;
+            if(crossBody>0)crossCorrectionCount++;
+            if(wristInFront && clearTarget.z<.015f)wristCorrectionCount++;
+            if(outwardBehind)outwardCorrectionCount++;
             SolveArm(a,b,arm.upperLength,arm.lowerLength,ref arm.pole,out var upperDirection,out var lowerDirection,wristInFront,upperInFront,crossBody,bodyForward,faceCollision?(Vector3?)clearTarget:null,outwardBehind);
             Quaternion upperBase = transform.rotation*arm.upperRootRest;
             Quaternion upperTarget = Quaternion.FromToRotation(upperBase*arm.upperDirection,transform.TransformDirection(upperDirection))*upperBase;
@@ -978,7 +1000,7 @@ namespace TanakaCap
             arm.lower.rotation = Quaternion.AngleAxis(arm.twist,arm.lowerUntwisted*arm.lowerDirection)*arm.lowerUntwisted;
             // Interpolation from an old backward pose must not violate a newly
             // confirmed front constraint. Project to the solved feasible pose.
-            if(faceCollision || outwardBehind || (wristInFront && transform.InverseTransformVector(arm.hand.position-arm.upper.position).z<0) ||
+            if(outwardBehind || (wristInFront && transform.InverseTransformVector(arm.hand.position-arm.upper.position).z<0) ||
                 (upperInFront && transform.InverseTransformVector(arm.lower.position-arm.upper.position).z<0) ||
                 (crossBody>0 && (Vector3.Dot(transform.InverseTransformVector(arm.lower.position-arm.upper.position),bodyForward)<.06f*crossBody ||
                  Vector3.Dot(transform.InverseTransformVector(arm.hand.position-arm.upper.position),bodyForward)<.06f*crossBody)))
@@ -989,12 +1011,13 @@ namespace TanakaCap
             }
         }
 
-        public static Vector3 ClearFace(Vector3 target,Vector3 center,float radius)
+        Vector3 ClearHead(Vector3 target,Vector3 shoulder)
         {
-            var delta=target-center;
-            if(delta.sqrMagnitude>=radius*radius)return target;
-            target.z=center.z+Mathf.Sqrt(Mathf.Max(0,radius*radius-delta.x*delta.x-delta.y*delta.y))+.005f;
-            return target;
+            var frame=head.rotation*Quaternion.Inverse(headRootRest);
+            var center=head.TransformPoint(headClearance.centerLocal);
+            var local=Quaternion.Inverse(frame)*(shoulder+transform.TransformVector(target)-center);
+            var corrected=HeadClearance.Project(local,headClearance.radii);
+            return transform.InverseTransformVector(center+frame*corrected-shoulder);
         }
 
         public static void SolveArm(Vector3 a, Vector3 b, float l1, float l2, ref Vector3 pole, out Vector3 upper, out Vector3 lower, bool wristInFront=false, bool upperInFront=false,float crossBody=0,Vector3 bodyForward=default(Vector3),Vector3? targetOverride=null,bool outwardBehind=false)
@@ -1503,12 +1526,14 @@ namespace TanakaCap
             foreach(bool isLeft in new[]{true,false})
             {
                 var arm=isLeft?left:right;
-                var center=transform.InverseTransformVector(head.TransformPoint(faceCenterLocal)-arm.upper.position);
+                var center=transform.InverseTransformVector(head.TransformPoint(headClearance.centerLocal)-arm.upper.position);
                 var pole=Vector3.down;
                 SolveArm(Vector3.down,Vector3.up,arm.upperLength,arm.lowerLength,ref pole,out var a,out var b,false,false,0,Vector3.forward,center);
                 for(int i=0;i<90;i++)DriveArm(arm,true,a*arm.upperLength,a*arm.upperLength+b*arm.lowerLength,isLeft,1);
                 var actual=transform.InverseTransformVector(arm.hand.position-arm.upper.position);
-                if((actual-center).magnitude<.175f || actual.z<center.z)
+                var frame=head.rotation*Quaternion.Inverse(headRootRest);
+                var local=Quaternion.Inverse(frame)*(arm.hand.position-head.TransformPoint(headClearance.centerLocal));
+                if(HeadClearance.Level(local,headClearance.radii)<.95f)
                     throw new Exception("Actual hand remained in head volume");
             }
             Debug.Log("TANAKACAP_ACTUAL_FACE_CLEARANCE_OK");

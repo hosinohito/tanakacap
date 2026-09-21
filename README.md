@@ -260,6 +260,8 @@ batのカメラ番号1が合わない環境では、まず`run-avatar.ps1 -Camer
 
 肩ヨーの`face_ratio`は顔肩比の共通短縮を連続補正し、正面付近の感度を緩和する。[計算・検証・限界](docs/SHOULDER_CONTINUOUS_CORRECTION.md)を参照。
 
+腕の前方補正を１つずつ有効にした[比較動画と検証手順](docs/ARM_CORRECTION_ISOLATION.md)を追加。頭回避はアバターから推定した楕円体の最寄り表面へ移す方式。デスクトップの`tanakacap-tools/tanakacap-compare-arm-corrections.bat`で動画フォルダーを開ける。
+
 ## 描画品質と解像度
 
 口角の追加強調は`tracking-settings.json`の`mouth_corner_emphasis`、または両起動スクリプトの`-MouthCornerEmphasis 0.5`で調整できる。0〜1の連続値、既定0は追加強調なし。自動独自キーでは1で以前の強調量、既存キーでは1で入力を最大2倍にし作者の100%形状までに制限する。0でも口角追跡は続く。操作UIの「表情」タブでも変更できる。[詳細](docs/EXPRESSION_PORTABILITY.md)。

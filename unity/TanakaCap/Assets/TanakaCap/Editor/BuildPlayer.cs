@@ -270,17 +270,7 @@ namespace TanakaCap.Editor
             foreach(float input in new[]{-.2f,-.5f,-1f,0,.2f,.5f,1f})
                 if(Mathf.Abs(AvatarDriver.ExpressiveCorner(input,0)-input*Mathf.Abs(input))>.00001f)
                     throw new Exception("Signed corner gamma endpoints/sign/small-input suppression failed");
-            foreach(float x in new[]{-.1f,0,.1f})
-            {
-                var center=new Vector3(0,.2f,.1f);
-                var target=center+new Vector3(x,0,-.04f);
-                var clear=AvatarDriver.ClearFace(target,center,.18f);
-                if((clear-center).magnitude<.18f || clear.z<=center.z || clear.x!=target.x || clear.y!=target.y)
-                    throw new Exception("Face clearance did not preserve XY on camera side");
-                if(AvatarDriver.ClearFace(clear,center,.18f)!=clear)
-                    throw new Exception("Face clearance drifted outside collision volume");
-            }
-            Debug.Log("TANAKACAP_FACE_CLEARANCE_OK");
+            HeadClearanceChecks.Run();
             foreach(float sign in new[]{-1f,1f})foreach(float yaw in new[]{-35f,0,35f})
             {
                 var rot=Quaternion.Euler(0,yaw,0);var normal=rot*Vector3.forward;

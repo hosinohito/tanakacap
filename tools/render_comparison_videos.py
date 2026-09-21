@@ -10,7 +10,7 @@ def sha(p):
 def run(output,comparison=None):
  output=output.resolve();output.mkdir(parents=True,exist_ok=False)
  ff=ROOT/'tools/bin/ffmpeg.exe';player=ROOT/'builds/player/TanakaCap.exe'
- variants={}
+ variants={};layout_columns=None
  inputs={'current':ROOT/'results/comparisons/first-take/baseline/replay.jsonl','hamer-fingers':ROOT/'results/comparisons/first-take-hamer/fingers/replay.jsonl'}
  scope='Same original capture and camera; only finger geometry differs. Offline rendering, not live latency. Opaque MP4 preview; OBS RGBA output unchanged.'
  if comparison is not None:
@@ -18,6 +18,7 @@ def run(output,comparison=None):
   if result['status']!='complete':raise ValueError('Completed body comparison required')
   inputs={name:comparison/name/'replay.jsonl' for name in result['variants']}
   variants=result['variants']
+  layout_columns=result.get('layout_columns')
   scope=result['scope']+' Opaque MP4 preview; OBS RGBA output unchanged.'
   if result.get('partial_test'):scope='PARTIAL INTEGRATION TEST. '+scope
  if len(inputs)<2:raise ValueError('At least two variants required')
@@ -48,7 +49,18 @@ def run(output,comparison=None):
  if len({report[name]['frames'] for name in inputs})!=1:raise ValueError('Video clocks differ')
  font='C\\:/Windows/Fonts/arial.ttf'
  labels=[f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{text}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]" for i,text in enumerate([{'separate':'Face - RTMW-L (original)','body3d':'Face - RTMW3D-X / PnP','depth3d':'Face - RTMW3D-X / learned Z','current':'Current - RTMW3D-X','shoulder-width':'Shoulder width - monotonic reference','shoulder-face':'Shoulder width + face ratio guard','front-projection':'RTMW3D - front projection trial','hamer-fingers':'HaMeR fingers - same body and corrections','sam-dinov3':'SAM 3D Body - DINOv3','sam-vith':'SAM 3D Body - ViT-H'}.get(name,name) for name in inputs])]
- filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
+ for i,name in enumerate(inputs):
+  label=variants.get(name,{}).get('label')
+  if label:
+   if any(c in label for c in "'\\:;[]"):raise ValueError('Unsafe video label')
+   labels[i]=f"[{i}:v]pad=iw:ih+48:0:48:color=0x161c26,drawtext=fontfile='{font}':text='{label}':fontcolor=white:fontsize=25:x=20:y=10[v{i}]"
+ if layout_columns is not None:
+  if not isinstance(layout_columns,int) or not 1<=layout_columns<=len(videos):raise ValueError('Invalid grid columns')
+  labels=[label.replace('pad=iw:', 'scale=640:360,pad=iw:').replace('fontsize=25','fontsize=18') for label in labels]
+  layout='|'.join(f'{i%layout_columns*640}_{i//layout_columns*408}' for i in range(len(videos)))
+  filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'xstack=inputs={len(videos)}:layout={layout}[out]'
+ else:
+  filt=';'.join(labels)+';'+''.join(f'[v{i}]' for i in range(len(videos)))+f'hstack=inputs={len(videos)}[out]'
  combined=output/'side-by-side.mp4'
  subprocess.run([str(ff),'-hide_banner','-loglevel','error','-n',*[v for path in videos for v in ['-i',str(path)]],'-filter_complex',filt,'-map','[out]','-an','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(combined)],check=True,timeout=900,creationflags=subprocess.CREATE_NO_WINDOW)
  rendered=videos+[combined]

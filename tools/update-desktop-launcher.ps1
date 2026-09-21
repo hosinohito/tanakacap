@@ -38,6 +38,9 @@ $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass 
 Write-Output $taskTarget
 
 $taskComparisonScript = Join-Path $taskRoot 'run-comparison.ps1'
+$taskArmVideos = Join-Path $taskRoot 'results\avatar-videos\arm-corrections-final'
+$taskArmVideoBat = Join-Path $taskDesktop 'tanakacap-compare-arm-corrections.bat'
+[IO.File]::WriteAllText($taskArmVideoBat,"@echo off`r`nstart `"`" `"$taskArmVideos`"`r`n",[Text.Encoding]::Default)
 $taskFaceCapture = Join-Path $taskMainDesktop 'tanakacap-face-capture.bat'
 [IO.File]::WriteAllText($taskFaceCapture,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskComparisonScript`" -Mode capture -Profile face-head`r`npause`r`n",[Text.Encoding]::Default)
 Write-Output $taskFaceCapture

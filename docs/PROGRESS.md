@@ -1325,3 +1325,6 @@ Unity Hub操作後に認証復旧し通常Playerビルド成功。304 Python tes
 
 
 2026-09-21：腕の前方・頭回避補正を全体整理するため、ユーザー撮影待ち。ユーザー説明では旧来の体への重なりの原因はUnity側でZを無視していた処理。新録画で現行のClearFace半径18cm、CrossBody、front_projection、手首前方制限等を段階比較する。補正自体はまだ変更していない。既存tanakacap-face-capture.batを30秒・動作案内なしで使用。録画側のcamera=1/MSMF固定を撤去し、通常UI保存のDevicePath・取得方式・解像度・fps・形式・照明設定を引き継ぐ。16関連テスト成功、実カメラは起動していない。保存先results/comparison-takes/<日時>/camera.avi、実写非表示・Git除外を維持。別PC更新はtanakacap/comparison_capture.pyとrun-comparison.ps1、カメラ選択はそのPCのUIで保存。Player/ZIPなし。
+
+
+2026-09-21：頭回避の最寄り楕円体化と腕補正の単独比較を完了。320 Python tests、Playerビルド、欠測復帰検査、12本全編デコード成功。汎用motion-checkは旧保持姿勢検査で停止、見た目未評価。詳細は[比較記録](ARM_CORRECTION_ISOLATION.md)。

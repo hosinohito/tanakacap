@@ -11,11 +11,19 @@ namespace TanakaCap
     public partial class AvatarDriver
     {
         bool videoMode;
+        [Serializable] class VideoArmPose
+        {
+            public Vector3 leftElbow,leftWrist,rightElbow,rightWrist;
+        }
         [Serializable] class VideoReport
         {
             public string status="complete",source,output;
             public int frames,width=1280,height=720,fps=30,packets;
             public double duration;
+            public string armCorrection;
+            public Vector3 headProxyRadii;
+            public int headCorrections,crossBodyCues,wristFrontClamps,outwardElbowCues;
+            public VideoArmPose[] armPoses;
         }
         bool TryStartVideo(string[] args)
         {
@@ -84,6 +92,7 @@ namespace TanakaCap
             target.antiAliasing=4;target.Create();
             var pixels=new Texture2D(1280,720,TextureFormat.RGB24,false);
             var errors=new StringBuilder();
+            var armPoses=new List<VideoArmPose>();
             var start=new System.Diagnostics.ProcessStartInfo {
                 FileName=encoder,
                 Arguments="-hide_banner -loglevel error -n -f rawvideo -pixel_format rgb24 -video_size 1280x720 -framerate 30 -i pipe:0 -vf vflip -an -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p -movflags +faststart "+VideoQuote(output),
@@ -107,6 +116,8 @@ namespace TanakaCap
                         // Unity refreshes skinned meshes once per engine frame.
                         // Manual Camera.Render calls inside one frame reuse stale skinning.
                         yield return null;
+                        if(armCorrectionTrial!="all")armPoses.Add(new VideoArmPose {leftElbow=left.lower.position,leftWrist=left.hand.position,
+                            rightElbow=right.lower.position,rightWrist=right.hand.position});
                         camera.Render();RenderTexture.active=target;
                         pixels.ReadPixels(new Rect(0,0,1280,720),0,0,false);
                         var bytes=pixels.GetRawTextureData();
@@ -117,7 +128,10 @@ namespace TanakaCap
                     if(!process.WaitForExit(60000))throw new TimeoutException("Encoder did not finish");
                     process.WaitForExit();
                     if(process.ExitCode!=0)throw new IOException("Encoder failed: "+errors);
-                    File.WriteAllText(output+".json",JsonUtility.ToJson(new VideoReport {source=input,output=output,frames=frames,packets=rows.Count,duration=frames/30.0},true));
+                    File.WriteAllText(output+".json",JsonUtility.ToJson(new VideoReport {source=input,output=output,frames=frames,packets=rows.Count,duration=frames/30.0,
+                        armCorrection=armCorrectionTrial,headProxyRadii=headClearance.radii,headCorrections=headCorrectionCount,
+                        crossBodyCues=crossCorrectionCount,wristFrontClamps=wristCorrectionCount,outwardElbowCues=outwardCorrectionCount,
+                        armPoses=armPoses.ToArray()},true));
                     Debug.Log("TANAKACAP_VIDEO_OK "+output);
                 }
                 finally
