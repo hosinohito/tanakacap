@@ -205,6 +205,7 @@ def benchmark(args):
                     if not ok and getattr(args,'loop_video',False):
                         video.set(cv2.CAP_PROP_POS_FRAMES,0)
                         if region_tracker: region_tracker.reset()
+                        body_retarget.arm_scale.reset()
                         ok, image = video.read()
                     if not ok:
                         break

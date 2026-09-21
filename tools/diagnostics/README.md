@@ -34,3 +34,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 `check_partial_tracking.py` は、デモアバターと人工入力で顔なしの腕・腕なしの掌/指を確認し、既存録画で3モードの部位更新間隔を検査します。カメラ不使用・実写表示なし。`--synthetic-only` で人工入力だけを検査できます。結果は `results/partial-tracking/`。
 
 `audit_eyelids.py` はUIで選択した保存動画を全部ONで再推論し、瞼のフィルター前後の値を集計します。カメラ不使用・実写表示なし・Playerへ送信なし。`--video`、`--frames`（既定900）で範囲を指定できます。結果は `results/eyelid-audit/`。
+
+`check_arm_scale.py` は保存済みランドマークを変更前Git版と現在版へ同時入力して④の腕更新を比較します。`--source`でframes.jsonl、`--baseline`で比較コミットを指定できます。画像表示/カメラ起動なし、結果はresults/arm-scale。

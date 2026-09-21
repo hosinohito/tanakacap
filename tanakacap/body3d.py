@@ -15,6 +15,7 @@ from .shoulder_projection import ShoulderProjection
 from .motion_gate import DirectionGate
 from .visibility import screen_visibility
 from .face_scale import FaceScale
+from .arm_scale import ArmScale
 from .torso_yaw import elbow_yaw, elbow_agreement, shoulder_yaw_magnitude, ShoulderWidthReference
 from .body_geometry import DepthAssist, visible_in_front_of_torso, constrain_front_arm, visible_hand_inward, cross_body_amount
 
@@ -34,6 +35,7 @@ class BodyRetarget:
         self.diagnostics = {}
         self.scale = None
         self.face_scale = FaceScale()
+        self.arm_scale = ArmScale()
         self.scale_time = -float('inf')
         self.shoulder_scale_ratio=1.
         self.calibration = ArmCalibration()
@@ -54,6 +56,7 @@ class BodyRetarget:
         now = time.perf_counter() if now is None else now
         dt = .033 if self.last_time is None else max(.001,min(.1,now-self.last_time))
         if self.last_time is not None and now-self.last_time > .3:
+            self.arm_scale.reset()
             self.previous.clear()
             for projector in self.projector.values(): projector.reset()
         self.last_time = now
@@ -71,6 +74,7 @@ class BodyRetarget:
             packet[side+'UpperArmTracked']=False
             packet[side+'CrossBody']=0.
         if xy is None or depth is None:
+            self.arm_scale.reset()
             self.calibration.observe(None,None,now)
             self.previous.clear()
             self.held.clear()
@@ -91,9 +95,6 @@ class BodyRetarget:
             packet[side+'OutOfView']=invalid
             if invalid:
                 self.held.pop(side+'Arm',None);self.held.pop(side+'Hand',None)
-        if self.calibration.observe(xy,scores,now):
-            self.previous.clear()
-        self.calibration.check_consistency(xy,scores)
         calibrated=self.calibration.value
         self.diagnostics['calibration']=calibrated
         self.diagnostics['calibration_status']=self.calibration.status
@@ -117,6 +118,11 @@ class BodyRetarget:
         if shoulders_visible and span>=30 and abs(dz)<=.5:
             shoulder_scale=np.sqrt(max(.36**2-min(abs(dz),.33)**2,.13**2))/span
         face_scale=self.face_scale.update(xy,scores,shoulder_scale,now)
+        # A person/shoulder tracking interruption invalidates the temporary
+        # cache. This is continuity guarding, not identity recognition.
+        if not shoulders_visible:
+            self.arm_scale.reset()
+        arm_scale=self.arm_scale.update(face_scale,now) if shoulders_visible else None
         scale_source='cached'
         if face_scale is not None:
             self.scale=face_scale
@@ -134,6 +140,17 @@ class BodyRetarget:
         self.diagnostics['face_scale']=self.face_scale.details
         self.diagnostics['geometry_scale_source']=scale_source
         learn_lengths=face_scale is not None or (image_size is None and self.face_scale.reference is None)
+        if self.arm_depth_mode=='front_projection' and self.arm_scale.source=='recovering_face':
+            learn_lengths=False
+        if learn_lengths:
+            if self.calibration.observe(xy,scores,now):self.previous.clear()
+            self.calibration.check_consistency(xy,scores)
+        else:
+            self.calibration.observe(None,None,now)
+        calibrated=self.calibration.value
+        self.diagnostics['calibration']=calibrated
+        self.diagnostics['arm_scale_source']=self.arm_scale.source
+        self.diagnostics['arm_geometry_scale']=arm_scale
         self.diagnostics['arm_length_learning']=learn_lengths
         if self.scale is None or now-self.scale_time>.5:
             self.diagnostics['geometry_scale_source']='unavailable'
@@ -249,6 +266,18 @@ class BodyRetarget:
                 continue
             shoulder, elbow, wrist = xyz[ids]
             a,b = elbow-shoulder,wrist-elbow
+            if self.arm_depth_mode=='front_projection' and camera_xyz is None:
+                # Keep torso/palm geometry unchanged; only the arm uses the
+                # trusted cached face scale, never a changing shoulder fallback.
+                if arm_scale is not None:
+                    a[:2]*=arm_scale/self.scale
+                    b[:2]*=arm_scale/self.scale
+                if not learn_lengths and (arm_scale is None or
+                        (not calibrated and (self.depth_assist[side].lengths.value<.07).any())):
+                    self.diagnostics[side]='projection_scale_unavailable'
+                    self.projector[side].reset()
+                    self.motion[side].reset()
+                    continue
             self.diagnostics[side+'_lengths'] = [float(np.linalg.norm(a)),float(np.linalg.norm(b))]
             prior=self.previous.get(side)
             mode='model'
@@ -282,10 +311,6 @@ class BodyRetarget:
                 if learn_lengths:
                     assist.lengths.update(np.linalg.norm(np.stack([a,b])[:,:2],axis=1),now)
                 self.diagnostics[side+'_automatic_lengths']=assist.lengths.value.tolist()
-                if not learn_lengths:
-                    self.diagnostics[side]='projection_scale_unavailable'
-                    self.projector[side].reset()
-                    continue
                 values=self.motion[side].update(np.stack([a,a+b])/.36,now)
                 if values is None:
                     self.diagnostics[side]='observation_warmup'
