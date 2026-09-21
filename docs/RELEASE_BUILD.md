@@ -1,6 +1,6 @@
 # 配布ZIPのビルド
 
-開発者向け手順。利用者向けは [USER_GUIDE.md](USER_GUIDE.md) に分離する。
+開発者向け手順。利用者向けは [user_guide.txt](user_guide.txt) に分離する。
 
 このPCではプロジェクト直下の **build-release.batをダブルクリック**する。AIや手作業によるソース生成は不要。Unityでこのプロジェクトを開いている場合は先に閉じる。
 
@@ -31,7 +31,7 @@
 - `tanakacap`：推論/制御/UI、`runtime`：再配置可能なPython・標準Tk・lockから選んだ実行ライブラリ。
 - `models`：通常全身/顔専用/頭専用/虹彩/人物検出の必要モデル。SAM/HaMeR/MANO等の比較専用モデルは除外。
 - `TanakaCap.bat`：UI起動。利用者によるPythonやpipの操作は不要。
-- `使い方.md`、`ライセンス`、全ファイルSHA256の `manifest.json`、公開準備状態 `release-status.json`。
+- `使い方.txt`、`ライセンス`、全ファイルSHA256の `manifest.json`、公開準備状態 `release-status.json`。
 
 開発venvを丸ごとコピーしない。lockと一致したdistributionのRECORD記載ファイルを集め、テスト/インストーラー向けパッケージは除外。移動後のPython/Tk/NumPy/OpenCV/ONNX/ORT/UI設定読込を検査する。原本ONNXを同梱し、FP16等の派生は初回使用時に生成。ZIP CRC全件検査、ファイル数・圧縮後サイズ・SHA256を `release-report.json` へ記録する。
 

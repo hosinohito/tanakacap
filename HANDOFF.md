@@ -1,3 +1,5 @@
+2026-09-21：利用説明書の原本を docs/user_guide.txt、配布名を 使い方.txt に変更。Markdown装飾をプレーンテキスト向けに整理し、ビルド・原本検査・現行文書の参照を更新。過去リリース実物は未変更、再ビルド/ZIPなし。別PCは docs/user_guide.txt を本体隣の使い方.txtへコピー。
+
 2026-09-21：掌・指の頭回避を通常ONで実装。骨長・握り方・手世界回転を保ちIKで手全体を移す。録画129補正、最大31.25mm、点の残差0。比較 results/avatar-videos/hand-head-contact。肘調査では旧方式でも±160度へ張付く、左21.967秒に143.44度の相対回転。原因切分け・限界・次案は docs/HAND_HEAD_CONTACT.md。回転制限や体横断の通常採否は変更していない。別PCへ builds/player/ 全体（配布版app/）。ZIPなし。
 
 2026-09-21：ユーザー指定で旧経路の内側手前方補正を完全削除、残りは通常ONを維持。詳細 docs/ARM_CORRECTION_ISOLATION.md。指や掌への頭回避は案のみ、実装指示待ち。別PC更新は tanakacap/body3d.py・body_geometry.py と builds/player/全体（配布版app/）。旧比較動画は保持。ZIPなし。

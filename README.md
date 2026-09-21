@@ -2,7 +2,7 @@
 
 開発版（2026-09-21）は部位別通信へ更新しています。PythonとPlayerを同時に更新し、`build-player.ps1`でPlayerをビルドしてください。旧通信の互換モードはありません。`tanakacap-test.bat`はデモアバターと保存済み動画を選択したUIを開きます。設計・検査は[部位別更新](docs/PARTIAL_TRACKING_DESIGN.md)を参照。
 
-配布版：[GitHub Releases](https://github.com/hosinohito/tanakacap/releases/latest)。part01とpart02の両ZIPを同じ場所へ展開してください。利用者向けの導入・操作は[使い方](docs/USER_GUIDE.md)を参照してください。
+配布版：[GitHub Releases](https://github.com/hosinohito/tanakacap/releases/latest)。part01とpart02の両ZIPを同じ場所へ展開してください。利用者向けの導入・操作は[使い方](docs/user_guide.txt)を参照してください。
 
 **配布ビルド：プロジェクト直下の `build-release.bat` をダブルクリック。** 原本確認からUnity/Exporterの再ビルド、ZIP作成・検査まで実行します。版名は日時で自動作成、ログはresults、成果物はbuilds/releases。必要な原本とバックアップ対象は[ビルド手順](docs/RELEASE_BUILD.md)を参照。Git管理外のmodels・埋め込みPackages・対応ソースもこの作業フォルダー内に揃っています。Unity EditorとPython環境は別途必要です。
 
@@ -41,7 +41,7 @@ Webカメラ1台で、VRChat向け3Dアバターを動かしてOBSへ透過出�
 
 **現在は開発版です。** 外部アバターの書き出し・読み込み、GPU推論、OBS透過受信、揺れ物を実装済み。汎用のVRC改変対応、本家PhysBoneとの動作一致、30分の安定性・OBS併用性能は未達成または未確認。仮想カメラ・コラボ送信・全身は後日の対象。重いゲームとの同時実行保証は要件に含めない。最新の評価は[HANDOFF.md](HANDOFF.md)、確定要件は[仕様書](docs/SPEC.md)を参照する。
 
-利用者向けの簡潔な導入・操作手順は [利用説明書](docs/USER_GUIDE.md)、配布ZIPの生成手順は [リリースビルド](docs/RELEASE_BUILD.md)。独自コードはMIT（LICENSE）、外部素材・モデル・ライブラリはそれぞれの許諾に従います。
+利用者向けの簡潔な導入・操作手順は [利用説明書](docs/user_guide.txt)、配布ZIPの生成手順は [リリースビルド](docs/RELEASE_BUILD.md)。独自コードはMIT（LICENSE）、外部素材・モデル・ライブラリはそれぞれの許諾に従います。
 
 ## セットアップ済みの環境で起動する
 
@@ -430,7 +430,7 @@ Playerを使う検証は普段使いのPlayerを終了してから行う。こ�
 
 従来のPowerShell起動は`-RenderFps 30|60`（既定60）。操作UIは60/推論同期/30/自由入力と推論上限の連動に対応する。[UI](docs/CONTROL_PANEL.md)。従来batでは`tanakacap-test-30fps.bat`で30fpsを試せる。OBS側fpsや推論頻度は変えない。[30/60比較・追加案](docs/RENDER_RATE_COMPARISON.md)。
 
-着せ替え済みアバターの準備は[利用説明書](docs/USER_GUIDE.md#着せ替えツール別の準備)を参照。MA/VRCFury/キセテネ/AvatarToolsとAAO併用を記載し、すべて原本を残す複製プロジェクトで作業します。公式根拠と現行Exporterの制約は[調査記録](docs/EXPORT_TOOL_RESEARCH.md)。
+着せ替え済みアバターの準備は[利用説明書](docs/user_guide.txt)を参照。MA/VRCFury/キセテネ/AvatarToolsとAAO併用を記載し、すべて原本を残す複製プロジェクトで作業します。公式根拠と現行Exporterの制約は[調査記録](docs/EXPORT_TOOL_RESEARCH.md)。
 
 ### Constraintを含むアバターの書き出し
 

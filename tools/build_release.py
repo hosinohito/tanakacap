@@ -43,7 +43,7 @@ def run(version,publishable=False):
     copy(player/'TanakaCapExporter.unitypackage','プラグイン/TanakaCapExporter.unitypackage')
     tree(ROOT/'tanakacap','tanakacap',('__pycache__',))
     for name in ('tracking-settings.json','models/catalog.json','docs/ui-part-costs.json'):copy(ROOT/name,name)
-    copy(ROOT/'docs/USER_GUIDE.md','使い方.md')
+    copy(ROOT/'docs/user_guide.txt','使い方.txt')
     copy(ROOT/'release/THIRD_PARTY.md','ライセンス/README.md')
     copy(ROOT/'release/THIRD_PARTY_TERMS.md','ライセンス/第三者部品の利用条件.md')
     tree(ROOT/'release/notices','ライセンス/notices')

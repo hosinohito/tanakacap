@@ -26,7 +26,7 @@ def check():
         'unity/TanakaCap/Packages/jp.keijiro.klak.spout/Plugin/KlakSpout.dll',
         'unity/TanakaCap/Packages/jp.lilxyzw.liltoon/package.json',
         'tanakacap/control_panel.py', 'tracking-settings.json', 'ui-settings.example.json',
-        'models/catalog.json', 'docs/ui-part-costs.json', 'docs/USER_GUIDE.md',
+        'models/catalog.json', 'docs/ui-part-costs.json', 'docs/user_guide.txt',
         'LICENSE', 'release/THIRD_PARTY.md', 'release/THIRD_PARTY_TERMS.md',
     ):
         require(relative)
