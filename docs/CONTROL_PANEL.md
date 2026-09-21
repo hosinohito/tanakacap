@@ -86,3 +86,6 @@ RTMW-LのFP16 CUDA Graphは非CUDAノードが残り起動失敗した。RTMW-L�
 ## 頭角度の追加（2026-09-13）
 
 「入力・推論」→「頭角度」でsize2d（2D比率の試行）とpnp（従来）を切り替え、適用すると再起動する。初期設定はユーザー指定によりpnpへ復帰。頭のみでは別の直接回転モデルを使うためこの選択は無効。口・眉の補正は切り替えない。詳細は[頭角度試行](HEAD_SIZE_TRIAL.md)。
+
+
+配布版のONNX Runtimeログ（2026-09-21）：runtime/python.exeがある構成ではdefault loggerもERROR以上に設定し、起動時のplugin EP探索警告を抑える。開発版のdefault loggerは変更しない。例外・CUDA実行確認・CPUフォールバック禁止は維持。ORT1.30.0の[公式実装](https://github.com/microsoft/onnxruntime/blob/v1.30.0/onnxruntime/python/onnxruntime_pybind_state.cc)は登録pluginがなくても従来CUDA factoryを試す。実HeadOnly推論で警告発生時にもCUDA171ノード/CPU0を確認した。

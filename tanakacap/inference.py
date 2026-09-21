@@ -12,7 +12,14 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from .models import catalog, model_path, sha256
+from .models import ROOT, catalog, model_path, sha256
+
+# Provider discovery uses ORT's default logger before the session logger exists.
+# Match the bundled-runtime check used by the UI's development logging policy.
+# Keep native errors/fatal errors, and leave development logging unchanged.
+if (ROOT / 'runtime/python.exe').is_file():
+    ort.set_default_logger_severity(3)
+
 from .gpu_runner import GpuRunner, provider_options
 
 

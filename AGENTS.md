@@ -1,3 +1,5 @@
+2026-09-21：配布向けはORT default loggerをERROR(3)へ設定。runtime/python.exeの既存配布判定を使用し、開発警告は維持。SessionOptionsだけでは抑制できないplugin EP探索の警告に対応。ORT1.30.0公式pybind実装ではplugin登録探索後に従来CUDA factoryへ進むため、警告だけでCUDA不可とは言えない。実HeadOnly推論で警告再現＋CUDA171ノード/CPU0を確認。配布判定を模擬した同モデル実行で警告なし、InvalidArgument例外は維持。309 tests成功。GPU選択/明示device_id=0/CPUフォールバック禁止は変更なし。別PCへtanakacap/inference.pyをコピー、Unity更新不要。ZIP/公開なし。
+
 2026-09-21：④をユーザー指定で実装。front_projectionの腕だけ最後の有効顔尺度で最大1秒追従、顔尺度/腕長校正済み・関節有効が条件。欠測/0.2秒復帰移行中は骨長学習禁止、胴体と掌の尺度は変更なし。人物欠測/両肩の有効性喪失/観測間隔0.3秒超/動画ループでキャッシュ無効化。人物ID識別を保証しない。期限切れや未校正は最後の姿勢保持。309 tests、録画5187frameの左右合計更新9086→9430、保持尺度336更新（精度の証明ではない）。自動キーPlayerと録画3モード成功。docs/PARTIAL_TRACKING_DESIGN.md、results/arm-scale。別PC更新はtanakacap/、run-ui.ps1、run-avatar.ps1、builds/player/全体（配布版はPlayer一式をapp/）。検証batは最新ランチャースクリプトで再生成。アバター再エクスポート/モデル変更不要、ZIP/公開なし。瞼の検出/平滑化は今回変更なし。
 
 2026-09-21：ユーザー指定でデモ専用アバター経路を削除。--use-demo-shape-keys/--demo-avatar/-DemoAvatarと強調固定、専用比較baselineを撤去。テストは通常haolan.tcapへauto-custom生成、既存キー/強調値の操作は通常処理。test.batは-AutoCustom -RecordedTestで録画UI起動。保存設定もauto-customへ。過去デモ原本/結果は保持、デモモーション入力は通常機能として維持。Player再ビルド、実Tk、人工入力/3モード録画成功。
