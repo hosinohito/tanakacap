@@ -30,7 +30,7 @@ $taskUiTarget=Join-Path $taskMainDesktop 'tanakacap.bat'
 [IO.File]::WriteAllText($taskUiTarget,"@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`"`r`n",[Text.Encoding]::Default)
 $taskTarget = Join-Path $taskMainDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar.ps1'
-$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`" -DemoAvatar`r`n"
+$taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`" -DemoAvatar -RecordedTest`r`n"
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget

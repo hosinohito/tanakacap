@@ -50,6 +50,7 @@ def validate(values):
     for key,choices in dict(camera_powerline=('keep','off','50hz','60hz'),camera_lowlight=('keep','fixed','variable'),camera_backend=('dshow','msmf'),camera_format=('auto','native','MJPG','YUY2','NV12')).items():
         if data[key] not in choices:raise ValueError('Invalid '+key)
     for key,lo,hi in [('camera',0,255),('fps',1,240),('width',64,4096),('height',64,4096),('camera_width',64,8192),('camera_height',64,8192)]:
+        if key=='camera' and data['source']!='camera':lo=-1
         value=float(data[key])
         if not math.isfinite(value) or value!=int(value) or not lo<=value<=hi:raise ValueError(f'{key}: {lo}〜{hi} の整数を指定してください')
         data[key]=int(value)
@@ -234,7 +235,15 @@ class Session:
         return {k:v for k,v in self.status.items() if now-self.last[k]<2 and self.running}
 
 
-def main(test_hook=None, *, demo_avatar=False):
+def recorded_test_settings(settings):
+    settings=dict(settings,source='video')
+    if not Path(settings.get('video','')).is_file():
+        takes=list((ROOT/'results/comparison-takes').glob('*/camera.avi'))
+        settings['video']=str(max(takes,key=lambda p:p.stat().st_mtime)) if takes else ''
+    return settings
+
+
+def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
     window=tk.Tk();window.title('TanakaCap — コントロール');window.geometry('770x820');window.minsize(700,730)
@@ -244,6 +253,7 @@ def main(test_hook=None, *, demo_avatar=False):
     session=Session();pending=None;closing=False;was_running=False;last_error=''
     try:settings=load_settings()
     except Exception as error:settings=DEFAULT.copy();messagebox.showerror('設定を読み込めません',str(error))
+    if recorded_test:settings=recorded_test_settings(settings)
     if demo_avatar:settings['avatar']=str(ROOT/'builds/demos/haolan-custom-brows/avatars/haolan.tcap')
     variables={k:(tk.BooleanVar(value=v) if type(v) is bool else tk.StringVar(value='' if v is None else str(v))) for k,v in settings.items()}
     outer=ttk.Frame(window,padding=20);outer.pack(fill='both',expand=True)
@@ -342,6 +352,7 @@ def main(test_hook=None, *, demo_avatar=False):
     resolution_choice.bind('<FocusOut>',update_formats)
     def request_modes(event=None,force=False,starting=False):
         nonlocal mode_pending,mode_data,mode_device
+        if variables['source'].get()!='camera':return
         if closing or session.running or session.stopping or mode_pending:return
         if not starting and tabs.select()!=str(frames['カメラ'].master.master):return
         device=variables['camera_id'].get()
@@ -367,6 +378,8 @@ def main(test_hook=None, *, demo_avatar=False):
         ttk.Button(picker,text='この録画を使う',command=choose).pack(pady=8)
     ttk.Button(f,text='保存済み録画から選択',command=choose_take).grid(row=5,column=1,sticky='w')
     def source_state(*args):
+        nonlocal mode_start
+        if variables['source'].get()!='camera':mode_start=False
         tabs.tab(frames['カメラ'].master.master,state='normal' if variables['source'].get()=='camera' else 'disabled')
         for index,wanted in [(3,'camera'),(4,'video'),(5,'video')]:
             for widget in f_input.winfo_children():
@@ -464,7 +477,7 @@ def main(test_hook=None, *, demo_avatar=False):
     def config():return validate({k:(None if k in ('gamma','suppression') and v.get()=='' else v.get()) for k,v in variables.items()})
     def start():
         nonlocal last_error,mode_start
-        if mode_pending:return
+        if mode_pending and variables['source'].get()=='camera':return
         device=variables['camera_id'].get()
         if variables['source'].get()=='camera' and device and device!=mode_device and device not in mode_failed:
             mode_start=True;request_modes(starting=True);return
@@ -506,13 +519,15 @@ def main(test_hook=None, *, demo_avatar=False):
     def tick():
         nonlocal pending,was_running,last_error,mode_pending,mode_data,mode_device,mode_start
         statuses=session.poll();running=session.running
-        start_button.configure(state='disabled' if session.stopping or mode_pending else 'normal')
+        start_button.configure(state='disabled' if session.stopping or (mode_pending and variables['source'].get()=='camera') else 'normal')
         try:
             device,found,error=mode_results.get_nowait()
         except queue.Empty:pass
         else:
             mode_pending=False
-            if device==variables['camera_id'].get():
+            if variables['source'].get()!='camera':
+                mode_start=False
+            elif device==variables['camera_id'].get():
                 if error or not found:
                     mode_failed.add(device);mode_data=[];mode_device=''
                     fps_choice.configure(state='normal');resolution_choice.configure(state='normal')
@@ -565,4 +580,6 @@ if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--demo-avatar',action='store_true',help='Select the preserved development demo avatar')
-    main(demo_avatar=parser.parse_args().demo_avatar)
+    parser.add_argument('--recorded-test',action='store_true',help='Select saved video input, using the latest recording if needed')
+    args=parser.parse_args()
+    main(demo_avatar=args.demo_avatar,recorded_test=args.recorded_test)

@@ -1,6 +1,6 @@
 # tanakacap — 開発者向け
 
-開発版（2026-09-21）は部位別通信へ更新しています。PythonとPlayerを同時に更新し、`build-player.ps1`でPlayerをビルドしてください。旧通信の互換モードはありません。`tanakacap-test.bat`はデモアバター選択済みのUIを開きます。設計・検査は[部位別更新](docs/PARTIAL_TRACKING_DESIGN.md)を参照。
+開発版（2026-09-21）は部位別通信へ更新しています。PythonとPlayerを同時に更新し、`build-player.ps1`でPlayerをビルドしてください。旧通信の互換モードはありません。`tanakacap-test.bat`はデモアバターと保存済み動画を選択したUIを開きます。設計・検査は[部位別更新](docs/PARTIAL_TRACKING_DESIGN.md)を参照。
 
 配布版：[GitHub Releases](https://github.com/hosinohito/tanakacap/releases/latest)。part01とpart02の両ZIPを同じ場所へ展開してください。利用者向けの導入・操作は[使い方](docs/USER_GUIDE.md)を参照してください。
 

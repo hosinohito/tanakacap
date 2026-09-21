@@ -5,6 +5,27 @@ from tanakacap.camera_display import DISPLAY_FLAG
 from tanakacap.live_status import LiveStatus
 
 
+def test_recorded_test_selects_video_without_requiring_a_camera(tmp_path,monkeypatch):
+    project_root=ui.ROOT
+    monkeypatch.setattr(ui,'ROOT',tmp_path)
+    take=tmp_path/'results/comparison-takes/latest/camera.avi'
+    take.parent.mkdir(parents=True);take.write_bytes(b'recorded fixture')
+    original={**ui.DEFAULT,'camera':-1,'camera_id':'disconnected','video':'missing.avi'}
+    config=ui.recorded_test_settings(original)
+    assert config['source']=='video' and config['video']==str(take)
+    assert original['source']=='camera'
+    validated=ui.validate(config)
+    monkeypatch.setattr(ui,'ROOT',project_root)
+    _,command=ui.commands(validated,40001,40002,123)
+    assert '--video' in command and '--loop-video' in command and '--camera-id' not in command
+    with pytest.raises(ValueError):ui.validate(dict(config,source='camera'))
+
+
+def test_recorded_test_preserves_selected_file(tmp_path):
+    selected=tmp_path/'chosen.avi';selected.write_bytes(b'fixture')
+    assert ui.recorded_test_settings(dict(ui.DEFAULT,video=str(selected)))['video']==str(selected)
+
+
 def test_pacing_waits_before_work_and_does_not_catch_up():
     now=[10.];sleeps=[]
     def sleep(delay):sleeps.append(delay);now[0]+=delay

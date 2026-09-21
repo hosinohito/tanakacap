@@ -1,3 +1,5 @@
+2026-09-21：ユーザー指定でtest.batを録画試験用へ変更。run-ui.ps1 -DemoAvatar -RecordedTestから保存済み動画入力のUIを開く。有効な保存動画選択は維持、なければ最新camera.avi（現在20260912T230559-718866Z）を選択。保存して開始でループ推論、実写非表示。動画/デモ入力ではカメラ対応照会を行わず、進行中の照会も動画開始を妨げない。カメラ未接続の内部値-1は非カメラ入力だけ許可。Camera identity could not be matched自体の機器対応は未変更。306 testsと偽デバイス実Tk（カメラ照会0回）成功。Unity再ビルド不要。別PCはtanakacap/、run-ui.ps1、tools/update-desktop-launcher.ps1を更新してランチャー再生成。必要な録画を別途コピーしUIで選択。
+
 最新（2026-09-21）：部位別送受信v2を実装。旧通信互換を作らずGitで切り戻す。異なる方式の追加指示が来た時点で意図を確認する。④の顔尺度/腕追従の分離はユーザー確認まで実装しない。UIに13部位の実測更新間隔(ms)、保持/未検出/OFFを表示。test.batはデモアバター選択UIを起動する。PythonとPlayerを同時更新。詳細はHANDOFF先頭とdocs/PARTIAL_TRACKING_DESIGN.md。
 
 最新カメラ対応（2026-09-13）：通常UIのカメラタブと機種別互換対応はdocs/CAMERA_COMPATIBILITY.md参照。DevicePathで選択保持、ちらつき防止/暗所補正は既定変更しない・セッション後復元。実写非表示/実カメラ試験の事前相談を維持。他機種の公式資料と模擬テストを実機品質保証と混同しない。

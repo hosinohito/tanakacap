@@ -23,10 +23,12 @@ def run():
     panel.Session=FakeSession
     output=ROOT/'results/ui-validation';output.mkdir(exist_ok=True)
     panel.SETTINGS=output/'widget-settings.json'
+    mock_video=output/'widget-recording.avi';mock_video.write_bytes(b'Mocked UI input; never decoded')
     errors=[]
     def hook(window,variables,session,actions):
         def check():
             try:
+                assert variables['source'].get()=='video' and Path(variables['video'].get()).is_file()
                 def descendants(parent):
                     for child in parent.winfo_children():
                         yield child
@@ -110,8 +112,9 @@ def run():
             assert not session.running
         window.after(200,check)
         window.after(8000,actions['close'])
-    with patch.object(panel,'load_settings',return_value={**panel.DEFAULT,'source':'video'}),patch('tanakacap.camera_devices.enumerate_cameras',return_value=[]),patch.object(panel,'query_modes',return_value=[]):
-        panel.main(test_hook=hook)
+    with patch.object(panel,'load_settings',return_value={**panel.DEFAULT,'source':'camera','camera_id':'disconnected','video':str(mock_video)}),patch('tanakacap.camera_devices.enumerate_cameras',return_value=[]),patch.object(panel,'query_modes',side_effect=AssertionError('Unexpected camera activation')) as query:
+        panel.main(test_hook=hook,recorded_test=True)
+        query.assert_not_called()
     assert not errors,errors
     (output/'widgets.json').write_text(json.dumps(dict(status='complete',scope='Real Tk start/apply/restart/settings; mocked processes, no camera')),encoding='utf-8')
     print('Tk controls: start, apply/restart, settings and close passed')
