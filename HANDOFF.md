@@ -1,3 +1,5 @@
+2026-09-21：UIの推論・描画・13部位更新速度をfpsへ統一。部位は実測平均間隔の逆数、内部intervalMs維持。処理時間ms/観測・ちらつきHzは別量として維持。瞼はデモの人工入力で片眼閉眼を画像確認。選択録画先頭900フレームの最大閉眼値は生左0.211/右0.245、フィルター後0.079/0.165。入力値の小ささと減衰を確認したが実写正解未確認のためモデルの取り逃がしは未確定。推定/フィルターは未変更。docs/EYELID_INPUT_AUDIT.mdとtools/diagnostics/audit_eyelids.py参照。306 tests・実Tk検査成功。Unity再ビルド不要、別PCはtanakacap/control_panel.pyを更新。
+
 2026-09-21：ユーザー指定でtest.batを録画試験用へ変更。run-ui.ps1 -DemoAvatar -RecordedTestから保存済み動画入力のUIを開く。有効な保存動画選択は維持、なければ最新camera.avi（現在20260912T230559-718866Z）を選択。保存して開始でループ推論、実写非表示。動画/デモ入力ではカメラ対応照会を行わず、進行中の照会も動画開始を妨げない。カメラ未接続の内部値-1は非カメラ入力だけ許可。Camera identity could not be matched自体の機器対応は未変更。306 testsと偽デバイス実Tk（カメラ照会0回）成功。Unity再ビルド不要。別PCはtanakacap/、run-ui.ps1、tools/update-desktop-launcher.ps1を更新してランチャー再生成。必要な録画を別途コピーしUIで選択。
 
 2026-09-21追記：④は「最後に安定した尺度を使う方向で、条件を具体化してから検討」とユーザー確認。まだ実装しない。PARTIAL_TRACKING_DESIGN末尾へ校正済み/腕点有効/尺度と骨長学習停止/仮の上限1秒/復帰0.2秒候補を記載。数値と品質は未検証。

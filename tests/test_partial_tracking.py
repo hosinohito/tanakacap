@@ -2,7 +2,7 @@ import json
 import socket
 import pytest
 from tanakacap.partial_tracking import LocalSender, FACE_PARTS, BODY_PARTS, PART_FIELDS, part_state
-from tanakacap.control_panel import part_interval_text
+from tanakacap.control_panel import part_rate_text
 
 
 def test_groups_are_sent_before_later_work_and_share_frame():
@@ -49,10 +49,10 @@ def test_oversized_parts_split_and_no_nan_is_sent():
 
 
 def test_ui_does_not_show_held_as_a_new_observation():
-    assert part_interval_text(dict(state='valid',intervalMs=33.3))=='33 ms'
-    assert part_interval_text(dict(state='held',intervalMs=33.3))=='保持中'
-    assert part_interval_text(dict(state='stale',intervalMs=33.3))=='更新待ち'
-    assert part_interval_text({})=='—'
+    assert part_rate_text(dict(state='valid',intervalMs=33.3))=='30.0 fps'
+    assert part_rate_text(dict(state='held',intervalMs=33.3))=='保持中'
+    assert part_rate_text(dict(state='stale',intervalMs=33.3))=='更新待ち'
+    assert part_rate_text({})=='—'
 
 
 def test_palm_uses_its_own_hold_flag():

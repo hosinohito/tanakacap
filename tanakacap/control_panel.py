@@ -19,11 +19,11 @@ PART_LABELS={'head':'頭','face_distance':'前後位置','mouth':'口','brows':'
              'torso':'胴体','left_arm':'左腕','right_arm':'右腕','left_palm':'左掌','right_palm':'右掌',
              'left_fingers':'左指','right_fingers':'右指'}
 
-def part_interval_text(part):
+def part_rate_text(part):
     state=part.get('state')
     if state=='valid':
         interval=part.get('intervalMs',0)
-        return f'{interval:.0f} ms' if interval>0 else '計測中'
+        return f'{1000/interval:.1f} fps' if interval>0 else '計測中'
     return {'lost':'未検出','held':'保持中','stale':'更新待ち','disabled':'OFF','error':'エラー'}.get(state,'—')
 def player_path():
     packaged=ROOT/'app/TanakaCap.exe'
@@ -259,7 +259,7 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
     outer=ttk.Frame(window,padding=20);outer.pack(fill='both',expand=True)
     metrics=ttk.Label(outer,text='停止中',style='Metric.TLabel');metrics.pack(anchor='w',pady=8)
     state=ttk.Label(outer,text='');state.pack(anchor='w')
-    part_panel=ttk.LabelFrame(outer,text='部位ごとの更新間隔');part_panel.pack(fill='x',pady=(6,0))
+    part_panel=ttk.LabelFrame(outer,text='部位ごとの更新速度');part_panel.pack(fill='x',pady=(6,0))
     part_labels={}
     for index,(key,label) in enumerate(PART_LABELS.items()):
         widget=ttk.Label(part_panel,text=label+'：—',font=('Yu Gothic UI',9),width=18)
@@ -555,10 +555,10 @@ def main(test_hook=None, *, demo_avatar=False, recorded_test=False):
                 else:session.start(c);last_error=''
             except Exception as e:messagebox.showerror('再起動できません',str(e))
         def number(kind,key):return f'{statuses[kind][key]:.1f}' if kind in statuses and key in statuses[kind] else '—'
-        metrics.configure(text=f'推論 {number("inference","hz")} Hz    描画 {number("player","renderHz")} fps')
+        metrics.configure(text=f'推論 {number("inference","hz")} fps    描画 {number("player","renderHz")} fps')
         part_status={item['id']:item for item in statuses.get('player',{}).get('parts',[])} if running else {}
         for key,widget in part_labels.items():
-            widget.configure(text=PART_LABELS[key]+'：'+part_interval_text(part_status.get(key,{})))
+            widget.configure(text=PART_LABELS[key]+'：'+part_rate_text(part_status.get(key,{})))
         if 'inference' in statuses and not last_error:state.configure(text=f'処理 {number("inference","busyMs")} ms/観測（入力・上限待機を除く）  /  '+('追跡中' if statuses['inference'].get('tracked') else '検出待ち'))
         elif running and not session.stopping and not last_error:state.configure(text='モーション再生中（推論なし）' if session.infer is None else '起動中 / 新しい推論データを待っています')
         lines=[]
