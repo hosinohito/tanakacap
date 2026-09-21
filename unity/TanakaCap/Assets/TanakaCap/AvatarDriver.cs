@@ -139,6 +139,7 @@ namespace TanakaCap
         }
         float browLeftInner,browLeftOuter,browRightInner,browRightOuter;
         float probeDelta;
+        float poseClock;
         float FrameDelta => probeDelta>0?probeDelta:Time.unscaledDeltaTime;
 
         class Arm
@@ -155,6 +156,8 @@ namespace TanakaCap
             public float requestedTwist;
             public Quaternion handBeforeSolve;
             public Finger[] fingers;
+            public PoseTransition armTransition=new PoseTransition(),palmTransition=new PoseTransition(),fingerTransition=new PoseTransition();
+            public float armSeen=float.NegativeInfinity,palmSeen=float.NegativeInfinity,fingerSeen=float.NegativeInfinity;
         }
 
         class Finger
@@ -415,7 +418,7 @@ namespace TanakaCap
             if(!demo && !videoMode && parts.Owns(current))current=parts.Snapshot(Time.unscaledTime);
             float t = 1-Mathf.Exp(-FrameDelta*16);
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
-            if(!live && !demo){DriveGaze(null,false,FrameDelta);return;} // Only gaze returns to center on loss.
+            if(!live && !demo){DriveArmsWithLoss(new TrackingPacket(),false);DriveGaze(null,false,FrameDelta);return;}
             var p = live ? current : new TrackingPacket();
             if (demo) p = motionDemo ? ProceduralMotion.Sample(Time.time) : new TrackingPacket { tracked=true, faceTracked=true,
                 headYaw=25*Mathf.Sin(Time.time), headRoll=10*Mathf.Sin(Time.time*.6f),
@@ -454,13 +457,7 @@ namespace TanakaCap
             expressions.Begin();
             DriveGaze(p,live,FrameDelta);
 
-            left.handBeforeSolve=left.hand.rotation; right.handBeforeSolve=right.hand.rotation;
-            DriveArm(left,p.leftArmTracked && !p.leftArmHeld,p.leftElbow,p.leftWrist,true,t,p.leftWristInFront,p.leftUpperInFront,p.leftCrossBody);
-            DriveArm(right,p.rightArmTracked && !p.rightArmHeld,p.rightElbow,p.rightWrist,false,t,p.rightWristInFront,p.rightUpperInFront,p.rightCrossBody);
-            DriveHand(left,p.leftHandTracked,p.leftHandForward,p.leftHandNormal,t);
-            DriveHand(right,p.rightHandTracked,p.rightHandForward,p.rightHandNormal,t);
-            if(PartActive("left_fingers",true))DriveFingers(left,p.leftFingerTracked,p.leftFingerFlex);
-            if(PartActive("right_fingers",true))DriveFingers(right,p.rightFingerTracked,p.rightFingerFlex);
+            DriveArmsWithLoss(p,live || demo);
             if(PartActive("mouth",p.faceTracked)) mouth = Mathf.Lerp(mouth,Mathf.Clamp01(p.mouth),faceT);
             if(PartActive("mouth",p.faceTracked)) mouthWidth = Mathf.Lerp(mouthWidth,Mathf.Clamp(p.mouthWidth,-1,1),faceT);
             if(PartActive("mouth",p.faceTracked)) mouthRound = Mathf.Lerp(mouthRound,Mathf.Clamp01(p.mouthRound),faceT);
@@ -873,6 +870,77 @@ namespace TanakaCap
             Debug.Log("TANAKACAP_GAZE_DIRECTIONS_LOSS_DISABLE_OK");
         }
 
+        public bool ArmTransitionActive => left!=null && right!=null &&
+            (left.armTransition.Moving||left.palmTransition.Moving||left.fingerTransition.Moving||
+             right.armTransition.Moving||right.palmTransition.Moving||right.fingerTransition.Moving);
+
+        float Observed(string id,bool valid,ref float fallback)
+        {
+            if(!demo && !videoMode && parts.Owns(current))return poseClock-(Time.unscaledTime-parts.LastObserved(id));
+            if(valid)fallback=poseClock;
+            return fallback;
+        }
+
+        void DriveArmsWithLoss(TrackingPacket p,bool live)
+        {
+            poseClock+=FrameDelta;
+            foreach(bool isLeft in new[]{true,false})
+            {
+                var arm=isLeft?left:right;string side=isLeft?"left":"right";
+                bool armValid=live && (isLeft?p.leftArmTracked&&!p.leftArmHeld:p.rightArmTracked&&!p.rightArmHeld);
+                bool palmValid=live && PartActive(side+"_palm",isLeft?p.leftHandTracked:p.rightHandTracked);
+                var fingerValid=isLeft?p.leftFingerTracked:p.rightFingerTracked;
+                bool fingersValid=live && PartActive(side+"_fingers",fingerValid!=null && Array.Exists(fingerValid,v=>v));
+                arm.handBeforeSolve=arm.hand.rotation;
+                DriveArm(arm,armValid,isLeft?p.leftElbow:p.rightElbow,isLeft?p.leftWrist:p.rightWrist,isLeft,1,
+                    isLeft?p.leftWristInFront:p.rightWristInFront,isLeft?p.leftUpperInFront:p.rightUpperInFront,isLeft?p.leftCrossBody:p.rightCrossBody);
+                DriveHand(arm,palmValid,isLeft?p.leftHandForward:p.rightHandForward,isLeft?p.leftHandNormal:p.rightHandNormal,1);
+                if(fingersValid)DriveFingers(arm,fingerValid,isLeft?p.leftFingerFlex:p.rightFingerFlex);
+
+                // Seated desk pose: upper arms down, elbows slightly forward,
+                // forearms forward and almost level. Use avatar bone lengths.
+                Vector3 upperDirection=new Vector3(isLeft?-.10f:.10f,-1,.08f).normalized;
+                Vector3 lowerDirection=new Vector3(isLeft?.08f:-.08f,-.04f,1).normalized;
+                Quaternion upperBase=transform.rotation*arm.upperRootRest,lowerBase=transform.rotation*arm.lowerRootRest;
+                Quaternion upperDesk=Quaternion.FromToRotation(upperBase*arm.upperDirection,transform.TransformDirection(upperDirection))*upperBase;
+                Quaternion lowerDesk=Quaternion.FromToRotation(lowerBase*arm.lowerDirection,transform.TransformDirection(lowerDirection))*lowerBase;
+                var armTarget=new[]{arm.upper.localRotation,Quaternion.Inverse(arm.upper.rotation)*arm.lowerUntwisted};
+                var armRest=new[]{Quaternion.Inverse(arm.upper.parent.rotation)*upperDesk,Quaternion.Inverse(upperDesk)*lowerDesk};
+                var palmTarget=new[]{arm.hand.localRotation,Quaternion.AngleAxis(arm.twist,Vector3.forward)};
+                Quaternion handDesk=arm.handRest;float deskTwist=0;
+                if(arm.handBasisValid)
+                {
+                    Vector3 axis=lowerDesk*arm.lowerDirection;
+                    Quaternion neutral=lowerDesk*arm.handRest*Quaternion.Inverse(arm.handFrameCorrection);
+                    deskTwist=SelectForearmTwist(0,Vector3.SignedAngle(Vector3.ProjectOnPlane(neutral*Vector3.up,axis),
+                        Vector3.ProjectOnPlane(-transform.up,axis),axis));
+                    Quaternion rolled=Quaternion.AngleAxis(deskTwist,axis)*lowerDesk;
+                    handDesk=Quaternion.Inverse(rolled)*Quaternion.LookRotation(transform.forward,-transform.up)*arm.handFrameCorrection;
+                }
+                var palmRest=new[]{handDesk,Quaternion.AngleAxis(deskTwist,Vector3.forward)};
+                float now=poseClock;
+                var blendedArm=arm.armTransition.Apply(armTarget,armRest,armValid,Observed(side+"_arm",armValid,ref arm.armSeen),now);
+                var blendedPalm=arm.palmTransition.Apply(palmTarget,palmRest,palmValid,Observed(side+"_palm",palmValid,ref arm.palmSeen),now);
+                arm.upper.localRotation=blendedArm[0];
+                arm.lowerUntwisted=arm.upper.rotation*blendedArm[1];
+                arm.twist=Mathf.DeltaAngle(0,blendedPalm[1].eulerAngles.z);
+                arm.lower.rotation=Quaternion.AngleAxis(arm.twist,arm.lowerUntwisted*arm.lowerDirection)*arm.lowerUntwisted;
+                arm.hand.localRotation=blendedPalm[0];
+                if(arm.fingers!=null)
+                {
+                    var targets=new Quaternion[15];var rests=new Quaternion[15];
+                    for(int f=0;f<5;f++)for(int j=0;j<3;j++)
+                    {
+                        var finger=arm.fingers[f];var bone=finger.bones[j];int i=f*3+j;
+                        targets[i]=bone?bone.localRotation:Quaternion.identity;
+                        rests[i]=finger.rest[j]*Quaternion.AngleAxis(f==0?0:(j==1?10:5),finger.axes[j]);
+                    }
+                    var values=arm.fingerTransition.Apply(targets,rests,fingersValid,Observed(side+"_fingers",fingersValid,ref arm.fingerSeen),now);
+                    for(int f=0;f<5;f++)for(int j=0;j<3;j++)if(arm.fingers[f].bones[j])arm.fingers[f].bones[j].localRotation=values[f*3+j];
+                }
+            }
+        }
+
         void DriveArm(Arm arm, bool valid, Vector3 elbow, Vector3 wrist, bool isLeft, float t, bool wristInFront=false, bool upperInFront=false,float crossBody=0)
         {
             if(!valid) return;
@@ -1219,11 +1287,48 @@ namespace TanakaCap
             return result;
         }
 
+        void CheckArmRest()
+        {
+            probeDelta=1f/60;
+            left.armTransition=new PoseTransition();left.palmTransition=new PoseTransition();left.fingerTransition=new PoseTransition();
+            right.armTransition=new PoseTransition();right.palmTransition=new PoseTransition();right.fingerTransition=new PoseTransition();
+            var p=new TrackingPacket {tracked=true,leftArmTracked=true,rightArmTracked=true,
+                leftElbow=new Vector3(-.5f,-.2f,.3f),leftWrist=new Vector3(-.3f,.3f,1),
+                rightElbow=new Vector3(.5f,-.2f,.3f),rightWrist=new Vector3(.3f,.3f,1)};
+            current=p;
+            for(int i=0;i<120;i++)DriveArmsWithLoss(p,true);
+            var initial=left.upper.localRotation;var rightInitial=right.upper.localRotation;
+            p.leftArmTracked=false;
+            for(int i=0;i<20;i++)DriveArmsWithLoss(p,true);
+            if(Quaternion.Angle(initial,left.upper.localRotation)>.05f)throw new Exception("Arm moved before loss delay");
+            for(int i=0;i<80;i++)DriveArmsWithLoss(p,true);
+            var lower=transform.InverseTransformDirection(left.hand.position-left.lower.position).normalized;
+            var palm=left.hand.rotation*Quaternion.Inverse(left.handFrameCorrection);
+            if(Quaternion.Angle(initial,left.upper.localRotation)<10 || lower.z<.9f || Mathf.Abs(lower.y)>.15f ||
+                Vector3.Dot(palm*Vector3.up,-transform.up)<.9f)throw new Exception("Desk pose is not forward, level and palm down");
+            if(Quaternion.Angle(rightInitial,right.upper.localRotation)>.1f)throw new Exception("Missing left arm changed right arm");
+            var resting=left.upper.localRotation;p.leftArmTracked=true;
+            DriveArmsWithLoss(p,true);
+            if(Quaternion.Angle(resting,left.upper.localRotation)>.05f)throw new Exception("Recovery jumped at start");
+            for(int i=0;i<50;i++)DriveArmsWithLoss(p,true);
+            if(Quaternion.Angle(resting,left.upper.localRotation)<10)throw new Exception("Recovery did not follow arm");
+            p.leftArmTracked=p.rightArmTracked=false;
+            for(int i=0;i<100;i++)DriveArmsWithLoss(p,false);
+            lower=transform.InverseTransformDirection(right.hand.position-right.lower.position).normalized;
+            if(lower.z<.9f || Mathf.Abs(lower.y)>.15f)throw new Exception("Whole-stream loss did not reach desk pose");
+            probeDelta=0;
+            Debug.Log("TANAKACAP_ARM_REST_CHECK_OK delay=0.5 rest=1 recovery=0.5 independent=true palmDown=true streamLoss=true");
+        }
+
         bool CheckLossHold()
         {
             var bones=GetComponentsInChildren<Transform>(true);
             var rotations=Array.ConvertAll(bones,b=>b.localRotation);
             var saved=current; float received=lastReceived;
+            var transitions=new[]{left.armTransition,left.palmTransition,left.fingerTransition,right.armTransition,right.palmTransition,right.fingerTransition};
+            var untwisted=new[]{left.lowerUntwisted,right.lowerUntwisted};var twists=new[]{left.twist,right.twist};float clock=poseClock;
+            left.armTransition=new PoseTransition();left.palmTransition=new PoseTransition();left.fingerTransition=new PoseTransition();
+            right.armTransition=new PoseTransition();right.palmTransition=new PoseTransition();right.fingerTransition=new PoseTransition();
             var savedGaze=gazeAngles;
             var savedPosition=transform.position;
             float savedMouth=mouth,savedWidth=mouthWidth,savedRound=mouthRound,savedSmile=mouthSmile,savedLeft=blinkLeft,savedRight=blinkRight;
@@ -1236,7 +1341,7 @@ namespace TanakaCap
                 for(int i=0;i<30;i++) LateUpdate();
                 if(transform.position!=savedPosition)throw new Exception("Avatar position changed during loss");
                 for(int i=0;i<bones.Length;i++)
-                    if(bones[i]!=leftEye && bones[i]!=rightEye && Quaternion.Angle(rotations[i],bones[i].localRotation)>.05f)
+                    if(!bones[i].IsChildOf(left.upper) && !bones[i].IsChildOf(right.upper) && bones[i]!=leftEye && bones[i]!=rightEye && Quaternion.Angle(rotations[i],bones[i].localRotation)>.05f)
                         throw new Exception("Pose changed during loss: "+bones[i].name+" mode="+mode);
                 if(mouth!=savedMouth || mouthWidth!=savedWidth || mouthRound!=savedRound || mouthSmile!=savedSmile || blinkLeft!=savedLeft || blinkRight!=savedRight)
                     throw new Exception("Expression changed during loss");
@@ -1244,6 +1349,10 @@ namespace TanakaCap
                 for(int j=0;j<detail.Length;j++)if(detail[j]!=savedDetail[j])throw new Exception("Detailed face changed during loss");
             }
             current=saved; lastReceived=received;
+            for(int i=0;i<bones.Length;i++)bones[i].localRotation=rotations[i];
+            left.armTransition=transitions[0];left.palmTransition=transitions[1];left.fingerTransition=transitions[2];
+            right.armTransition=transitions[3];right.palmTransition=transitions[4];right.fingerTransition=transitions[5];
+            left.lowerUntwisted=untwisted[0];right.lowerUntwisted=untwisted[1];left.twist=twists[0];right.twist=twists[1];poseClock=clock;
             gazeAngles=savedGaze;DriveGaze(null,false,0);
             return true;
         }
@@ -1633,6 +1742,7 @@ namespace TanakaCap
             Destroy(image); target.Release(); Destroy(target);
             camera.GetComponent<AlphaOutput>().CheckOutput(path,obsMode && !Application.isBatchMode);
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-check")>=0) CheckMotionPaths(path);
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"--arm-rest-check")>=0) CheckArmRest();
             var auditArgs=Environment.GetCommandLineArgs();
             int auditIndex=Array.IndexOf(auditArgs,"--replay-file");
             if(auditIndex>=0 && auditIndex+1<auditArgs.Length) AuditRecording(auditArgs[auditIndex+1],path+".audit.jsonl");

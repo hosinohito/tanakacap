@@ -6,16 +6,16 @@ from test_body3d import body, packet
 from test_face_scale import add_face
 
 
-def test_cache_expires_from_observation_not_repeated_reads_and_recovers():
+def test_cache_has_no_face_timeout_and_recovers():
     cache=ArmScale()
     assert cache.update(None,0) is None
     assert cache.update(.002,.1)==.002
     assert cache.update(None,.5)==.002
     assert cache.update(None,1.1)==.002
-    assert cache.update(None,1.11) is None
-    assert cache.update(.004,1.2)==.002
-    assert cache.update(.004,1.3)==pytest.approx(.003)
-    assert cache.update(.004,1.41)==.004
+    assert cache.update(None,120)==.002
+    assert cache.update(.004,120.2)==.002
+    assert cache.update(.004,120.3)==pytest.approx(.003)
+    assert cache.update(.004,120.41)==.004
     assert cache.source=='face'
     cache.reset()
     assert cache.update(None,1.42) is None
@@ -46,8 +46,8 @@ def test_face_missing_arms_move_without_learning_or_shoulder_scale_fallback():
     assert tracker.diagnostics['arm_geometry_scale']==scale
     for i in range(48,64):
         p=tracker.update(packet(),xy,s,z,ds,now=i*.05,image_size=(640,480))
-    assert not p['leftArmTracked'] or p['leftArmHeld']
-    assert tracker.diagnostics['arm_scale_source']=='unavailable'
+    assert p['leftArmTracked'] and not p['leftArmHeld']
+    assert tracker.diagnostics['arm_scale_source']=='held_face'
 
 
 def test_missing_joint_and_unlearned_arm_do_not_use_cached_scale():
@@ -76,3 +76,14 @@ def test_person_loss_clears_cache_and_recovery_does_not_learn_lengths():
     p=tracker.update(packet(),xy,s,z,ds,now=2.15,image_size=(640,480))
     assert tracker.diagnostics['arm_geometry_scale'] is None
     assert not p['leftArmTracked'] or p['leftArmHeld']
+
+
+def test_missing_opposite_shoulder_does_not_expire_visible_arm():
+    tracker,xy,s,z,ds,_=ready_tracker()
+    lengths=tracker.automatic_lengths()
+    s[23:91]=0;s[6]=0
+    for i in range(40,140):
+        p=tracker.update(packet(),xy,s,z,ds,now=i*.05,image_size=(640,480))
+    assert p['leftArmTracked'] and not p['leftArmHeld']
+    assert not p['rightArmTracked'] or p['rightArmHeld']
+    assert tracker.automatic_lengths()==lengths

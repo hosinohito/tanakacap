@@ -36,3 +36,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 `audit_eyelids.py` はUIで選択した保存動画を全部ONで再推論し、瞼のフィルター前後の値を集計します。カメラ不使用・実写表示なし・Playerへ送信なし。`--video`、`--frames`（既定900）で範囲を指定できます。結果は `results/eyelid-audit/`。
 
 `check_arm_scale.py` は保存済みランドマークを変更前Git版と現在版へ同時入力して④の腕更新を比較します。`--source`でframes.jsonl、`--baseline`で比較コミットを指定できます。画像表示/カメラ起動なし、結果はresults/arm-scale。
+
+`../smoke_unity.py --arm-rest-check` は実Playerのアバターで、欠測待機・机上姿勢・左右独立・復帰・全通信停止を検査します。人工入力のみ、実カメラ不使用。アバター画像と検査ログを保存します。

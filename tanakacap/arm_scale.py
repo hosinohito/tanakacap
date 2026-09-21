@@ -1,4 +1,4 @@
-"""Briefly preserve trusted face geometry for arms without learning from fallback."""
+"""Preserve trusted face geometry while body tracking remains continuous."""
 class ArmScale:
     def __init__(self):
         self.reset()
@@ -14,7 +14,7 @@ class ArmScale:
         if face_scale is None:
             self.missing = True
             self.recovery = None
-            if self.last_valid is not None and 0 <= now-self.last_valid <= 1.0:
+            if self.last_valid is not None and now >= self.last_valid:
                 self.source = 'held_face'
                 return self.value
             self.source = 'unavailable'

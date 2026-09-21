@@ -132,6 +132,7 @@ namespace TanakaCap
         {
             var slot=slots[id];return slot.state=="valid"&&now-slot.observed<.3f;
         }
+        public float LastObserved(string id)=>slots[id].observed;
         public TrackingPacket Snapshot(float now)
         {
             // Values persist; only independently fresh parts are applied by the driver.

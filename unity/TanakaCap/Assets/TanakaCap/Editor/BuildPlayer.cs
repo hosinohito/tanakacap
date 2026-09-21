@@ -140,6 +140,7 @@ namespace TanakaCap.Editor
         public static void Build()
         {
             TrackingPartsChecks.Run();
+            PoseTransitionChecks.Run();
             FaceExpressionChecks.Run();
             CheckArmSolver();
             Prepare();

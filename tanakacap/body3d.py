@@ -118,11 +118,9 @@ class BodyRetarget:
         if shoulders_visible and span>=30 and abs(dz)<=.5:
             shoulder_scale=np.sqrt(max(.36**2-min(abs(dz),.33)**2,.13**2))/span
         face_scale=self.face_scale.update(xy,scores,shoulder_scale,now)
-        # A person/shoulder tracking interruption invalidates the temporary
-        # cache. This is continuity guarding, not identity recognition.
-        if not shoulders_visible:
-            self.arm_scale.reset()
-        arm_scale=self.arm_scale.update(face_scale,now) if shoulders_visible else None
+        # A missing opposite shoulder must not stop an otherwise observed arm.
+        # Whole-person loss and interrupted input still clear the cache above.
+        arm_scale=self.arm_scale.update(face_scale,now)
         scale_source='cached'
         if face_scale is not None:
             self.scale=face_scale
@@ -136,6 +134,10 @@ class BodyRetarget:
             self.scale=shoulder_scale*self.shoulder_scale_ratio
             self.scale_time=now
             scale_source='shoulder_fallback'
+        elif arm_scale is not None and self.arm_depth_mode=='front_projection':
+            self.scale=arm_scale
+            self.scale_time=now
+            scale_source='held_face'
         self.diagnostics['distance_source']=self.face_scale.status
         self.diagnostics['face_scale']=self.face_scale.details
         self.diagnostics['geometry_scale_source']=scale_source

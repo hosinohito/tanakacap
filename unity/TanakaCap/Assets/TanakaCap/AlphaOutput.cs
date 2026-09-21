@@ -137,7 +137,7 @@ namespace TanakaCap
                     if(!syncDriver)syncDriver=FindObjectOfType<AvatarDriver>();
                     long sequence=syncDriver?syncDriver.TrackingFrameRevision:0;
                     bool motion=Array.IndexOf(Environment.GetCommandLineArgs(),"--motion-demo")>=0;
-                    if(!motion && sequence==lastPacket && Time.unscaledTime-lastOutput<.1f)return;
+                    if(!motion && !(syncDriver && syncDriver.ArmTransitionActive) && sequence==lastPacket && Time.unscaledTime-lastOutput<.1f)return;
                     lastPacket=sequence;
                 }
                 var start=System.Diagnostics.Stopwatch.GetTimestamp();
