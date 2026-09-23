@@ -13,13 +13,15 @@ def main():
     p.add_argument('--reference-report',type=Path,required=True)
     p.add_argument('--before-revision',required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--before-label',default='Before')
+    p.add_argument('--after-label',default='Current')
     a=p.parse_args()
     source=subprocess.check_output(['git','-c',f'safe.directory={ROOT.as_posix()}','show',f'{a.before_revision}:tanakacap/fingers.py'],cwd=ROOT,text=True)
     namespace={'__name__':'tanakacap.fingers_before','__package__':'tanakacap'}
     exec(compile(source,'fingers_before.py','exec'),namespace)
     ref=json.loads(a.reference_report.read_text(encoding='utf-8'))
     settings=ref['settings'];block=settings['observation_block'];stride=settings['observation_stride']
-    trackers={'before':namespace['FingerTracker'](block,stride),'left-sign-reversed':FingerTracker(block,stride)}
+    trackers={'before':namespace['FingerTracker'](block,stride),'after':FingerTracker(block,stride)}
     a.output.mkdir(parents=True,exist_ok=False)
     streams={}
     for name in trackers:
@@ -38,7 +40,7 @@ def main():
                     tracker.update(packet,xyz,scores,ds,now)
                 packets[name]=packet
                 streams[name].write(json.dumps(dict(packet=packet,dt=1/30 if previous is None else now-previous))+'\n')
-            before=packets['before'];after=packets['left-sign-reversed']
+            before=packets['before'];after=packets['after']
             assert before==row['packet'],f'Baseline reproduction differs at {row["frame"]}'
             for key,value in before.items():
                 if key!='leftFingerFlex':assert after[key]==value,(row['frame'],key)
@@ -46,7 +48,7 @@ def main():
     finally:
         for stream in streams.values():stream.close()
     args=ref['variants']['original']['player_args']
-    report=dict(status='complete',variants={n:dict(label=('Before' if n=='before' else 'Left finger sign reversed'),player_args=args) for n in trackers},
+    report=dict(status='complete',variants={n:dict(label=(a.before_label if n=='before' else a.after_label),player_args=args) for n in trackers},
         scope='Same cached original FP16 recording observations and timestamps. Only left signed finger flexion differs; no raw video displayed. Avatar quality unverified.',
         source=str(a.records),source_sha256=sha256(a.records),before_revision=a.before_revision,frames=count,changed_frames=changed,baseline_exact=True,other_channels_exact=True)
     (a.output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')

@@ -2701,3 +2701,8 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-23：左指だけを絶対値化
 
 ユーザー指定で左符号反転を絶対値に置換。右手はそのままという追加指定を適用。角度を絶対値化してから既存の観測ゲート・不確実帯へ渡す（親指CMCは固定0、親指専用の帯・上限順序は維持）。指・左右独立・実写ガード18 tests成功。全保存4本7,842フレームの再推論済み観測を0045f0fと比較し、右指の追跡フラグと角度が全件完全一致。左変化は順に3419/0/567/805フレーム。結果results/finger-left-absolute-20260923/report.json。実写表示・再推論・Playerビルド・動画生成・公開なし。通常の録画UIで新コードを確認でき、起動方法は変更なし。見た目の評価は未完了。
+
+
+## 2026-09-23：左指絶対値化のアバター動画
+
+最新9/23録画の保存済みFP16観測と以前の符号反転版packetを結合し、0045f0fで旧packet完全再現、左指角度以外完全一致を検査。901フレーム中804フレームで左指に変化。入力results/finger-absolute-video-20260923/、動画results/avatar-videos/finger-absolute-20260923/。before.mp4=旧符号反転、after.mp4=左のみ絶対値化、side-by-side.mp4=左右比較。各901フレーム・30fps・約30秒、改変済みHAOLAN/auto-custom。単独・比較ともFFmpeg全フレーム復号成功。見た目の判定はユーザー待ち。実写表示・再推論・Playerビルド・公開なし。compare_finger_revision.pyの出力名をbefore/afterへ整理し、表示ラベルを引数化。
