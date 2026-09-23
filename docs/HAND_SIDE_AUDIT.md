@@ -69,3 +69,24 @@ Unityは、両腕を固定して顔の両側へ手を上げ、基準／右ロー
 撮影後の数値生成は`tools/compare_precision.py --take <新しい録画フォルダー> --output <未使用の比較フォルダー> --name recorded --mode graph-fp16`を使用する。今回、記録に実際のbody_xy/body_scores/body_depth_scores、画像サイズ、body_diagnosticsを追加したため、次の録画では欠測理由とZの有限判定を同じ入力で追跡できる。推論・補正の動作は変えていない。撮影開始はユーザー操作で行う。
 
 撮影準備の検査：関連31 tests成功。既存録画40観測で追加した点群・Z振幅・欠測理由・画像サイズの保存とcompleteレポートを確認（results/hand-sides-recording-check）。デスクトップの撮影batを再生成し、face-headプロファイル・実写表示許可なしを確認。カメラは起動していない。
+
+
+## 2026-09-23の再現用録画
+
+`results/comparison-takes/20260923T064052-167149Z` はcomplete、1280×720、30fps、901観測、約30秒。ハッシュ検査後、全身ON/CUDA graph-fp16で再推論。実写は表示していない。数値・診断・動画は `results/hand-sides-new-recording-20260923/`。
+
+- `recorded/frames.jsonl`：モデル出力、マスク後入力、Z振幅、欠測理由、送信値。今回Z振幅の代用は0件。
+- `fingers.json`：左の有効指観測は親指から684/676/620/613/627、右674/642/641/652/645（各901中）。左の主な拒否理由は関節点の信頼度不足。左指が常時無効という現象ではない。有効率は精度を表さない。
+- 左の生の掌法線が1観測で100度以上変わる時刻は0.224、8.656、9.024、16.719、19.920秒。推論点から求める幾何の段階で起きており、Unityだけで発生した回転ではない。ただし実際の左右独立動作の時刻は未指定、これだけでモデル誤推定と断定しない。
+- 指定の改変済みHAOLANの実骨監査 `avatar.png.audit.jsonl` は901観測成功。約10〜18秒の左前腕は+160度、要求約+277〜285度。同じ向きの約-83〜-75度が可動範囲内なのに、現在の表示角に近い360度別表現を選んでからclampするため上限から戻れない。約9〜20秒で掌方向誤差が大きくなる。`DriveHand` の `UnwrapTwist` / `ResolveArmTwist` の組み合わせを次の修正候補とする。可動限界±160度自体の撤廃はしない。
+- 初期姿勢の影響を切り分けるため、通常のオフライン描画でも再生し同じ張り付きを確認。`avatar-replay.mp4` は実写なし、指定アバター/auto-custom、901フレーム・30fps。対応JSONに実骨のねじりを保存。これは推論レイテンシ比較ではない。
+
+左右の共有状態が原因という証拠は依然ない。指については無効観測と有効だが小さい屈曲を分けて調べる。信頼度の閾値や製品コードは今回変更していない。ユーザーから右手だけを回した時間帯を聞き、点群・法線との対応を確認する。
+
+再実行例：
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 tools/smoke_unity.py --avatar builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap --replay-file results/hand-sides-new-recording-20260923/recorded/replay.jsonl --output results/hand-sides-new-recording-20260923/next.png
+```
+
+ローカルUIの録画とアバターをこの組み合わせに設定。以前の個人設定は結果フォルダーの `ui-settings-before.json` に保存。別PCで同じ検証をする場合は上記takeフォルダー全体、指定 `avatar.tcap`、数値再生なら `recorded/replay.jsonl`、更新した `tools/smoke_unity.py` をコピーする。アプリ本体は未変更。

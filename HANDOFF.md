@@ -12,7 +12,7 @@
 
 ## 現在の作業・公開状態
 
-- 現在の課題は右手ロール時に左手もロールする／左指が動かない症状。指定の改変済みHAOLANで、左右の人工入力・開発/配布Player・既存録画を調査済み。状態共有は未検出、実使用の症状は未再現。次はユーザーの30秒再現録画を待つ。[調査・次の切り分け](docs/HAND_SIDE_AUDIT.md)。製品コードは変更していない。公開・ビルド指示はない。
+- 現在の課題は右手ロール時に左手もロールする／左指が動かない症状。指定の改変済みHAOLANで、左右の人工入力・開発/配布Player・既存録画を調査済み。状態共有は未検出。新録画901観測で左掌の生法線反転と、Unityの左前腕が+160度へ張り付く問題を確認。次は360度別表現の選択と可動制限の組み合わせを見直す。左右連動の直接原因はまだ未確定。[調査・次の切り分け](docs/HAND_SIDE_AUDIT.md)。製品コードは変更していない。公開・ビルド指示はない。
 - READMEは公開入口、DEVELOPMENTは開発手順、HANDOFFは現在状態、PROGRESSは履歴に分離。別のCodexが再開できる情報を残すことが必須。
 - 配布済み最新版は[v0.1.4](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.4)。ローカル成果物は`builds/releases/0.1.4/TanakaCap/`。通常設定で作成し、個人設定・実写・アバターは同梱していない。Exporterはv0.1.3から変更なし。
 - リポジトリは`hosinohito/tanakacap`。この環境の作業ブランチ`master`から公開先`main`へプッシュする。履歴から旧アバターシーンを除去済み。再度の履歴書き換えは不要。[公開データ監査](docs/RELEASE_PRIVACY.md)を維持する。
@@ -34,7 +34,7 @@
 
 ## 未解決・保留と次の確認
 
-- **左右の手の連動・左指**：撮影用はデスクトップの`tanakacap-face-capture.bat`（30秒・案内なし・実写非表示）。ユーザーが撮影完了したら最新のcompleteなtakeを確認し、症状が出る録画で、生の掌法線→送信値→実骨のどこから左手が動くかを確認する。指の欠測理由も同時に照合。人工入力の成功を症状の解決と扱わない。
+- **左右の手の連動・左指**：撮影用はデスクトップの`tanakacap-face-capture.bat`（30秒・案内なし・実写非表示）。最新takeは `results/comparison-takes/20260923T064052-167149Z`、解析・アバター動画は `results/hand-sides-new-recording-20260923/`。検証UIの入力/アバターも変更済み。左右独立動作の時刻はユーザーが実写を見て確認する予定で、実写とアバター動画のパスを案内済み。左前腕の境界への張り付きは通常再生でも確認済み、指は常時停止ではなく信頼度不足等による欠測を含む。人工入力の成功を症状の解決と扱わない。
 - **肘のねじれの見た目**：新方式の人工入力・録画比較は完了したが、改善の最終評価はユーザー待ち。通常±160度を維持し、制限を狭める／無制限にする変更を独断で採用しない。
 - **肩の過抑制**：前傾・接近時の抑制とともに胴体ひねりも小さくなった区間があり、見た目の確認が残る。
 - **指の振動、欠測・復帰**：人工入力と動作検証は済んでいるが、実人物の品質評価は未完了。最新の指試験に使った録画短区間には有効な指観測がなかった。
@@ -51,7 +51,7 @@
 | --- | --- |
 | 通常の検証アバター | `builds/player/avatars/haolan.tcap`。通常アバターにauto-customを適用。廃止済みデモ専用キーは使わない |
 | 今回の症状のアバター | `builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap`（改変済みHAOLAN）。人工入力の調査結果は`results/hand-sides-modified-20260923/`、配布版は`results/hand-sides-release-20260923/` |
-| 現在の録画 | `results/comparison-takes/20260921T044937-004325Z/camera.avi` |
+| 現在の録画 | `results/comparison-takes/20260923T064052-167149Z/camera.avi` |
 | 肘の4条件・6本比較 | `results/avatar-videos/arm-rotation-coupled-final/` |
 | 掌・指の頭接触比較 | `results/avatar-videos/hand-head-contact/` |
 | 前方補正の単独比較 | `results/avatar-videos/arm-corrections-final/` |

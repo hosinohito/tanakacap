@@ -14,6 +14,7 @@ from tanakacap.partial_tracking import LocalSender
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--avatar",type=Path,help="Avatar package for the actual-bone audit")
     parser.add_argument('--motion-check',action='store_true',help='Also check actual bone rotation paths with synthetic trajectories')
     parser.add_argument('--arm-rest-check',action='store_true',help='Check loss/recovery easing and desk pose on the actual avatar')
     parser.add_argument('--expression-mode',choices=['existing','auto-custom'],default='auto-custom')
@@ -47,6 +48,7 @@ def main():
         probe.bind(('127.0.0.1',0))
         test_port=probe.getsockname()[1]
     render_args=['--expression-mode',args.expression_mode]
+    if args.avatar:render_args += ["--avatar",str(args.avatar.resolve())]
     if args.arm_rest_check:render_args+=['--arm-rest-check']
     for key in ('mouth_corner_gamma','mouth_open_smile_suppression','mouth_corner_emphasis'):
         value=getattr(args,key)
