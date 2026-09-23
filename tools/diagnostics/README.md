@@ -58,3 +58,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 指の実装版比較：`compare_finger_revision.py --records <保存済み手観測frames.jsonl> --reference-report <compare_hand_mirrorのreport.json> --before-revision <Git版> --output <新規フォルダー>`。比較前のpacket完全再現と左指以外の一致を検査し、render_comparison_videos.py用の入力を生成する。実写を表示せず、推論も再実行しない。
 
 - `audit_finger_signs.py`：旧Git版の指計算へ観測フックを追加し、保存packetとの一致を検査してから正値制限前の角度分布を指・関節別に集計。引数・結果の意味は[指の監査](../../docs/HAND_SIDE_AUDIT.md#左指ごと関節ごとの元の符号2026-09-23)。
+
+- `audit_all_take_finger_signs.py --output <新規フォルダー>`：全保存元録画を共通FP16設定で再推論し、反転前の指計算を関節別に監査。入力は`--takes`で指定、既定results/comparison-takes。`audit_finger_signs.py`を呼び出して計測フックによる出力不変も確認。有効観測なしは判定不能として保存。実写表示や新規撮影なし。

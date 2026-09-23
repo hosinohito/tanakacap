@@ -45,6 +45,9 @@ def main():
         report['fingers'][side] = {}
         for finger, name in enumerate(('thumb', 'index', 'middle', 'ring', 'little')):
             values = np.asarray([s['angles'] for s in samples if s['side']==side and s['finger']==finger])
+            if not len(values):
+                report['fingers'][side][name] = {'status': 'no_valid_observations', 'n': 0}
+                continue
             joints = {}
             for j, joint in enumerate(('CMC', 'MCP', 'IP') if finger==0 else ('MCP', 'PIP', 'DIP')):
                 if finger==0 and j==0: continue
