@@ -50,7 +50,7 @@ def run(args):
     for n in names:
         folder=args.output/n;folder.mkdir();streams[n]=(folder/"frames.jsonl").open("w")
         replays[n]=(folder/"replay.jsonl").open("w")
-    model=SimCCModel("rtmw3d-x-384",None,"graph-fp16",preprocess_mode=settings["preprocess_mode"])
+    model=SimCCModel("rtmw3d-x-384",None,args.mode,preprocess_mode=settings["preprocess_mode"])
     report=dict(status="running",source=str(args.take),video_sha256=meta["video_sha256"],
         records_sha256=sha256(args.records),model=model.identity,settings=settings,
         scope="Same frames, recorded ROI and face-derived scale. Mirrored image and reflected ROI; hands unmirrored and swapped, Z not negated. Face/arms fixed. Z/XY hybrid conditions are diagnostic only. No raw images saved or displayed; no accuracy ground truth.")
@@ -101,4 +101,5 @@ if __name__=="__main__":
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--take",type=Path,required=True);p.add_argument("--records",type=Path,required=True)
     p.add_argument("--output",type=Path,required=True);p.add_argument("--limit",type=int)
+    p.add_argument("--mode",choices=("graph-fp16","graph"),default="graph-fp16",help="CUDA graph precision: graph is original FP32 ONNX")
     run(p.parse_args())
