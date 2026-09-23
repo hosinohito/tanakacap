@@ -181,3 +181,13 @@ $taskHandVideoBat = Join-Path $taskDesktop 'tanakacap-compare-hand-head.bat'
 $taskArmRotationVideos = Join-Path $taskRoot 'results\avatar-videos\arm-rotation-coupled-final'
 $taskArmRotationBat = Join-Path $taskDesktop 'tanakacap-compare-arm-rotation.bat'
 [IO.File]::WriteAllText($taskArmRotationBat,"@echo off`r`nstart `"`" `"$taskArmRotationVideos`"`r`n",[Text.Encoding]::Default)
+
+# Numeric hand diagnostics: camera access starts only when the user launches its BAT.
+$taskHandScript=Join-Path $taskRoot 'tools\diagnostics\realtime_hands.py'
+$taskHandPython=Join-Path $taskRoot '.venv\Scripts\python.exe'
+foreach ($taskHandSource in @('video','camera')) {
+    $taskHandBat=Join-Path $taskDesktop ("tanakacap-hands-$taskHandSource.bat")
+    $taskHandBody="@echo off`r`ncd /d `"$taskRoot`"`r`n`"$taskHandPython`" -X utf8 `"$taskHandScript`" --source $taskHandSource`r`npause`r`n"
+    [IO.File]::WriteAllText($taskHandBat,$taskHandBody,[Text.Encoding]::Default)
+    Write-Output $taskHandBat
+}

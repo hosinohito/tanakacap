@@ -252,6 +252,7 @@ namespace TanakaCap
         {
             int renderFps = 60;
             var renderArgs = Environment.GetCommandLineArgs();
+            InitializeHandTrace(renderArgs);
             // Sync output is packet-driven in AlphaOutput. Keep the event loop responsive
             // without inheriting the user's previous fixed/custom output rate.
             if(Array.IndexOf(renderArgs,"--render-sync")>=0)renderFps=240;
@@ -458,7 +459,7 @@ namespace TanakaCap
             if(!demo && !videoMode && parts.Owns(current))current=parts.Snapshot(Time.unscaledTime);
             float t = 1-Mathf.Exp(-FrameDelta*16);
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
-            if(!live && !demo){DriveArmsWithLoss(new TrackingPacket(),false);DriveGaze(null,false,FrameDelta);return;}
+            if(!live && !demo){DriveArmsWithLoss(new TrackingPacket(),false);DriveGaze(null,false,FrameDelta);TraceHands(false);return;}
             var p = live ? current : new TrackingPacket();
             if (demo) p = motionDemo ? ProceduralMotion.Sample(Time.time) : new TrackingPacket { tracked=true, faceTracked=true,
                 headYaw=25*Mathf.Sin(Time.time), headRoll=10*Mathf.Sin(Time.time*.6f),
@@ -498,6 +499,7 @@ namespace TanakaCap
             DriveGaze(p,live,FrameDelta);
 
             DriveArmsWithLoss(p,live || demo);
+            TraceHands(live || demo);
             if(PartActive("mouth",p.faceTracked)) mouth = Mathf.Lerp(mouth,Mathf.Clamp01(p.mouth),faceT);
             if(PartActive("mouth",p.faceTracked)) mouthWidth = Mathf.Lerp(mouthWidth,Mathf.Clamp(p.mouthWidth,-1,1),faceT);
             if(PartActive("mouth",p.faceTracked)) mouthRound = Mathf.Lerp(mouthRound,Mathf.Clamp01(p.mouthRound),faceT);
@@ -1318,7 +1320,7 @@ namespace TanakaCap
         {
             obsMode=enabled;
         }
-        void OnDestroy() { receiver?.Close();foreach(var mesh in expressionClones)if(mesh)Destroy(mesh); }
+        void OnDestroy() { handTrace?.Dispose();receiver?.Close();foreach(var mesh in expressionClones)if(mesh)Destroy(mesh); }
 
         static float[] FingerAngles(Arm arm)
         {

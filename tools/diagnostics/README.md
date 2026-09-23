@@ -41,3 +41,6 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 
 
 左右の手の混線・指の停止は`audit_hand_sides.py`で人工入力と保存済み数値を検査する。カメラは使用せず、指定したアバターと既存Playerを読み込む。[手順・検証範囲](../../docs/HAND_SIDE_AUDIT.md)。
+
+
+手の実時間診断：`realtime_hands.py --source video` またはユーザー操作の `--source camera`。保存UI設定を読み、実写なしで点群・UDP・実骨を記録。`summarize_realtime_hands.py <結果フォルダー>` で有効な掌/指の送受信値を照合。[手順と限界](../../docs/HAND_SIDE_AUDIT.md#6秒15秒の照合と実時間診断)。

@@ -183,3 +183,8 @@ pytestは`tests/`を収集し、Windowsの一時フォルダーを`results/pytes
 文書の役割は[AGENTS](../AGENTS.md)に従う。READMEは公開入口、この文書は開発手順、機能別仕様書は現在の設計、[PROGRESS](PROGRESS.md)は履歴、[HANDOFF](../HANDOFF.md)は再開状態を担当する。手順を変えたら担当文書も同時に更新し、同じ完了報告を各文書へ複製しない。
 
 別のCodexインスタンスで再開するときも、会話履歴を前提にしない。AGENTS → HANDOFF冒頭 → 関連仕様 → PROGRESS末尾の順に読み、採用済み・保留・撤回済みと、実装／検証／見た目確認の到達点を区別する。作業終了時は次の作業・検証方法・必要ファイルの場所をHANDOFFへ残す。
+
+
+### 手のリアルタイム診断
+
+開発Playerをビルドし、`tools/update-desktop-launcher.ps1` で生成したデスクトップ `tanakacap-tools/tanakacap-hands-video.bat`（保存録画）または `tanakacap-hands-camera.bat`（実カメラ・ユーザー操作）を使う。全身ON/auto-custom、部位別通信と実骨ログを保存する。SPACE/Qは黒いコンソールで操作。[ログ・検査方法](HAND_SIDE_AUDIT.md#6秒15秒の照合と実時間診断)。別PCの開発環境へは `builds/player/` 全体、`tools/diagnostics/realtime_hands.py`、`tools/diagnostics/summarize_realtime_hands.py`、`tools/update-desktop-launcher.ps1` を同じ配置へコピーし、そのPCでランチャーを再生成。アバターと動画パスはそのPCのUIで選び直す。Exporter/モデルの更新は不要。

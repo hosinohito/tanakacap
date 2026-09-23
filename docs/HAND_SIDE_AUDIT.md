@@ -90,3 +90,23 @@ Unityは、両腕を固定して顔の両側へ手を上げ、基準／右ロー
 ```
 
 ローカルUIの録画とアバターをこの組み合わせに設定。以前の個人設定は結果フォルダーの `ui-settings-before.json` に保存。別PCで同じ検証をする場合は上記takeフォルダー全体、指定 `avatar.tcap`、数値再生なら `recorded/replay.jsonl`、更新した `tools/smoke_unity.py` をコピーする。アプリ本体は未変更。
+
+
+## 6秒・15秒の照合と実時間診断
+
+ユーザー指定の右手だけを回す区間は6秒と15秒。各±0.5秒における生の掌法線の最大角距離は、左21.0/27.9度、右137.9/111.9度。平滑化後は左16.3/23.9度、右132.4/76.5度。左の推定揺れは存在するが、右回転の同量コピーではない。
+
+`tools/diagnostics/realtime_hands.py` は保存UI設定から通常の推論コマンドとPlayerを起動し、全身ON・auto-customで記録。`--source video` は動画FPSを上限に再推論し、通常の部位別UDP経路を通す。`--source camera` は保存カメラ設定を使いユーザーが開始する。901観測で終了、黒いコンソールでSPACEを押すと症状の時刻を記録、Qで終了。実写は保存・表示しない。数値ランドマーク記録の追加処理と中継ログの負荷を含むため、通常動作と同一負荷とは扱わない。
+
+Playerの明示引数 `--hand-trace <新規JSONLパス>` のみで、各描画フレームの受信済み目標、部位別元フレーム/状態/経過時間、実際の掌基準・前腕ねじり・指角度を記録する。通常起動では無効。起動時刻の異なるPython/Unity間は部位別frameIdで照合する。カメラの欠落フレームを単純なframe/30で動画時刻へ変換しない。
+
+実時間検証は `results/hand-realtime/20260923T065613-282164Z/`。901推論、2703UDP、2037描画記録。12,138個の有効な掌/指フィールドを部位の元フレーム番号で照合し、不一致0（許容1e-4、最大3.79e-6）。6秒付近の実際の左掌変動約16.1度、右131.8度。15秒付近は左約21.7度、右68.4度、左前腕は+160度に固定。通常経路でも境界張り付きを再現した。左指の実角度も非ゼロであり、完全停止ではない。録画での成功を実カメラの症状解決とは扱わない。
+
+フォルダーには `wire.jsonl`（中継前に受けた部位別データ）、`player-hands.jsonl`（実骨/受信）、`status.jsonl`、`markers.jsonl`、`session.json` を保存。`session.json`の `inference_results` が元点群・欠測理由の `frames.jsonl` のフォルダー。詳細な推論ログはそちらにあり、実写は含まれない。
+
+```powershell
+.\.venv\Scripts\python.exe -X utf8 tools/diagnostics/realtime_hands.py --source video --headless
+.\.venv\Scripts\python.exe -X utf8 tools/diagnostics/summarize_realtime_hands.py results/hand-realtime/20260923T065613-282164Z
+```
+
+カメラ試験はまだ実行していない。デスクトップ `tanakacap-tools/tanakacap-hands-camera.bat` をユーザーが起動する。録画版は同じ場所の `tanakacap-hands-video.bat`。Playerのビルド成功、関連Python14 tests成功。診断無効の左右人工入力5条件も成功（results/hand-sides-trace-build-20260923）。反対手への最大角変化0.003度未満、左右の指屈曲はそれぞれ約65度。
