@@ -1,6 +1,6 @@
 # 現在の引き継ぎ
 
-更新：2026-09-23。会話履歴なしで再開するための現在状態。過去の完了報告はここへ積み重ねない。
+更新：2026-09-24。会話履歴なしで再開するための現在状態。過去の完了報告はここへ積み重ねない。
 
 ## 再開の順序
 
@@ -55,7 +55,8 @@
 | --- | --- |
 | 通常の検証アバター | `builds/player/avatars/haolan.tcap`。通常アバターにauto-customを適用。廃止済みデモ専用キーは使わない |
 | 今回の症状のアバター | `builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap`（改変済みHAOLAN）。人工入力の調査結果は`results/hand-sides-modified-20260923/`、配布版は`results/hand-sides-release-20260923/` |
-| 円周ヨー＋可変追従の最新動画 | `results/avatar-videos/head-yaw-circle-20260923/after.mp4`。比較は同階層`side-by-side.mp4`、左=旧比率ヨー＋固定追従、右=円周ヨー＋可変追従。両手はどちらも絶対値化、改変済みHAOLAN/auto-custom、901フレーム約30秒。入力は`results/head-yaw-video-20260923/` |
+| 円周ヨー・ひとつ前の撮影の動画 | `results/avatar-videos/head-yaw-previous-full-20260924/after.mp4`。9/21撮影の全901フレーム約30秒。同階層`side-by-side.mp4`は左=旧ヨー＋固定、右=円周ヨー＋可変。入力は`results/head-yaw-previous-full-20260924/`。`previous-take`名の旧出力は40フレームの試行なので使わない |
+| 円周ヨー＋可変追従の9/23撮影動画 | `results/avatar-videos/head-yaw-circle-20260923/after.mp4`。比較は同階層`side-by-side.mp4`、左=旧比率ヨー＋固定追従、右=円周ヨー＋可変追従。両手はどちらも絶対値化、改変済みHAOLAN/auto-custom、901フレーム約30秒。入力は`results/head-yaw-video-20260923/` |
 | 左のみ絶対値化時点の動画 | `results/avatar-videos/finger-absolute-20260923/after.mp4`。比較は同階層`side-by-side.mp4`、左=旧符号反転、右=絶対値化。最新録画901フレーム約30秒、改変済みHAOLAN/auto-custom。入力と数値検証は`results/finger-absolute-video-20260923/` |
 | 旧・左指符号反転の比較動画 | `results/avatar-videos/finger-sign-20260923/side-by-side.mp4`。左画面=変更前、右画面=旧左指符号反転。現在の絶対値化の動画ではない。数値と再生入力は`results/finger-sign-20260923/`。最新録画・改変済みHAOLAN/auto-custom。掌XY案は将来課題として未実装 |
 | 入力左右反転の比較動画 | `results/avatar-videos/hand-mirror-20260923/side-by-side.mp4`。左画面=元入力、右画面=反転推論・左右復元。数値は `results/hand-mirror-corrected-20260923/summary.json` |

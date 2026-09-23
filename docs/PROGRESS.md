@@ -2723,3 +2723,8 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-23：円周ヨーと可変追従の比較動画
 
 ユーザーが円周モデルの解釈を承認し動画作成を指示。最新録画の保存済み顔/手観測でcompare_head_yaw.pyを実行し、c8bfb61の旧比率ヨー＋固定追従と現在の円周ヨー＋可変追従を比較。両手の指はどちらも現在の絶対値化、頭以外のpacket全件一致。Unity既存実装では表情の補間率も頭の追従率を共有するため、表情の追従にも差が出る可能性を比較scopeへ明記。入力results/head-yaw-video-20260923/、動画results/avatar-videos/head-yaw-circle-20260923/。before/after各901フレーム・30fps・約30秒、side-by-sideと単独版すべてFFmpeg全フレーム復号成功。改変済みHAOLAN/auto-custom。表示ガード8 tests成功。実写表示・新規推論・Playerビルド・公開なし。見た目はユーザー待ち。
+
+
+## 2026-09-24：ひとつ前の9/21撮影で円周ヨー動画
+
+ユーザー指定で9/21 13:49の録画（20260921T044937-004325Z）を使用。最初に選んだhand-sides-recording-checkは冒頭40フレームのみだったため、配布せず全編で再作成。arm-corrections/recordedの901フレームの顔観測・保存packetと、finger-sign-all-takes-20260923-v2の同じ撮影の手観測を使用。動画ハッシュ・撮影時計・フレーム数を照合。頭と指を現行コードで再計算し、その他の動作は保存packetを使用。新旧の頭以外のpacket完全一致。入力results/head-yaw-previous-full-20260924/、成果物results/avatar-videos/head-yaw-previous-full-20260924/。after=円周ヨー＋可変、before=旧ヨー＋固定、両手はどちらも絶対値化。改変済みHAOLAN/auto-custom、各901フレーム30fps約30秒。単独・比較ともFFmpeg全フレーム復号成功。旧40フレーム試行はprevious-take名で残るが利用対象外。製品変更・実写表示・新規推論・ビルド・公開なし。
