@@ -235,3 +235,26 @@ GitHub APIのprojects/rtmpose3dパス履歴では最新変更は2025-08-04の[�
 FP32でもZだけ移植で左49.11/右14.09度、XYだけ移植で左7.64/右63.36度。反転間の手首相対Z差p95は左151.01/右166.11mmでFP16と同値。一方、同じ向きの入力でFP16対FP32の相対Z差は中央値0/p95 7.55mm、XY差中央値0/p95約1.14～1.16px、掌法線差p95約5.0～6.7度。細部の差はあるが、左右差の大勢は変わらない。
 
 結論: 今回の左右非対称はFP16化だけが原因ではなく、公開元FP32 ONNXでも残る。ONNX変換由来か学習済み重み自体かの分離はまだ行っていない。指の解釈の完全な正しさも保証しない。通常FP16を維持、指符号反転案は保留。今回動画は再生成していない。別PCへアプリ更新は不要、数値確認には上記summary.jsonとprecision-comparison.jsonをコピー。診断再実行にはtools/diagnostics/compare_hand_mirror.pyの更新が必要。
+
+## 元PyTorchと自前ONNXの比較
+
+2026-09-23、ユーザー承認の①元モデル比較・②再変換を実行。③手専用別モデル探索は行わない。①②で改善しなければ全身モデル交換を次の予定とし、結果報告時にリマインドする指定。
+
+最新録画の5.5～6.5秒、7.5～8.1秒、14.5～15.5秒、18.5～19.5秒から3フレーム刻みの40観測を抽出。元と水平反転の80入力。記録ROIと反転ROI、製品のRGB/正規化/warp済みテンソルを一度だけ作り3経路へ共通入力。比較は顔尺度・指解釈・フィルター前のSimCC X/Y/Zそのもの。実写は表示しない。
+
+公式MMPoseコミット `759b39c13fea6ba094afc1fa932f51dc1b11cbf9` のモデル構造・X設定を使用。公式checkpointのSHA-256 `b0a0eab7ca501e2c88028fe1cfd78b50c7130e220d39541da7f669e5de25e6ca` は配布ファイル名の識別子とも一致。全state_dictをstrict=Trueで読み込み、全キー一致。外部backbone初期重みのダウンロードは無効にし、このcheckpointの全重みで上書き。モデルはeval、FP32、RTX4090 CUDA、PyTorch/ORTともTF32を明示無効。PyTorch2.1.0+cu121/MMCV2.1.0/MMEngine0.10.7/MMPose1.3.2互換環境を `.cache/rtmw-audit` に隔離。製品依存は変更しない。
+
+| 元PyTorchとの比較 | 既存コミュニティONNX | 自前再変換ONNX（opset17） |
+| --- | --- | --- |
+| Xのargmax位置 | 10640点すべて一致 | 同左 |
+| Yのargmax位置 | 1点のみ1bin差、他は一致 | 同左 |
+| Zのargmax位置 | 10640点すべて一致（手3360点も一致） | 同左 |
+| 生出力の最大絶対差（X/Y/Z全体） | 約1.28e-5 | 約1.28e-5 |
+
+ONNX構造検査成功、FP16 initializerなし。小さい浮動小数点差はあるが、今回問題にしているZの左右差は元PyTorchにも存在し、再変換では改善しなかった。比較区間内では変換ミスが主因という仮説を支持しない。全入力での完全同一性、モデルがあらゆる条件で誤ること、独自指解釈が完全に正しいことまで保証しない。同一の製品前処理での比較であり、別の前処理を試す実験ではない。
+
+**次の予定：全身モデルの入れ替えを検討する。** ユーザー指定に基づく条件が今回成立。次の再開時にもリマインドし、今回は候補探索・導入・交換まで進めない。手専用モデルの探索は保留、左指符号反転も保留。PyTorchの製品組み込み/自前ONNXへの差し替えは採用しない。通常FP16とモデルは維持。
+
+ローカル結果は `results/rtmw-pytorch-20260923/`。`comparison.json` が数値、`inputs.json` が抽出フレーム/入力ハッシュ、`pytorch.json` が重み/ソース/環境/出力ハッシュ、`environment.txt` が診断環境。`inputs.npy` は実写由来テンソルなのでGit管理外・画面表示禁止。`pytorch.npz`/`community.npz`/`reexport.npz` と `reexport.onnx` も非公開結果。公式重みは `models/rtmw3d-pytorch-audit/rtmw3d-x.pth`。準備失敗はchumpyビルドのpip不足、setuptoolsのpkg_resources廃止、一時ファイルのsandbox権限。pip付き非隔離chumpyビルド、setuptools69.5.1、承認済み通常権限で解消。公式checkpointにはNumPyメタデータがありtorch2.1のweights_only=Trueでは読めず、公式取得/ハッシュ確認後に通常ロード。診断ツールもこの全ハッシュを要求する。
+
+出典: [公式モデル・重み](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose3d)、[対応環境](https://mmpose.readthedocs.io/en/latest/installation.html)、[公式Windows MMCV wheel](https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html)。MMPoseはApache-2.0、今回の追加環境・重みを配布物へ含めていない。

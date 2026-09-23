@@ -191,3 +191,5 @@ pytestは`tests/`を収集し、Windowsの一時フォルダーを`results/pytes
 
 
 手の左右反転診断は `tools/diagnostics/compare_hand_mirror.py` と `summarize_hand_mirror.py`。引数は[診断一覧](../tools/diagnostics/README.md)、現在の比較素材/動画は[HANDOFF](../HANDOFF.md)を参照。`tools/update-desktop-launcher.ps1` がデスクトップの `tanakacap-tools/tanakacap-compare-hand-mirror.bat` を生成し、アバター比較MP4の場所を開く。実写は表示しない。別PCで動画を見るだけならMP4のみコピーする。
+
+元モデルとONNXの切り分けは [診断ツールの手順](../tools/diagnostics/README.md#公式pytorchとonnxの診断) を参照。PyTorch/MMPoseは製品と隔離した診断環境にのみ導入する。

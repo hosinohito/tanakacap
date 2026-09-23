@@ -48,3 +48,9 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 `audit_hand_causality.py <手のカメラ診断フォルダー> --output <新規フォルダー>` は共通尺度の感度、指の符号付き曲げ、片側のみ変化する人工入力を実Playerで検査する。実写は表示しない。結果は握りの正解率ではない。
 
 - `compare_hand_mirror.py --take <録画フォルダー> --records <同じ録画のframes.jsonl> --output <新規フォルダー>`：`--mode graph`で元FP32、既定はgraph-fp16。元入力と水平反転入力を同じROI/尺度でモデルへ渡し、手の左右とXを復元して比較。元記録の顔/腕を保持、Z/XYのみ移植の診断も保存。`summarize_hand_mirror.py <結果フォルダー>`で集計。正解率ではない。
+
+### 公式PyTorchとONNXの診断
+
+`compare_rtmw_pytorch.py` は `prepare`（製品Pythonで録画から共通入力作成）、`torch`（隔離MMPose環境で公式重み実行・ONNX出力）、`compare`（製品PythonでORT照合）を分離する。全段階で同じ `--output <結果フォルダー>` を渡す。prepareのみ `--video <録画> --records <対応frames.jsonl>` が必要。torchは `--source <MMPoseソース>` と `--weights <公式pth>` を指定可能、既定パスと監査済み重みは[担当文書](../../docs/HAND_SIDE_AUDIT.md#元pytorchと自前onnxの比較)。prepare出力は新規フォルダーのみ。実写由来inputs.npyを表示・公開しない。
+
+隔離環境の再作成はuv venvでPython3.11を選び、公式cu121 indexからtorch2.1.0/torchvision0.16.0を入れる。numpy1.26.4、setuptools69.5.1、pip/wheel/scipyを先に入れ、chumpy0.70は--no-build-isolationでインストール。その後mmengine0.10.7/mmcv2.1.0/mmpose1.3.2/mmdet3.3.0/onnx1.16.2（MMCVは公式cu121/torch2.1 wheel）。ソースはMMPoseコミット759b39c13fea6ba094afc1fa932f51dc1b11cbf9。TEMP/TMP/MPLCONFIGDIRはプロジェクト内の専用.cache以下へ向ける。sandboxで一時ファイル作成が止まる場合は通常権限の承認が必要。製品requirementsへこの診断依存を追加しない。
