@@ -51,6 +51,7 @@
 | --- | --- |
 | 通常の検証アバター | `builds/player/avatars/haolan.tcap`。通常アバターにauto-customを適用。廃止済みデモ専用キーは使わない |
 | 今回の症状のアバター | `builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap`（改変済みHAOLAN）。人工入力の調査結果は`results/hand-sides-modified-20260923/`、配布版は`results/hand-sides-release-20260923/` |
+| 最新の上限復帰修正アバター動画 | `results/twist-recovery-20260923/avatar-current.mp4`。最新録画由来、改変済みHAOLAN/auto-custom、約30秒。見た目確認待ち |
 | 現在の録画 | `results/comparison-takes/20260923T064052-167149Z/camera.avi` |
 | 肘の4条件・6本比較 | `results/avatar-videos/arm-rotation-coupled-final/` |
 | 掌・指の頭接触比較 | `results/avatar-videos/hand-head-contact/` |
