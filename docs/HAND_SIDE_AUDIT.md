@@ -258,3 +258,20 @@ ONNX構造検査成功、FP16 initializerなし。小さい浮動小数点差は
 ローカル結果は `results/rtmw-pytorch-20260923/`。`comparison.json` が数値、`inputs.json` が抽出フレーム/入力ハッシュ、`pytorch.json` が重み/ソース/環境/出力ハッシュ、`environment.txt` が診断環境。`inputs.npy` は実写由来テンソルなのでGit管理外・画面表示禁止。`pytorch.npz`/`community.npz`/`reexport.npz` と `reexport.onnx` も非公開結果。公式重みは `models/rtmw3d-pytorch-audit/rtmw3d-x.pth`。準備失敗はchumpyビルドのpip不足、setuptoolsのpkg_resources廃止、一時ファイルのsandbox権限。pip付き非隔離chumpyビルド、setuptools69.5.1、承認済み通常権限で解消。公式checkpointにはNumPyメタデータがありtorch2.1のweights_only=Trueでは読めず、公式取得/ハッシュ確認後に通常ロード。診断ツールもこの全ハッシュを要求する。
 
 出典: [公式モデル・重み](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose3d)、[対応環境](https://mmpose.readthedocs.io/en/latest/installation.html)、[公式Windows MMCV wheel](https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html)。MMPoseはApache-2.0、今回の追加環境・重みを配布物へ含めていない。
+
+
+## 左指ごと・関節ごとの元の符号（2026-09-23）
+
+最新録画30秒・901フレームの保存済みFP16観測を変更前66d08f2のFingerTrackerで再生。計算式を変更せず観測フックを追加し、送信packetが保存値と全件一致することを確認。以下は信頼度・長さ・幾何条件を通った観測の、時間平滑化と正値制限より前の角度。負は実装上の逆曲げ方向であり、実写の正解と照合した誤推定率ではない。通常4指は−7度未満、親指は−5度未満を負側に集計し、微小な角度を除外。親指CMCは固定0で対象外。指ごとに有効観測数が異なり、同時刻限定の左右比較ではない。
+
+| 左指 | 有効観測数 | 付け根の負側割合 | 中間の負側割合 | 指先側の負側割合 |
+| --- | --- | --- | --- | --- |
+| 親指 | 696 | 4.7% | 対象なし | 43.5% |
+| 人差し指 | 695 | 34.1% | 17.3% | 25.0% |
+| 中指 | 658 | 50.8% | 22.3% | 20.7% |
+| 薬指 | 653 | 36.4% | 34.2% | 35.2% |
+| 小指 | 813 | 45.1% | 27.2% | 40.8% |
+
+親指MCPは正側92.8%・中央値+22.6度、中指DIPは正側71.7%・中央値+35.2度で、全左指・全関節が一律に逆ではない。中指MCPは負側50.8%・中央値−7.4度。右手にも負側があり、中指PIP68.2%、親指IP66.2%など。左右の実動作は異なるので左右の割合差を精度差と断定しない。左全反転は正常な正側の握りも消すため、一般的な修正としての根拠はない。現行のユーザー指定試行は変更せず、見た目評価と関節別の正解照合を待つ。過去の「左指の逆曲げ」の具体例を全指・全関節へ一般化しない。
+
+再実行：`tools/diagnostics/audit_finger_signs.py --records results/hand-mirror-corrected-20260923/original/frames.jsonl --reference-report results/hand-mirror-corrected-20260923/report.json --revision 66d08f2 --output <新しい出力先>`。`.venv/Scripts/python.exe`で実行。詳細な両手の割合・中央値・5/95パーセンタイルは`results/finger-sign-audit-20260923/report.json`、観測値は同階層`angles.jsonl`。実写表示・追加推論・実カメラ試験なし。

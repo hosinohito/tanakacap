@@ -2686,3 +2686,8 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ユーザー指定で左5指の符号付き屈曲角を範囲制限前に反転。掌/モデルXYZ/右指は維持。[仕様・掌XY方向案の保留](FINGER_FOLLOW.md)。`tools/diagnostics/compare_finger_revision.py`で保存済み元FP16観測901フレームを変更前66d08f2と再生し、変更前packet完全再現、leftFingerFlex以外全キー一致、843フレームで左指値に変化。入力は最新録画の`results/hand-mirror-corrected-20260923/original/frames.jsonl`、出力`results/finger-sign-20260923/`。指・左右独立・実写ガード17 tests成功。モデル再推論・実カメラ試験なし。映像の品質判断はユーザー待ち。
 
 比較動画`results/avatar-videos/finger-sign-20260923/side-by-side.mp4`生成成功。変更前/後とも901フレーム、1280×720、30fps、約30秒。並列比較版と各単独MP4をFFmpeg全フレーム復号で検査済み。Unityソース変更なし、Player再ビルド・ZIP・公開なし。録画UIの確認方法は変更なし。
+
+
+## 2026-09-23：左指の元符号を関節別に監査
+
+診断ツールaudit_finger_signs.pyを追加し、最新保存済み901フレームを旧実装で再生、フック追加後もpacket全件一致。各関節の正値制限前の分布を集計。一律反転の根拠にならず、親指付け根・中指指先側は元から正側が多いことを確認。[担当文書の結果](HAND_SIDE_AUDIT.md#左指ごと関節ごとの元の符号2026-09-23)。アプリ変更・再ビルド・動画再生成・公開なし。

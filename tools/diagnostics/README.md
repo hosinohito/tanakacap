@@ -56,3 +56,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 隔離環境の再作成はuv venvでPython3.11を選び、公式cu121 indexからtorch2.1.0/torchvision0.16.0を入れる。numpy1.26.4、setuptools69.5.1、pip/wheel/scipyを先に入れ、chumpy0.70は--no-build-isolationでインストール。その後mmengine0.10.7/mmcv2.1.0/mmpose1.3.2/mmdet3.3.0/onnx1.16.2（MMCVは公式cu121/torch2.1 wheel）。ソースはMMPoseコミット759b39c13fea6ba094afc1fa932f51dc1b11cbf9。TEMP/TMP/MPLCONFIGDIRはプロジェクト内の専用.cache以下へ向ける。sandboxで一時ファイル作成が止まる場合は通常権限の承認が必要。製品requirementsへこの診断依存を追加しない。
 
 指の実装版比較：`compare_finger_revision.py --records <保存済み手観測frames.jsonl> --reference-report <compare_hand_mirrorのreport.json> --before-revision <Git版> --output <新規フォルダー>`。比較前のpacket完全再現と左指以外の一致を検査し、render_comparison_videos.py用の入力を生成する。実写を表示せず、推論も再実行しない。
+
+- `audit_finger_signs.py`：旧Git版の指計算へ観測フックを追加し、保存packetとの一致を検査してから正値制限前の角度分布を指・関節別に集計。引数・結果の意味は[指の監査](../../docs/HAND_SIDE_AUDIT.md#左指ごと関節ごとの元の符号2026-09-23)。
