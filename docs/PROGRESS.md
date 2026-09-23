@@ -2728,3 +2728,8 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-24：ひとつ前の9/21撮影で円周ヨー動画
 
 ユーザー指定で9/21 13:49の録画（20260921T044937-004325Z）を使用。最初に選んだhand-sides-recording-checkは冒頭40フレームのみだったため、配布せず全編で再作成。arm-corrections/recordedの901フレームの顔観測・保存packetと、finger-sign-all-takes-20260923-v2の同じ撮影の手観測を使用。動画ハッシュ・撮影時計・フレーム数を照合。頭と指を現行コードで再計算し、その他の動作は保存packetを使用。新旧の頭以外のpacket完全一致。入力results/head-yaw-previous-full-20260924/、成果物results/avatar-videos/head-yaw-previous-full-20260924/。after=円周ヨー＋可変、before=旧ヨー＋固定、両手はどちらも絶対値化。改変済みHAOLAN/auto-custom、各901フレーム30fps約30秒。単独・比較ともFFmpeg全フレーム復号成功。旧40フレーム試行はprevious-take名で残るが利用対象外。製品変更・実写表示・新規推論・ビルド・公開なし。
+
+
+## 2026-09-24：v0.1.5公開準備
+
+ユーザー指示で公開用Playerと配布物を再ビルド。Python全343 tests成功。Unityはアバター非内蔵、個人設定は配布既定値に置換。ライセンス監査は未解決・機械検査エラー0。Git全履歴と配布2ZIPの混入監査は0件で成功（results/public-data-audit-0.1.5-final.json）。成果物・SHAはbuilds/releases/0.1.5/release-report.json。ユーザーがrelease/RELEASE_NOTES_0.1.5.mdを編集完了。今後も公開前に編集可能にし、開発の注意事項はリリースノートに含めない方針をAGENTSへ記録。

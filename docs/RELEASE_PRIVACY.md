@@ -18,3 +18,7 @@ Gitの復旧用bundleはGit管理外の`results/pre-public-history-cleanup.bundl
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 tools/diagnostics/audit_public_data.py --ref=--all --release builds/releases/0.1.4 --output results/public-data-audit-final.json
 ```
+
+## v0.1.5の再検査（2026-09-24）
+
+公開専用ビルドから再生成し、上記の設定・アバター・実写・Exporter・Tcl画像・Git履歴の検査を再実行。結果は0件、passed。履歴の再書換えは不要。監査：`results/public-data-audit-0.1.5-final.json`。公開対象は`builds/releases/0.1.5/release-report.json`のpart01/part02のみ。
