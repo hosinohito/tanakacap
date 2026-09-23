@@ -2680,3 +2680,9 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-23：MediaPipeの比較材料を追加
 
 体・手・Face Mesh V2のモデルカードApache-2.0、体の2D評価と手の3D誤差、機器別の速度、初公開/モデル改良/API移行の時期を区別して[候補文書](WHOLEBODY_MODEL_CANDIDATES.md)へ記録。現在より新しい重みという根拠はなく、左手問題の品質改善・Windows RTX性能・配布実物監査は未確認。文書のみ、導入・実装・公開なし。
+
+## 2026-09-23：左指の符号反転試行と掌方向の保留
+
+ユーザー指定で左5指の符号付き屈曲角を範囲制限前に反転。掌/モデルXYZ/右指は維持。[仕様・掌XY方向案の保留](FINGER_FOLLOW.md)。`tools/diagnostics/compare_finger_revision.py`で保存済み元FP16観測901フレームを変更前66d08f2と再生し、変更前packet完全再現、leftFingerFlex以外全キー一致、843フレームで左指値に変化。入力は最新録画の`results/hand-mirror-corrected-20260923/original/frames.jsonl`、出力`results/finger-sign-20260923/`。指・左右独立・実写ガード17 tests成功。モデル再推論・実カメラ試験なし。映像の品質判断はユーザー待ち。
+
+比較動画`results/avatar-videos/finger-sign-20260923/side-by-side.mp4`生成成功。変更前/後とも901フレーム、1280×720、30fps、約30秒。並列比較版と各単独MP4をFFmpeg全フレーム復号で検査済み。Unityソース変更なし、Player再ビルド・ZIP・公開なし。録画UIの確認方法は変更なし。

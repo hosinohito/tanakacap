@@ -3,6 +3,7 @@ from tanakacap.fingers import FingerTracker
 
 
 def hand(bent=False):
+    # Synthetic input follows the left-sign trial; not anatomical ground truth.
     xyz=np.zeros((133,3)); s=np.ones(133)
     for offset in (91,112):
         for f,start in enumerate((1,5,9,13,17)):
@@ -10,7 +11,7 @@ def hand(bent=False):
             xyz[offset+start]=base
             for j in range(1,4):
                 angle=np.radians(30*j if bent else 0)
-                xyz[offset+start+j]=xyz[offset+start+j-1]+np.array([0,np.cos(angle),np.sin(angle)*(-1 if offset==91 else 1)])*.025
+                xyz[offset+start+j]=xyz[offset+start+j-1]+np.array([0,np.cos(angle),np.sin(angle)])*.025
     return xyz,s
 
 
@@ -46,7 +47,7 @@ def test_thumb_curls_toward_index_without_folding_cmc_or_reverse_extension():
                 a=np.radians(deg*sign)
                 xyz[offset+1+j]=xyz[offset+j]+np.array([np.sin(a),np.cos(a),0])*.025
         p={};FingerTracker().update(p,xyz,s,s,0)
-        expected=[0,30,30] if sign==1 else [0,0,0]
+        expected=[0,30,30] if sign==-1 else [0,0,0]
         np.testing.assert_allclose(p['leftFingerFlex'][:3],expected,atol=.01)
 
 
@@ -95,7 +96,7 @@ def test_closed_mcp_does_not_flip_longitudinal_axis_on_either_hand():
             for start in (5,9,13,17):
                 for j,deg in enumerate((mcp,mcp+60,mcp+90),1):
                     angle=np.radians(deg)
-                    xyz[offset+start+j]=xyz[offset+start+j-1]+.025*np.array([0,np.cos(angle),np.sin(angle)*(-1 if offset==91 else 1)])
+                    xyz[offset+start+j]=xyz[offset+start+j-1]+.025*np.array([0,np.cos(angle),np.sin(angle)])
         p={};FingerTracker().update(p,xyz,s,s,0)
         for side in ('left','right'):
             assert all(p[side+'FingerTracked'][1:])
