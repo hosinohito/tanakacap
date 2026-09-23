@@ -47,3 +47,22 @@ Fast版の現行READMEはRTX 5090で約65ms/フレームを報告する。約15f
 - [SMPLest-Xの契約](https://github.com/MotrixLab/SMPLest-X/blob/main/LICENSE.txt)
 
 重み・依存のダウンロード、実機推論、ビルドは今回実施していない。SMPL-Xの拡張子なしURLは取得失敗し、公式modellicense.htmlで確認した。
+
+## 他のキャプチャソフトの採用技術（2026-09-23）
+
+使用モデルを公開している製品と、サービスとしてのみ提供する製品を分けて調査。以下の「未確認」は調べた公式資料内での状態であり、世界中の全資料を確認した意味ではない。各ソフトの最新重みの版・ハッシュは今回取得していない。
+
+| 製品 | 公開情報から確認できた系統 | 一次資料・限界 |
+| --- | --- | --- |
+| Warudo | 内蔵MediaPipeで顔・手首・指。外部トラッカー併用可 | [公式マニュアル](https://docs.warudo.app/docs/mocap/mediapipe)。内部の厳密な重み版は未確認 |
+| VNyan | WebカメラのMediaPipe系統、顔と実験的な手追跡 | [公式リポジトリWiki](https://github.com/Suvidriel/VNyanDoc/wiki/Tracking-Layers)。2025年の記述のため最新バイナリのモデル版まで断定しない |
+| XR Animator | Google MediaPipe。顔・体・手を選択して全身追跡 | [作者README](https://github.com/ButzYung/SystemAnimatorOnline)。モデル単体でなく出力をアバターへ変換するアプリ |
+| Dollars MONO SDK | MediaPipeUnityPluginベース、MediaPipe出力から骨格を計算 | [公式SDKガイド](https://docs.dollarsmocap.com/sdk-guide/)。SDKの確認であり全製品・全版への一般化はしない |
+| VSeeFace / VTube StudioのWebカメラ顔追跡 | OpenSeeFace、MobileNetV3ベースの顔ランドマーク、ONNX Runtime | [OpenSeeFace作者](https://github.com/emilianavt/OpenSeeFace)。VSeeFace標準の手追跡は[Leap Motion](https://www.vseeface.icu/)でありWebカメラ全身モデルではない |
+| Webcam Motion Capture | AIによる手・指追跡。具体的な公開モデル名は未確認 | [公式サイト](https://www.webcammotioncapture.info/index.php)。商用コンテンツ制作は可だがアプリ再配布・他製品への組込は不可と明記。MediaPipeと推測で断定しない |
+| Move AI | 単眼s2・複眼m2、Dex手追跡。リアルタイムrt系列は複眼 | [公式モデル一覧](https://developers.move.ai/docs/models/)。製品モデル名は公開、ネットワーク構造と自由に配布できる重みは確認できず |
+| Rokoko Vision / DeepMotion Animate 3D | 動画からのAIモーション生成。具体的な公開重みは未確認 | [Rokoko](https://www.rokoko.com/products/vision)・[DeepMotion](https://www.deepmotion.com/about)。Rokokoは[2026年に動画アップロード中心へ移行](https://support.rokoko.com/hc/en-us/articles/48823033216017-Rokoko-Vision-and-Rokoko-Create-What-you-need-to-know)。単眼ライブと同条件の速度比較ではない |
+
+今回の発見は、新しい全身モデルよりもMediaPipeによる部位別モデル構成の採用例が多いこと。Googleの[Holistic公式](https://developers.google.com/edge/mediapipe/solutions/vision/holistic_landmarker)は体33点、両手21点ずつ、顔478点のモデルを組み合わせ、体と手のworld座標も返す。MediaPipeという名称だけで各製品が同じ版・同じ補正を使うとは言えない。
+
+OpenSeeFaceは作者がコードとモデルをBSD-2-Clauseと明記するが顔用であり、今回の左手Z問題の直接の交換先ではない。MediaPipe系は別の比較対象になり得るものの、今回の調査は採用実績の確認まで。候補資産の配布監査、Windows RTX実行方法、品質・速度の比較は未実施。先の「より新しい全身モデルを探して見つからない」は、この既存系統まで使えないという結論ではない。ユーザーが保留した手専用追加モデルの実装を再開する指示とも扱わない。

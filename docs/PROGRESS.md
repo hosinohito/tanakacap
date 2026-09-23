@@ -2672,3 +2672,7 @@ HANDOFFを現在の採用方式・未解決/保留・次の確認・ローカル
 ## 2026-09-23：新しい全身モデルの交換候補を調査
 
 コードだけでなく重みと人体モデルの配布条件を一次資料で確認。SAM系が条件付き候補に残るが過去評価済みで速度課題あり。Multi-HMR 2/Anny版・SMPLest-Xは非商用、Hand4Whole++はMITコードに加えて別契約の人体/手モデルが必要で、今回の配布方針では採用対象外。[比較・根拠・未確認点](WHOLEBODY_MODEL_CANDIDATES.md)。現行FP16・TensorRT不採用を維持。文書のみ変更、追加ダウンロード・実行試験・ビルド・公開なし。
+
+## 2026-09-23：有名キャプチャソフトの採用技術を調査
+
+Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube StudioのOpenSeeFace、Move AIの製品モデル名、Rokoko/DeepMotion/Webcam Motion Captureの公開情報の限界を整理。[製品別根拠](WHOLEBODY_MODEL_CANDIDATES.md#他のキャプチャソフトの採用技術2026-09-23)。内部モデルの流用許諾と製品の商用利用を区別。追加導入・実装・実機試験・公開なし。
