@@ -2706,3 +2706,8 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-23：左指絶対値化のアバター動画
 
 最新9/23録画の保存済みFP16観測と以前の符号反転版packetを結合し、0045f0fで旧packet完全再現、左指角度以外完全一致を検査。901フレーム中804フレームで左指に変化。入力results/finger-absolute-video-20260923/、動画results/avatar-videos/finger-absolute-20260923/。before.mp4=旧符号反転、after.mp4=左のみ絶対値化、side-by-side.mp4=左右比較。各901フレーム・30fps・約30秒、改変済みHAOLAN/auto-custom。単独・比較ともFFmpeg全フレーム復号成功。見た目の判定はユーザー待ち。実写表示・再推論・Playerビルド・公開なし。compare_finger_revision.pyの出力名をbefore/afterへ整理し、表示ラベルを引数化。
+
+
+## 2026-09-23：右指にも絶対値化・顔ヨーの監査
+
+ユーザー指定で右指にも絶対値化を採用し左右の条件分岐を除去。親指固定CMC・帯・ゲート・上限は維持。関連10 tests成功。保存4本7,842フレームを7c3954cと比較し左の追跡フラグ・角度は完全一致、右の変化は2831/5/524/681フレーム。結果results/finger-both-absolute-20260923/report.json。製品の再ビルド・動画生成・公開なし。顔ヨーは現在full/PnPでも2D鼻横ずれ比率であり、PnP角度を使用していないことを確認。[補正一覧と現在設定](HEAD_YAW_AUDIT.md)。ヨー自体は未変更。

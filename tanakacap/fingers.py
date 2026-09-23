@@ -45,7 +45,7 @@ class FingerTracker:
                     continue
                 segments /= lengths[:, None]
                 reasons[finger]='flexion_plane'
-                # Calculate signed hinge-plane angles before the left-only magnitude mapping.
+                # Calculate signed hinge-plane angles before the magnitude mapping for both hands.
                 along=segments[1]-normal*(segments[1]@normal)
                 reference=segments[0]-normal*(segments[0]@normal)
                 # A closing MCP can point through the palm plane and its
@@ -63,7 +63,7 @@ class FingerTracker:
                 if (np.linalg.norm(projected,axis=1)<.2).any() and finger!=0: continue
                 directions=np.arctan2(projected[:,1],projected[:,0])
                 flex=np.degrees(np.r_[directions[0],(np.diff(directions)+np.pi)%(2*np.pi)-np.pi])
-                if side == 'left': flex = np.abs(flex)
+                flex = np.abs(flex)
                 if finger==0:
                     # Thumb CMC opposition is not the same DOF as finger MCP
                     # curl. Preserve the authored base instead of folding it
@@ -81,7 +81,7 @@ class FingerTracker:
                     axis/=np.linalg.norm(axis)
                     thumb_angles=[float(np.degrees(np.arctan2(axis@np.cross(a,b),a@b)))
                                   for a,b in zip(segments[1:3],segments[2:4])]
-                    if side == 'left': thumb_angles=np.abs(thumb_angles)
+                    thumb_angles=np.abs(thumb_angles)
                     flex=[0.]+[max(0,angle-5) for angle in thumb_angles]
                     flex=np.clip(flex,0,[0,50,65])
                 reasons[finger]='observation_warmup'

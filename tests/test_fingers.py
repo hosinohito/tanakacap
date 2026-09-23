@@ -39,7 +39,7 @@ def test_two_observations_and_independent_missing_finger():
     assert all(p['rightFingerTracked'])
 
 
-def test_left_thumb_magnitude_and_right_signed_curl_preserve_cmc():
+def test_both_thumb_magnitudes_preserve_cmc():
     for sign in (1,-1):
         xyz,s=hand()
         for offset in (91,112):
@@ -48,15 +48,15 @@ def test_left_thumb_magnitude_and_right_signed_curl_preserve_cmc():
                 xyz[offset+1+j]=xyz[offset+j]+np.array([np.sin(a),np.cos(a),0])*.025
         p={};FingerTracker().update(p,xyz,s,s,0)
         np.testing.assert_allclose(p['leftFingerFlex'][:3],[0,30,30],atol=.01)
-        np.testing.assert_allclose(p['rightFingerFlex'][:3],[0,30,30] if sign==1 else [0,0,0],atol=.01)
+        np.testing.assert_allclose(p['rightFingerFlex'][:3],[0,30,30],atol=.01)
 
 
-def test_left_extension_becomes_curl_but_right_extension_and_lateral_noise_do_not():
+def test_both_extension_signs_become_curl_but_lateral_noise_does_not():
     xyz,s=hand(True)
     xyz[:,2]*=-1
     p={};FingerTracker().update(p,xyz,s,s,0)
     np.testing.assert_allclose(p['leftFingerFlex'][3:],[23*80/73,23*110/103,23*90/83]*4,atol=.01)
-    np.testing.assert_allclose(p['rightFingerFlex'][3:],0)
+    np.testing.assert_allclose(p['rightFingerFlex'][3:],[23*80/73,23*110/103,23*90/83]*4,atol=.01)
     xyz,s=hand()
     for offset in (91,112):
         xyz[offset+6,0]+=.003;xyz[offset+7,0]-=.003
@@ -104,11 +104,13 @@ def test_closed_mcp_does_not_flip_longitudinal_axis_on_either_hand():
             assert (flex[:,0]>70).all() and (flex[:,1]>50).all()
 
 
-def test_left_alternating_sign_preserves_curl_through_temporal_gate():
+def test_both_alternating_signs_preserve_curl_through_temporal_gate():
     tracker=FingerTracker(3,1);p={}
     for i in range(20):
         xyz,s=hand(True)
-        xyz[91:112,2]*=(-1)**i
+        xyz[91:133,2]*=(-1)**i
         tracker.update(p,xyz,s,s,i*.05)
     expected=[23*80/73,23*110/103,23*90/83]*4
     np.testing.assert_allclose(p['leftFingerFlex'][3:],expected,atol=.01)
+
+    np.testing.assert_allclose(p['rightFingerFlex'][3:],expected,atol=.01)
