@@ -66,3 +66,13 @@ Fast版の現行READMEはRTX 5090で約65ms/フレームを報告する。約15f
 今回の発見は、新しい全身モデルよりもMediaPipeによる部位別モデル構成の採用例が多いこと。Googleの[Holistic公式](https://developers.google.com/edge/mediapipe/solutions/vision/holistic_landmarker)は体33点、両手21点ずつ、顔478点のモデルを組み合わせ、体と手のworld座標も返す。MediaPipeという名称だけで各製品が同じ版・同じ補正を使うとは言えない。
 
 OpenSeeFaceは作者がコードとモデルをBSD-2-Clauseと明記するが顔用であり、今回の左手Z問題の直接の交換先ではない。MediaPipe系は別の比較対象になり得るものの、今回の調査は採用実績の確認まで。候補資産の配布監査、Windows RTX実行方法、品質・速度の比較は未実施。先の「より新しい全身モデルを探して見つからない」は、この既存系統まで使えないという結論ではない。ユーザーが保留した手専用追加モデルの実装を再開する指示とも扱わない。
+
+## MediaPipeの精度・速度・ライセンス・時期（2026-09-23）
+
+- 体はBlazePose GHUM（Lite/Full/Heavy）、手はHandPose GHUM（Lite/Full）。顔・体・手の複数モデルをまとめるHolisticと単体モデルを区別する。
+- 公式旧Pose評価は2〜4mの人物1人、Yoga/Dance/HIIT、COCO相当17点。FullのPCK@0.2は95.5/96.3/95.7%、Heavyは96.4/97.2/97.5%。許容誤差以内の2D点の割合であり、3D・指・着席近接の正解率ではない。[公式表](https://github.com/google-ai-edge/mediapipe/blob/master/docs/solutions/pose.md)
+- 手Fullの公式2021年評価は2D mAP83.8%、平均3D誤差1.3cm（Liteは79.2%、1.4cm）。今回のRTMW3Dとの同条件比較ではない。[Google記事](https://blog.tensorflow.org/2021/11/3D-handpose.html)。遮蔽・手袋・物を握る場合などには制約があり、掌Z/指の改善は実録画で未確認。
+- 手の現行Task公式平均遅延はPixel 6 CPU17.12ms/GPU12.27ms、処理パイプライン全体。[公式](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker)。旧体FullはPixel 3 GPU25ms、Heavy53ms、Lite20ms。別機器・別世代なので合算しない。2021年ブラウザー両手Fullはi9-10900K/GTX1070、MediaPipe WASM+GPUで120fps（TF.js WebGLでは35fps）。Windows Python CUDAや全身の速度を意味しない。
+- 公開系統の時期：Hands初公開2019-08-19、BlazePose2020-08-13、Holistic2020-12-10。手のメートル単位3D対応改良は2021-11-15。Face Mesh V2のモデルカード日付2022-09-15。旧Solutionsから新Tasksへの移行告知2023-05-10。2026年のドキュメント更新日を重みの刷新と扱わない。[Hands初公開](https://research.google/blog/on-device-real-time-hand-tracking-with-mediapipe/)・[Pose](https://research.google/blog/on-device-real-time-body-pose-tracking-with-mediapipe-blazepose/)・[Holistic](https://research.google/blog/mediapipe-holistic-simultaneous-face-hand-and-pose-prediction-on-device/)
+- コードだけでなく、[体モデルカード](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20BlazePose%20GHUM%203D.pdf)、[手モデルカード](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Hand%20Tracking%20%28Lite_Full%29%20with%20Fairness%20Oct%202021.pdf)、[Face Mesh V2モデルカード](https://storage.googleapis.com/mediapipe-assets/Model%20Card%20MediaPipe%20Face%20Mesh%20V2.pdf)にもApache-2.0明記。これらは商用利用・再配布可の根拠あり。本文/NOTICE/変更通知を保持する。GHUMを教師にした推論モデルと別途GHUM人体モデル資産の配布を混同せず、採用時は検出器・表情モデル等も含め実物の全資産・版・ハッシュを監査する。今回配布物の監査完了ではない。
+- Windows GPU実装は別課題。[公式Windowsビルド手順](https://developers.google.com/edge/mediapipe/framework/getting_started/install)はGPU無効の例、[Python GPUのIssue](https://github.com/google-ai-edge/mediapipe/issues/5385)も存在。ブラウザーGPUの実績をPython CUDA対応と読み替えない。今回インストール・ベンチマークなし。

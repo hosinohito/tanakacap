@@ -2676,3 +2676,7 @@ HANDOFFを現在の採用方式・未解決/保留・次の確認・ローカル
 ## 2026-09-23：有名キャプチャソフトの採用技術を調査
 
 Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube StudioのOpenSeeFace、Move AIの製品モデル名、Rokoko/DeepMotion/Webcam Motion Captureの公開情報の限界を整理。[製品別根拠](WHOLEBODY_MODEL_CANDIDATES.md#他のキャプチャソフトの採用技術2026-09-23)。内部モデルの流用許諾と製品の商用利用を区別。追加導入・実装・実機試験・公開なし。
+
+## 2026-09-23：MediaPipeの比較材料を追加
+
+体・手・Face Mesh V2のモデルカードApache-2.0、体の2D評価と手の3D誤差、機器別の速度、初公開/モデル改良/API移行の時期を区別して[候補文書](WHOLEBODY_MODEL_CANDIDATES.md)へ記録。現在より新しい重みという根拠はなく、左手問題の品質改善・Windows RTX性能・配布実物監査は未確認。文書のみ、導入・実装・公開なし。
