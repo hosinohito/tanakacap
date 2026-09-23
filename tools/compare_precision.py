@@ -63,7 +63,10 @@ def run(args):
                                      now=now, image_size=image.shape[1::-1], reference_xy=xy, reference_scores=scores)
                 elapsed = (time.perf_counter()-start)*1000
                 timings.append(elapsed)
-                line(records, dict(**clock, roi=roi, xy=xy, scores=scores, depth=depth, sent_packet=packet, pipeline_ms=elapsed))
+                line(records, dict(**clock, roi=roi, xy=xy, scores=scores, depth=depth,
+                    body_xy=body_xy, body_scores=body_scores, body_depth_scores=depth_scores,
+                    image_size=image.shape[1::-1], body_diagnostics=body.diagnostics,
+                    sent_packet=packet, pipeline_ms=elapsed))
                 line(replay, dict(packet=packet, dt=1/30 if previous is None else now-previous))
                 previous = now
                 if len(timings)%300 == 0: print(args.name, len(timings), flush=True)

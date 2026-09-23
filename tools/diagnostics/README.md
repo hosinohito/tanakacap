@@ -38,3 +38,6 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 `check_arm_scale.py` は保存済みランドマークを変更前Git版と現在版へ同時入力して④の腕更新を比較します。`--source`でframes.jsonl、`--baseline`で比較コミットを指定できます。画像表示/カメラ起動なし、結果はresults/arm-scale。
 
 `../smoke_unity.py --arm-rest-check` は実Playerのアバターで、欠測待機・机上姿勢・左右独立・復帰・全通信停止を検査します。人工入力のみ、実カメラ不使用。アバター画像と検査ログを保存します。
+
+
+左右の手の混線・指の停止は`audit_hand_sides.py`で人工入力と保存済み数値を検査する。カメラは使用せず、指定したアバターと既存Playerを読み込む。[手順・検証範囲](../../docs/HAND_SIDE_AUDIT.md)。
