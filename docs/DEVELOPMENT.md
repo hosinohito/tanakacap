@@ -188,3 +188,6 @@ pytestは`tests/`を収集し、Windowsの一時フォルダーを`results/pytes
 ### 手のリアルタイム診断
 
 開発Playerをビルドし、`tools/update-desktop-launcher.ps1` で生成したデスクトップ `tanakacap-tools/tanakacap-hands-video.bat`（保存録画）または `tanakacap-hands-camera.bat`（実カメラ・ユーザー操作）を使う。全身ON/auto-custom、部位別通信と実骨ログを保存する。SPACE/Qは黒いコンソールで操作。[ログ・検査方法](HAND_SIDE_AUDIT.md#6秒15秒の照合と実時間診断)。別PCの開発環境へは `builds/player/` 全体、`tools/diagnostics/realtime_hands.py`、`tools/diagnostics/summarize_realtime_hands.py`、`tools/update-desktop-launcher.ps1` を同じ配置へコピーし、そのPCでランチャーを再生成。アバターと動画パスはそのPCのUIで選び直す。Exporter/モデルの更新は不要。
+
+
+手の左右反転診断は `tools/diagnostics/compare_hand_mirror.py` と `summarize_hand_mirror.py`。引数は[診断一覧](../tools/diagnostics/README.md)、現在の比較素材/動画は[HANDOFF](../HANDOFF.md)を参照。`tools/update-desktop-launcher.ps1` がデスクトップの `tanakacap-tools/tanakacap-compare-hand-mirror.bat` を生成し、アバター比較MP4の場所を開く。実写は表示しない。別PCで動画を見るだけならMP4のみコピーする。

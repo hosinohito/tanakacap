@@ -191,3 +191,9 @@ foreach ($taskHandSource in @('video','camera')) {
     [IO.File]::WriteAllText($taskHandBat,$taskHandBody,[Text.Encoding]::Default)
     Write-Output $taskHandBat
 }
+
+$taskMirrorVideo=Join-Path $taskRoot "results/avatar-videos/hand-mirror-20260923/side-by-side.mp4"
+$taskMirrorBat=Join-Path $taskDesktop "tanakacap-compare-hand-mirror.bat"
+$taskMirrorText=[string]::Join([Environment]::NewLine,@("@echo off",("explorer.exe /select,"+[char]34+$taskMirrorVideo+[char]34),""))
+[IO.File]::WriteAllText($taskMirrorBat,$taskMirrorText,[Text.Encoding]::Default)
+Write-Output $taskMirrorBat

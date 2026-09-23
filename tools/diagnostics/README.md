@@ -46,3 +46,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 手の実時間診断：`realtime_hands.py --source video` またはユーザー操作の `--source camera`。保存UI設定を読み、実写なしで点群・UDP・実骨を記録。`summarize_realtime_hands.py <結果フォルダー>` で有効な掌/指の送受信値を照合。[手順と限界](../../docs/HAND_SIDE_AUDIT.md#6秒15秒の照合と実時間診断)。
 
 `audit_hand_causality.py <手のカメラ診断フォルダー> --output <新規フォルダー>` は共通尺度の感度、指の符号付き曲げ、片側のみ変化する人工入力を実Playerで検査する。実写は表示しない。結果は握りの正解率ではない。
+
+- `compare_hand_mirror.py --take <録画フォルダー> --records <同じ録画のframes.jsonl> --output <新規フォルダー>`：元入力と水平反転入力を同じROI/尺度でモデルへ渡し、手の左右とXを復元して比較。元記録の顔/腕を保持、Z/XYのみ移植の診断も保存。`summarize_hand_mirror.py <結果フォルダー>`で集計。正解率ではない。
