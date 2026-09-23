@@ -21,7 +21,7 @@ OPTIONS={
  'gaze_reference':('目線の基準','contour',{'contour':'目の輪郭','legacy':'切り出し領域'}),
  'gaze_calibration':('目線の範囲校正','on',{'on':'あり','off':'なし'}),
  'gaze_response':('目線の上限処理','soft',{'soft':'連続カーブ','legacy':'上限で停止'}),
- 'head_follow':('頭の追従','fixed',{'fixed':'固定速度','adaptive':'動きに合わせた可変速度'}),
+ 'head_follow':('頭の追従','adaptive',{'fixed':'固定速度','adaptive':'動きに合わせた可変速度'}),
  'brow_follow':('眉の追従','adaptive',{'adaptive':'動きに合わせた可変速度','direct':'直接反映'}),
  'preprocess_mode':('画像の前処理','crop',{'crop':'切り出してから色変換','legacy':'全体を色変換'}),
  'batch_eyes':('左右目の推論','on',{'on':'まとめて処理','off':'個別処理'}),

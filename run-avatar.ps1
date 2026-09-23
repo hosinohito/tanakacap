@@ -81,6 +81,7 @@ try {
     if ($taskGazeSettings.PSObject.Properties.Name -contains 'gaze_gain') { $taskGazeGain=[double]$taskGazeSettings.gaze_gain }
     if ($taskGazeGain -lt .5 -or $taskGazeGain -gt 6 -or [double]::IsNaN($taskGazeGain)) { throw 'gaze_gain must be 0.5..6' }
     $taskPlayerArgs=@('--gaze-gain',$taskGazeGain.ToString([Globalization.CultureInfo]::InvariantCulture))
+    $taskPlayerArgs+='--adaptive-head-follow'
     $taskPlayerArgs+=@('--expression-mode',$ExpressionMode)
     $taskPlayerArgs+=@('--render-fps',$RenderFps.ToString())
     $taskPlayerArgs+=@('--output-height',$OutputHeight.ToString())

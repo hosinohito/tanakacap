@@ -124,3 +124,11 @@ def test_numeric_experiments_validate_runtime_ranges_and_forward(key):
         assert float(command[command.index('--'+key.replace('_','-'))+1])==value
     for value in (lo-.01,hi+.01,float('nan')):
         with pytest.raises(ValueError):ui.validate(dict(ui.DEFAULT,**{key:value}))
+
+
+def test_head_follow_defaults_to_adaptive_for_all_axes():
+    assert ui.DEFAULT['head_follow']=='adaptive'
+    player,_=ui.commands(ui.DEFAULT,40001,40002)
+    assert '--adaptive-head-follow' in player
+    player,_=ui.commands(dict(ui.DEFAULT,head_follow='fixed'),40001,40002)
+    assert '--adaptive-head-follow' not in player

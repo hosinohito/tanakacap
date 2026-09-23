@@ -69,6 +69,8 @@ class HeadPose:
         if not np.isfinite(self.gain) or not .5<=self.gain<=3:raise ValueError("head pitch gain must be 0.5..3")
         self.reference=None
         self.samples=[]
+        from .head_yaw import CircularYaw
+        self.yaw=CircularYaw()
         self.last_pitch=0.
         self.diagnostics={}
 
@@ -78,11 +80,16 @@ class HeadPose:
         self.diagnostics=dict(tracked=pose is not None,legacy_pitch=legacy_pitch,lip_depth_scale=self.lip_depth_scale)
         if pose is None:
             if self.reference is None:self.samples=[]
+            packet['headYaw']=self.yaw.last
             packet['headPitch']=self.last_pitch
             packet['mouthContourTracked']=False
             packet['browTracked']=False
             return self.diagnostics
         rotation,translation,angles,error=pose
+        eye_center=np.mean([TEMPLATE[i] for i in (36,39,42,45)],axis=0)
+        eye_distance=float((rotation@eye_center+translation)[2])
+        packet['headYaw']=self.yaw.update(points,scores,eye_distance/max(image_size))
+        self.diagnostics['yaw']=dict(self.yaw.diagnostics)
         if self.reference is None and abs(packet.get('headYaw',0))<20 and abs(packet.get('headRoll',0))<15:
             self.samples=(self.samples+[float(angles[0])])[-10:]
             if len(self.samples)==10 and np.ptp(self.samples)<6:
