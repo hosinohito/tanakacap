@@ -16,6 +16,8 @@ namespace TanakaCap
             public Vector3 leftElbow,leftWrist,rightElbow,rightWrist;
             public float leftTwist,rightTwist,leftRequestedTwist,rightRequestedTwist,leftElbowTwist,rightElbowTwist;
             public Quaternion leftUpperRotation,leftLowerRotation,rightUpperRotation,rightLowerRotation;
+            public Quaternion leftHandRotation,rightHandRotation;
+            public float[] leftFingers,rightFingers;
         }
         [Serializable] class VideoReport
         {
@@ -128,7 +130,9 @@ namespace TanakaCap
                             leftTwist=left.twist,rightTwist=right.twist,leftRequestedTwist=left.requestedTwist,rightRequestedTwist=right.requestedTwist,
                             leftElbowTwist=ElbowAxialTwist(left),rightElbowTwist=ElbowAxialTwist(right),
                             leftUpperRotation=left.upper.localRotation,leftLowerRotation=left.lower.localRotation,
-                            rightUpperRotation=right.upper.localRotation,rightLowerRotation=right.lower.localRotation});
+                            rightUpperRotation=right.upper.localRotation,rightLowerRotation=right.lower.localRotation,
+                            leftHandRotation=left.hand.localRotation,rightHandRotation=right.hand.localRotation,
+                            leftFingers=FingerAngles(left),rightFingers=FingerAngles(right)});
                         camera.Render();RenderTexture.active=target;
                         pixels.ReadPixels(new Rect(0,0,1280,720),0,0,false);
                         var bytes=pixels.GetRawTextureData();
