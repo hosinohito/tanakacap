@@ -2733,3 +2733,5 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ## 2026-09-24：v0.1.5公開準備
 
 ユーザー指示で公開用Playerと配布物を再ビルド。Python全343 tests成功。Unityはアバター非内蔵、個人設定は配布既定値に置換。ライセンス監査は未解決・機械検査エラー0。Git全履歴と配布2ZIPの混入監査は0件で成功（results/public-data-audit-0.1.5-final.json）。成果物・SHAはbuilds/releases/0.1.5/release-report.json。ユーザーがrelease/RELEASE_NOTES_0.1.5.mdを編集完了。今後も公開前に編集可能にし、開発の注意事項はリリースノートに含めない方針をAGENTSへ記録。
+
+公開完了：mainへ4420882をプッシュし、v0.1.5に監査済み2ZIPだけをアップロード。GitHub側のbytes/SHA256がrelease-reportと完全一致し、本文もユーザー編集ファイルと一致した後にdraft解除。公開状態isDraft=falseを確認。開発注意事項は今後リリースノートへ入れない。
