@@ -25,9 +25,6 @@ class FingerTracker:
                 continue
             normal = basis[1]
             inward=normal*(1 if side=='left' else -1)
-            # RTMW3D left-hand trial: reverse signed curl before gating/clamping.
-            # Palm orientation and the original XYZ observations stay unchanged.
-            flexion_sign = -1 if side == 'left' else 1
             for finger, start in enumerate((1, 5, 9, 13, 17)):
                 reasons[finger]='joint_confidence'
                 ids = np.array([0, start, start+1, start+2, start+3])+offset
@@ -48,8 +45,7 @@ class FingerTracker:
                     continue
                 segments /= lengths[:, None]
                 reasons[finger]='flexion_plane'
-                # Signed hinge-plane angles: lateral errors and extension must
-                # not be rectified into positive curl before temporal averaging.
+                # Calculate signed hinge-plane angles before the left-only magnitude mapping.
                 along=segments[1]-normal*(segments[1]@normal)
                 reference=segments[0]-normal*(segments[0]@normal)
                 # A closing MCP can point through the palm plane and its
@@ -67,7 +63,7 @@ class FingerTracker:
                 if (np.linalg.norm(projected,axis=1)<.2).any() and finger!=0: continue
                 directions=np.arctan2(projected[:,1],projected[:,0])
                 flex=np.degrees(np.r_[directions[0],(np.diff(directions)+np.pi)%(2*np.pi)-np.pi])
-                flex *= flexion_sign
+                if side == 'left': flex = np.abs(flex)
                 if finger==0:
                     # Thumb CMC opposition is not the same DOF as finger MCP
                     # curl. Preserve the authored base instead of folding it
@@ -83,15 +79,17 @@ class FingerTracker:
                         if gate: gate.reset()
                         continue
                     axis/=np.linalg.norm(axis)
-                    flex=[0.]+[max(0,flexion_sign*float(np.degrees(np.arctan2(axis@np.cross(a,b),a@b)))-5)
-                               for a,b in zip(segments[1:3],segments[2:4])]
+                    thumb_angles=[float(np.degrees(np.arctan2(axis@np.cross(a,b),a@b)))
+                                  for a,b in zip(segments[1:3],segments[2:4])]
+                    if side == 'left': thumb_angles=np.abs(thumb_angles)
+                    flex=[0.]+[max(0,angle-5) for angle in thumb_angles]
                     flex=np.clip(flex,0,[0,50,65])
                 reasons[finger]='observation_warmup'
                 flex = self.gates.setdefault((side, finger), DirectionGate(2.5, float('inf'),self.block_size,self.stride)).update(flex, now)
                 if flex is None:
                     continue
                 if finger!=0:
-                    # 7-degree uncertainty band after signed averaging. Preserve
+                    # 7-degree uncertainty band after temporal averaging. Preserve
                     # the range endpoint; do not add another temporal filter.
                     limits=np.array([80.,110.,90.])
                     flex=np.maximum(0,np.asarray(flex)-7)*limits/(limits-7)

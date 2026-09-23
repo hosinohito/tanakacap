@@ -3,7 +3,7 @@ from tanakacap.fingers import FingerTracker
 
 
 def hand(bent=False):
-    # Synthetic input follows the left-sign trial; not anatomical ground truth.
+    # Synthetic curl input, not anatomical ground truth.
     xyz=np.zeros((133,3)); s=np.ones(133)
     for offset in (91,112):
         for f,start in enumerate((1,5,9,13,17)):
@@ -39,7 +39,7 @@ def test_two_observations_and_independent_missing_finger():
     assert all(p['rightFingerTracked'])
 
 
-def test_thumb_curls_toward_index_without_folding_cmc_or_reverse_extension():
+def test_left_thumb_magnitude_and_right_signed_curl_preserve_cmc():
     for sign in (1,-1):
         xyz,s=hand()
         for offset in (91,112):
@@ -47,15 +47,15 @@ def test_thumb_curls_toward_index_without_folding_cmc_or_reverse_extension():
                 a=np.radians(deg*sign)
                 xyz[offset+1+j]=xyz[offset+j]+np.array([np.sin(a),np.cos(a),0])*.025
         p={};FingerTracker().update(p,xyz,s,s,0)
-        expected=[0,30,30] if sign==-1 else [0,0,0]
-        np.testing.assert_allclose(p['leftFingerFlex'][:3],expected,atol=.01)
+        np.testing.assert_allclose(p['leftFingerFlex'][:3],[0,30,30],atol=.01)
+        np.testing.assert_allclose(p['rightFingerFlex'][:3],[0,30,30] if sign==1 else [0,0,0],atol=.01)
 
 
-def test_extension_and_lateral_noise_are_not_positive_curl():
+def test_left_extension_becomes_curl_but_right_extension_and_lateral_noise_do_not():
     xyz,s=hand(True)
     xyz[:,2]*=-1
     p={};FingerTracker().update(p,xyz,s,s,0)
-    np.testing.assert_allclose(p['leftFingerFlex'][3:],0)
+    np.testing.assert_allclose(p['leftFingerFlex'][3:],[23*80/73,23*110/103,23*90/83]*4,atol=.01)
     np.testing.assert_allclose(p['rightFingerFlex'][3:],0)
     xyz,s=hand()
     for offset in (91,112):
@@ -64,12 +64,12 @@ def test_extension_and_lateral_noise_are_not_positive_curl():
     np.testing.assert_allclose(p['leftFingerFlex'][3:],0)
 
 
-def test_signed_noise_is_averaged_before_positive_curl():
+def test_small_noise_remains_inside_deadband():
     tracker=FingerTracker(3,1);p={}
     for i in range(20):
         xyz,s=hand()
         for offset in (91,112):
-            xyz[offset+6,2]=.002*(-1)**i
+            xyz[offset+6,2]=.0005*(-1)**i
         tracker.update(p,xyz,s,s,i*.05)
     assert max(p['leftFingerFlex'][3:6])<1
 
@@ -102,3 +102,13 @@ def test_closed_mcp_does_not_flip_longitudinal_axis_on_either_hand():
             assert all(p[side+'FingerTracked'][1:])
             flex=np.array(p[side+'FingerFlex'][3:]).reshape(4,3)
             assert (flex[:,0]>70).all() and (flex[:,1]>50).all()
+
+
+def test_left_alternating_sign_preserves_curl_through_temporal_gate():
+    tracker=FingerTracker(3,1);p={}
+    for i in range(20):
+        xyz,s=hand(True)
+        xyz[91:112,2]*=(-1)**i
+        tracker.update(p,xyz,s,s,i*.05)
+    expected=[23*80/73,23*110/103,23*90/83]*4
+    np.testing.assert_allclose(p['leftFingerFlex'][3:],expected,atol=.01)
