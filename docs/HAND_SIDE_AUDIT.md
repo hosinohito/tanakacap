@@ -197,3 +197,24 @@ Z/XYの移植条件は原因切り分けのみ、モデルの実在する出力�
 `tools/diagnostics/summarize_hand_mirror.py <結果フォルダー>` が数値を集計。結果summary.jsonと各条件frames/replay.jsonlを保存。入力・設定・モデル情報はreport.json。掌と指だけを差し替え、顔/腕位置は既存packetで固定した検証用アバター動画は `results/avatar-videos/hand-mirror-20260923/side-by-side.mp4`。左画面=元画像、右画面=反転推論して左右復元。改変済みHAOLAN/auto-custom、現在のhinge±160、1280x720各画面、901フレーム/30fps/30.03秒。全動画デコードとハッシュ記録済み。短い欠測の保持処理を丸ごと再実行していないため過去の製品動画との完全一致比較ではない。今回の2条件間では処理を統一。推論のリアルタイム速度試験ではない。
 
 公式点定義: https://github.com/open-mmlab/mmpose/blob/main/configs/_base_/datasets/coco_wholebody.py 。原本/モデル/製品の動きは未変更。別PCで確認するだけならside-by-side.mp4のみコピー。
+
+## 公開バグ報告と更新状況の調査
+
+2026-09-23確認。対象は現在のRTMW3D-X、公式MMPoseのRTMPose3D、変換元Soykaf/RTMW3D-x、参照実装RTMlib。モデル・依存・動作は変更していない。
+
+| 確認対象 | 確認結果 | 今回との関係 |
+| --- | --- | --- |
+| [公式Model Zoo](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose3d) | X/Lとも20240626の重みを掲載。Xはb0a0eab7 | 今回の手の左右差を修正した新重みは確認できない |
+| [Soykaf ONNX](https://huggingface.co/Soykaf/RTMW3D-x/tree/main/onnx) | APIの公開LFS SHA-256とローカルmodel.onnxの実ハッシュが一致 | 再取得しても同じ元モデル。ローカル派生FP16との同一性を意味しない |
+| [MMPose #3214](https://github.com/open-mmlab/mmpose/discussions/3214) | Zの値域・XYとの尺度の違いを質問。未回答扱い、利用者の説明コメントあり | 座標解釈の関連情報。作者による左右Zバグ認定や修正ではない |
+| [RTMlib #61](https://github.com/Tau-J/rtmlib/issues/61) | XYピクセルとZの座標系・z_rootについて質問、Open | 同上。左右の指屈曲の逆転と同一原因とは確認できない |
+| [RTMlib #78](https://github.com/Tau-J/rtmlib/issues/78) | OpenVINOが出力を2つに固定し3Dの3出力を受け取れない報告 | CUDAで3出力を読む本体経路には該当しない |
+| [MMPose #3253](https://github.com/open-mmlab/mmpose/issues/3253) | 手精度を再現できない報告だが、RTMPose-mの2D手モデルの再学習 | RTMW3D-Xの左右Z問題の根拠にしない |
+| [MMPose v1.3.2](https://github.com/open-mmlab/mmpose/releases/tag/v1.3.2) | 最新リリース表示、2024-07-12。RTMW3D追加を含む | 新しい手Z修正版ではない |
+| [RTMlib 0.0.16](https://github.com/Tau-J/rtmlib/releases/tag/0.0.16) | 最新リリース表示。OpenVINO出力数、検出器/追跡契約、RTMO等の修正 | 重み更新ではない。本体はrtmlibに実行依存せず独自前後処理のため、単なる更新は解決策にならない |
+
+公開ONNXとローカル元モデルSHA-256: `4a289c0e99d47eb595e99679d9d4a2d1def1b4241f9adcbafba44b9ff585ebcd`、369330857 bytes。照合元は `models/rtmw3d-x-384/model.onnx` と `https://huggingface.co/api/models/Soykaf/RTMW3D-x/tree/main/onnx`。現在実行するgraph-fp16はこの元モデルからの派生である。
+
+GitHub APIのprojects/rtmpose3dパス履歴では最新変更は2025-08-04の[型注釈互換修正 #3112](https://github.com/open-mmlab/mmpose/pull/3112)、前は2024年の引用・重みリンク更新等。RTMlibのrtmpose3d.py履歴は2025-11-05追加と2026-02-10の0.0.15更新。これらと最新版リリース説明から、今回と同一の左右Z不整合を直した公開パッチは確認できなかった。RTMW3D/RTMPose3Dとhand/depth/left/flipで公式Issues・Discussions・PRとWeb検索を確認した範囲であり、報告が絶対に存在しないとは断定しない。SoykafのCommunity一覧の1件はL版変換依頼。Hugging Faceのコミット履歴・個別議論APIは接続失敗で全文未確認、更新なしの判断は現行ファイルのハッシュ照合と公式一覧による。
+
+現状の最も直接的な証拠は上記の自前録画反転検証。推論出力の左右非対称は強く支持されるが、学習済み重みそのもののバグ、コミュニティONNX変換、ローカルFP16化のどこで生じるかは未分離。次候補は同一録画・同一ROIでFP32の元ONNXとgraph-fp16を比較し、その後必要なら公式PyTorch重みとの出力比較。これは提案で未実行。左指符号反転案は保留を維持し、新モデル導入は採用済みと扱わない。
