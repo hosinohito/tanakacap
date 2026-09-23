@@ -48,6 +48,26 @@ namespace TanakaCap.Editor
             if(Mathf.Abs(before+160)>.01f)throw new Exception("Twist recovery incomplete");
             if(AvatarDriver.SelectForearmTwist(160,-170)!=160 || AvatarDriver.SelectForearmTwist(-160,170)!=-160)
                 throw new Exception("Twist wrap took opposite limit");
+            foreach(float limit in new[]{90f,160f})
+            foreach(float sign in new[]{-1f,1f})
+            foreach(float fps in new[]{30f,60f,120f})
+            {
+                float value=sign*limit,target=-sign*80;
+                for(int i=0;i<(int)fps;i++)
+                {
+                    float desired=AvatarDriver.ResolveBoundedArmTwist(value,target,limit);
+                    float next=Mathf.MoveTowards(value,desired,900/fps);
+                    if(Mathf.Abs(next)>limit+.001f || Mathf.Abs(next-value)>900/fps+.001f)
+                        throw new Exception("Bounded twist recovery escaped range or speed limit");
+                    value=next;
+                }
+                if(Mathf.Abs(value-target)>.001f)throw new Exception("Reachable twist stuck at limit");
+                foreach(float raw in new[]{sign*179f,-sign*179f})
+                    if(AvatarDriver.ResolveBoundedArmTwist(sign*limit,raw,limit)!=sign*limit)
+                        throw new Exception("Unreachable twist flipped boundary");
+            }
+            if(AvatarDriver.ResolveBoundedArmTwist(160,-80,float.PositiveInfinity)!=280)
+                throw new Exception("Unlimited diagnostic lost unwrapped continuity");
             Debug.Log("TANAKACAP_ARM_FRAME_CHECK_OK mirrored/hinge/extension/continuous/directions/twist_transition");
         }
     }

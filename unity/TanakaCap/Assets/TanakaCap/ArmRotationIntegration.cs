@@ -37,7 +37,20 @@ namespace TanakaCap
 
         float ResolveArmTwist(float displayed,float raw)
         {
-            return Mathf.Clamp(UnwrapTwist(displayed,displayed,raw),-armTwistLimit,armTwistLimit);
+            return ResolveBoundedArmTwist(displayed,raw,armTwistLimit);
+        }
+
+        public static float ResolveBoundedArmTwist(float displayed,float raw,float limit)
+        {
+            float nearest=UnwrapTwist(displayed,displayed,raw);
+            if(float.IsPositiveInfinity(limit))return nearest;
+            float canonical=Mathf.DeltaAngle(0,raw);
+            // Prefer a reachable orientation to its unreachable 360-degree alias.
+            // DriveHand follows the scalar through the allowed interval.
+            if(Mathf.Abs(canonical)<=limit)return canonical;
+            // Preserve the boundary choice across the +/-180 representation seam
+            // while the target remains outside the allowed range.
+            return Mathf.Clamp(nearest,-limit,limit);
         }
 
         void ApplyLegacyArmFrame(Arm arm,Vector3 upperDirection,Vector3 lowerDirection,float t)
