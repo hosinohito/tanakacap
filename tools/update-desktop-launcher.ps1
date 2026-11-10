@@ -1,4 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
+﻿param([string]$MaterialAvatar='')
+$ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskUiScript=Join-Path $taskRoot 'run-ui.ps1'
 $taskDesktop = [Environment]::GetFolderPath('Desktop')
@@ -33,6 +34,11 @@ $taskUiTarget=Join-Path $taskMainDesktop 'tanakacap.bat'
 $taskTarget = Join-Path $taskMainDesktop 'tanakacap-test.bat'
 $taskScript = Join-Path $taskRoot 'run-avatar.ps1'
 $taskContents = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskUiScript`" -AutoCustom -RecordedTest`r`n"
+if($MaterialAvatar){
+    $taskMaterialPath=(Resolve-Path -LiteralPath $MaterialAvatar).Path
+    $taskMaterialScript=Join-Path $taskRoot 'tools/diagnostics/preview_material.ps1'
+    $taskContents="@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$taskMaterialScript`" -Avatar `"$taskMaterialPath`"`r`n"
+}
 # cmd.exe consumes its system ANSI encoding. Current project path is ASCII.
 [IO.File]::WriteAllText($taskTarget,$taskContents,[Text.Encoding]::Default)
 Write-Output $taskTarget

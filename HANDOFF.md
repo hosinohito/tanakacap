@@ -1,6 +1,6 @@
 # 現在の引き継ぎ
 
-更新：2026-09-24。会話履歴なしで再開するための現在状態。過去の完了報告はここへ積み重ねない。
+更新：2026-11-11。会話履歴なしで再開するための現在状態。過去の完了報告はここへ積み重ねない。
 
 ## 再開の順序
 
@@ -11,6 +11,8 @@
 セットアップ・ビルド・起動・検証は[DEVELOPMENT](docs/DEVELOPMENT.md)。旧HANDOFFの詳細は[PROGRESSの移管履歴](docs/PROGRESS.md#2026-09-21旧handoffからの履歴移管)に残した。古い「次の作業」を現在の実行指示として扱わない。
 
 ## 現在の作業・公開状態
+
+- lilToonアクセサリーの色修正：描画側をGammaからLinearへ変更し、意図しないGammaビルドを拒否。指定tcapの花が白・茎が茶色になる症状を旧Playerで確認し、修正Playerでピンク・金色の描画を確認。元VRCプロジェクトとtcapは変更なし。builds/release-playerとbuilds/playerは修正版、配布済み0.1.5は旧版のまま。ZIP作成・公開は未指示。検証素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、書出し元は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。比較画像・ログは`results/material-color/`。デスクトップのtanakacap-test.batはこのtcapを修正Playerで表示するカメラなしの色確認用へ変更済み。RGB/アルファのシェーダー転送検査成功。実際のOBSシーン・ユーザーの見た目評価は未確認。詳細はPROGRESSの2026-11-11。
 
 - v0.1.5を公開済み。ビルド・全343テスト・Git全履歴と配布ZIPの混入検査は成功。ユーザー編集済みの`release/RELEASE_NOTES_0.1.5.md`を使用。公開した2ZIPのサイズ・SHA256と本文を照合済み。詳細はPROGRESS末尾。
 

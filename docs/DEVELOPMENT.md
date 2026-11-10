@@ -196,3 +196,14 @@ pytestは`tests/`を収集し、Windowsの一時フォルダーを`results/pytes
 
 
 通常PnPの円周ヨー検証：録画UIの頭角度をPnP、頭の追従を可変速度にする。正面付近の安定した10観測で眼間隔の基準を取得する。`tests/test_head_yaw.py`は回転・距離・閉眼・欠測・初期校正を合成投影で検査する。[仕様](HEAD_YAW_AUDIT.md)。
+
+
+### マテリアルの色の検証
+
+Player SettingsのColor SpaceはLinearを維持する。BuildRelease/BuildPlayerはGamma設定でのビルドを拒否する。公開用ビルドではColorTransferChecksがAA・プレビュー・Spout用の各シェーダーのRGB転送とアルファを検査する。
+
+`tools/diagnostics/audit_material_color.ps1 -Avatar <tcap> -Output <新規結果フォルダー>`で、既存tcapの色設定・テクスチャ参照と同じ照明での頭部画像を保存する。Unity Editor 2022.3.22f1の有効なライセンスが必要。カメラ入力は使わず、元アバター・tcapは変更しない。結果はGit管理外へ置く。
+
+`tools/update-desktop-launcher.ps1 -MaterialAvatar <tcap>`はデスクトップのtanakacap-test.batをアバターの色確認用に切り替える。builds/release-playerを使用し、推論・カメラ取得なしでプレビューとSpoutを出力する。引数なしで更新すると従来の録画UI検証へ戻る。
+
+色空間の背景：[UnityのLinear/Gammaワークフロー](https://docs.unity.cn/Manual/LinearRendering-LinearOrGammaWorkflow.html)。実際の原因と検証結果はPROGRESSの2026-11-11を参照。

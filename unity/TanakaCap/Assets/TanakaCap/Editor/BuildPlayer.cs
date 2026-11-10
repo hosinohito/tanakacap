@@ -14,6 +14,8 @@ namespace TanakaCap.Editor
         [MenuItem("TanakaCap/Create haolan lab scene")]
         public static void Prepare()
         {
+            // VRChat avatar bundles are authored in Linear color space.
+            if(PlayerSettings.colorSpace!=ColorSpace.Linear)throw new Exception("TanakaCap requires Linear color space. Set Player Settings > Color Space to Linear before building.");
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/HAOLAN/Phys_Haolan.prefab");
             if (!prefab) throw new Exception("BOOTH haolan prefab has not been imported");

@@ -2735,3 +2735,14 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ユーザー指示で公開用Playerと配布物を再ビルド。Python全343 tests成功。Unityはアバター非内蔵、個人設定は配布既定値に置換。ライセンス監査は未解決・機械検査エラー0。Git全履歴と配布2ZIPの混入監査は0件で成功（results/public-data-audit-0.1.5-final.json）。成果物・SHAはbuilds/releases/0.1.5/release-report.json。ユーザーがrelease/RELEASE_NOTES_0.1.5.mdを編集完了。今後も公開前に編集可能にし、開発の注意事項はリリースノートに含めない方針をAGENTSへ記録。
 
 公開完了：mainへ4420882をプッシュし、v0.1.5に監査済み2ZIPだけをアップロード。GitHub側のbytes/SHA256がrelease-reportと完全一致し、本文もユーザー編集ファイルと一致した後にdraft解除。公開状態isDraft=falseを確認。開発注意事項は今後リリースノートへ入れない。
+
+
+## 2026-11-11：lilToonアクセサリーの色空間不一致
+
+ユーザー指定の0.1.5/avatars/hanalan.tcapと書き出し元を調査。sakurakazariのhanabiraはColor=(0.96471,0.77255,0.90980)、wireは(0.96078,0.79216,0.39608)。tcap内にも同じ設定が残り、シェーダーはlilToon/supported=True。元プロジェクトはLinear、TanakaCapはGammaだった。マテリアル固有の色補正・Shader置換・原本の編集は行わず、Playerの色空間をLinearへ統一し両ビルド入口に設定検査を追加。
+
+旧0.1.5 PlayerのRGBA出力で花の白化を確認。Gamma/Linearだけを切り替えた同条件Editor比較でも茎の茶色→金色を確認。修正版公開用Playerをビルドして同じtcapを読み、AAあり/なし双方のRGBA出力を保存。花はピンク、茎は金色へ戻り、背景透過も保持。結果はresults/material-color/release015.{on,off}.alpha.png、linear-player.{on,off}.alpha.png。同一構図の頭部比較はgamma-controlled/avatar-0.65.pngとlinear-verified/avatar-0.65.png。MaterialColorAuditの色値とテクスチャ参照は各materials.txt。
+
+ColorTransferChecksで既知RGBA(192,96,32,128)をAA・プレビュー・Spout用シェーダーへ渡し、RGBは誤差2以内、アルファは誤差1以内（プレビューは不透明化）で一致。linear-verified/unity.logに成功マーカー。実際のOBS受信画面との比較は未実施で、全ワールド照明との一致や全アバターの保証ではない。Unity再認証前はMachine bindings不一致で失敗し、ユーザーのHubログイン後に再実行成功。途中の画像数値集計はPillow不在/NumPy DLLアクセス拒否で未実施だが、Unityによる画素検査と描画の目視確認は完了。
+
+アバター非内蔵のbuilds/release-playerを再ビルドし、開発用builds/playerへ実行ファイルとランタイムだけを反映（avatarsは維持）。配布済み0.1.5フォルダーのアプリは比較用に変更しない。テストbatは指定アバターの静止プレビューとSpoutへ切替。カメラ取得・実写表示なし。新規ZIP・GitHub公開なし。

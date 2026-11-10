@@ -12,6 +12,9 @@ namespace TanakaCap.Editor {
    Debug.Log("TANAKACAP_EXPORTER_BUILD_OK");
   }
   public static void Build(){
+   // VRChat avatar bundles are authored in Linear color space.
+   if(PlayerSettings.colorSpace!=ColorSpace.Linear)throw new Exception("TanakaCap requires Linear color space. Set Player Settings > Color Space to Linear before building.");
+   ColorTransferChecks.Run();
    FaceExpressionChecks.Run();
    AvatarMaterialChecks.Run();
    var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);

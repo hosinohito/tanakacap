@@ -62,3 +62,5 @@ OpenCV測定は150フレームの画像変換後の到着速度。測定範囲�
 - `audit_all_take_finger_signs.py --output <新規フォルダー>`：全保存元録画を共通FP16設定で再推論し、反転前の指計算を関節別に監査。入力は`--takes`で指定、既定results/comparison-takes。`audit_finger_signs.py`を呼び出して計測フックによる出力不変も確認。有効観測なしは判定不能として保存。実写表示や新規撮影なし。
 
 - `compare_head_yaw.py --records <全身推論frames.jsonl> --hand-records <手観測frames.jsonl> --reference-report <手比較report.json> --output <新規フォルダー>`：同じ撮影時計を検証し、旧ヨー/固定追従と円周ヨー/可変追従の再生入力を作る。両手の指は現行絶対値化に統一し、頭以外のpacket一致を検査。`render_comparison_videos.py`で描画する。
+
+- `audit_material_color.ps1 -Avatar <tcap> -Output <新規結果フォルダー>`：Unityでマテリアル値・頭部描画・色転送を検査。`preview_material.ps1 -Avatar <tcap>`：修正版公開用Playerでカメラなしの色確認。詳細は[開発手順](../../docs/DEVELOPMENT.md#マテリアルの色の検証)。
