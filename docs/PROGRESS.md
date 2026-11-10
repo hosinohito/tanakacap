@@ -2746,3 +2746,7 @@ Warudo/XR Animator/Dollars MONO SDK等のMediaPipe採用、VSeeFace/VTube Studio
 ColorTransferChecksで既知RGBA(192,96,32,128)をAA・プレビュー・Spout用シェーダーへ渡し、RGBは誤差2以内、アルファは誤差1以内（プレビューは不透明化）で一致。linear-verified/unity.logに成功マーカー。実際のOBS受信画面との比較は未実施で、全ワールド照明との一致や全アバターの保証ではない。Unity再認証前はMachine bindings不一致で失敗し、ユーザーのHubログイン後に再実行成功。途中の画像数値集計はPillow不在/NumPy DLLアクセス拒否で未実施だが、Unityによる画素検査と描画の目視確認は完了。
 
 アバター非内蔵のbuilds/release-playerを再ビルドし、開発用builds/playerへ実行ファイルとランタイムだけを反映（avatarsは維持）。配布済み0.1.5フォルダーのアプリは比較用に変更しない。テストbatは指定アバターの静止プレビューとSpoutへ切替。カメラ取得・実写表示なし。新規ZIP・GitHub公開なし。
+
+## 2026-11-11：手のコライダー接触を課題登録
+
+ユーザー依頼で実現性を調査。SecondaryMotionのTransform追従コライダーとPointCorrectionを拡張する形で可能と判断。掌・指の最終姿勢への追従、対象選択、欠測時の安定性、骨制限との競合と負荷評価をSECONDARY_MOTIONへ記録。今回は課題登録のみで、実装・ビルド・公開なし。
