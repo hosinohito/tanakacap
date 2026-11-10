@@ -2750,3 +2750,7 @@ ColorTransferChecksで既知RGBA(192,96,32,128)をAA・プレビュー・Spout�
 ## 2026-11-11：手のコライダー接触を課題登録
 
 ユーザー依頼で実現性を調査。SecondaryMotionのTransform追従コライダーとPointCorrectionを拡張する形で可能と判断。掌・指の最終姿勢への追従、対象選択、欠測時の安定性、骨制限との競合と負荷評価をSECONDARY_MOTIONへ記録。今回は課題登録のみで、実装・ビルド・公開なし。
+
+## 2026-11-11：手の接触課題をVRC設定の再現へ訂正
+
+ユーザーの指摘と公式PhysBones仕様を確認。手・指はDescriptorの標準コライダーを利用し、Allow Collisionと自己許可を再現する課題へ変更。直前の独自寸法生成・再書き出し不要を優先する案は撤回。現行ExporterはDescriptorを省略し衝突許可も保存しないため、既存tcapだけでは復元できない。Automatic/Custom/Disabledと許可設定の取得・保存・適用・検証を担当仕様へ記載。今回も課題仕様の更新のみ、実装なし。
