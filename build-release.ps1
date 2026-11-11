@@ -1,10 +1,12 @@
-param([string]$Version='', [switch]$SkipUnity, [switch]$Publishable, [switch]$CheckOnly, [switch]$NoZip, [string]$Unity='C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Unity.exe')
+param([string]$Version='', [switch]$SkipUnity, [switch]$Publishable, [switch]$CheckOnly, [switch]$NoZip, [string]$OutputName='', [string]$Unity='C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Unity.exe')
 $ErrorActionPreference='Stop'
 Push-Location $PSScriptRoot
 $taskTranscript=$false
 try {
 if(-not $Version){$Version='0.1.0-build-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')}
 if($Version -notmatch '^[0-9A-Za-z][0-9A-Za-z._-]{0,60}$'){throw 'Invalid version name'}
+if(-not $OutputName){$OutputName=$Version}
+if($OutputName -notmatch '^[0-9A-Za-z][0-9A-Za-z._-]{0,60}$'){throw 'Invalid output name'}
 New-Item -ItemType Directory -Path (Join-Path $PSScriptRoot 'results') -Force | Out-Null
 $taskBuildLog=Join-Path $PSScriptRoot ('results/release-build-'+$Version+'.log')
 Start-Transcript -Path $taskBuildLog | Out-Null
@@ -19,7 +21,7 @@ if(-not $CheckOnly -and -not (Test-Path -LiteralPath 'assets-source/licenses/ope
 & '.\.venv\Scripts\python.exe' -X utf8 tools/check_release_inputs.py
 if($LASTEXITCODE){throw 'Missing or changed originals. Restore the listed files; see README.md.'}
 if($CheckOnly){Write-Host 'Input check only. Unity activation will be checked during the actual build.';return}
-$taskOutput=Join-Path $PSScriptRoot ('builds/releases/'+$Version)
+$taskOutput=Join-Path $PSScriptRoot ('builds/releases/'+$OutputName)
 if(Test-Path -LiteralPath $taskOutput){throw "Version already exists: $taskOutput"}
 if(-not $SkipUnity){
  Write-Host 'Building Player and Exporter from source. Close this project in Unity Editor first.'
@@ -28,7 +30,7 @@ if(-not $SkipUnity){
  $taskProcess=Start-Process -FilePath $Unity -ArgumentList @('-batchmode','-quit','-projectPath',('"'+$taskProject+'"'),'-executeMethod','TanakaCap.Editor.BuildRelease.Build','-logFile',('"'+$taskLog+'"')) -WindowStyle Hidden -PassThru -Wait
  if($taskProcess.ExitCode -ne 0){throw "Unity build failed. Check Hub activation or an open Editor. Log: $taskLog"}
 }
-$taskArgs=@('-X','utf8','tools/build_release.py','--version',$Version)
+$taskArgs=@('-X','utf8','tools/build_release.py','--version',$Version,'--output-name',$OutputName)
 if($Publishable){$taskArgs+='--publishable'}
 if($NoZip){$taskArgs+='--no-zip'}
 & '.\.venv\Scripts\python.exe' @taskArgs

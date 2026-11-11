@@ -19,15 +19,17 @@ def sha(path):
         for block in iter(lambda:stream.read(1024*1024),b''):h.update(block)
     return h.hexdigest()
 
-def run(version,publishable=False,zip_output=True):
+def run(version,publishable=False,zip_output=True,output_name=None):
     if not re.fullmatch(r'[0-9A-Za-z][0-9A-Za-z._-]{0,60}',version):raise ValueError('Invalid version')
+    output_name=output_name or version
+    if not re.fullmatch(r'[0-9A-Za-z][0-9A-Za-z._-]{0,60}',output_name):raise ValueError('Invalid output name')
     config=json.loads((ROOT/'release/config.json').read_text(encoding='utf-8'))
     model_lock=json.loads((ROOT/'release/models.lock.json').read_text(encoding='utf-8'))
     for relative,expected in model_lock.items():
         if sha(ROOT/relative)!=expected:raise RuntimeError('Model differs from release lock: '+relative)
     if publishable and (not config['publication_approved'] or config['open_license_items']):
         raise RuntimeError('Final release review pending. Open license items: '+str(config['open_license_items']))
-    output=ROOT/'builds/releases'/version
+    output=ROOT/'builds/releases'/output_name
     output.mkdir(parents=True,exist_ok=False)
     stage=output/'TanakaCap';stage.mkdir()
     def copy(source,destination):
@@ -137,4 +139,4 @@ def run(version,publishable=False,zip_output=True):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--version',required=True);p.add_argument('--publishable',action='store_true')
-    p.add_argument('--no-zip',action='store_true');a=p.parse_args();run(a.version,a.publishable,not a.no_zip)
+    p.add_argument('--no-zip',action='store_true');p.add_argument('--output-name');a=p.parse_args();run(a.version,a.publishable,not a.no_zip,a.output_name)
