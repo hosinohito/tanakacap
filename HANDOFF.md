@@ -12,11 +12,11 @@
 
 ## 現在の作業・公開状態
 
-- **進行中の試行**：画像内位置オプションは実装・人工検査済み、腕の2課題は未解決。`builds/release-player`に試行版をビルド済み。指定9/11録画の旧/試行比較は `results/arm-release-fix/20260911T235327-031115Z/comparison-provisional.mp4`（左旧・右試行）。15〜30秒で実際に真横へ伸ばしたかユーザーへ確認中。投影長が直前の学習最大より約3割短くなっており、モデルの画像座標／長さ学習／奥行き復元を継続調査する。上腕へのねじり分担だけでは解消しなかった。詳細はPROGRESS末尾。未公開、リリースノートの再確認はまだ。
+- **揺れ物の暴れを修正・比較済み、見た目の確認待ち**。最新ユーザー提供tcapを変更せず、位置拘束からの速度増幅を角応答の方式へ変更し、動画物理刻みを固定。40秒/101骨の急回転最大179.99→34.00度、骨別p95最大179.29→9.88度。人工の収束/骨位置/手接触検査、Python350テスト成功。`results/secondary-audit/comparison.mp4` は左旧・右修正、`verified.mp4` は修正のみ。衣装状態はユーザー提供版。Exporterは無効コライダーを除外するよう修正。元tcapの再生成はしていない。builds/playerとbuilds/release-playerを最終ビルドへ更新し、実Playerの動作検査成功。デスクトップtanakacap-test.batは9/11録画＋最新版ユーザーアバターで検証できる。詳細・失敗試案はPROGRESS末尾、方式はSECONDARY_MOTION。腕・位置オプションと合わせて公開前の見た目確認とリリースノート編集待ち。`builds/releases/0.1.6-reviewed-candidate` は途中生成物で公開不可、梱包を再開しない。
 
 - **今回の0.1.6候補の公開はユーザー指定で中止**。GitHubには未公開・未プッシュ。既存の色修正・標準手接触は保持し、(1)腕を真横に広げると斜め前へ出る問題、(2)肘がねじ切れて見える問題、(3)画像内の左右・上下位置へアバターを移動する既定OFFオプション（顔サイズ由来の前後移動と競合させない）を修正・実装・検証してから同じリリースへ含める。旧候補 `builds/releases/0.1.6/` を公開しない。リリースノート `release/RELEASE_NOTES_0.1.6.md` は修正完了後に更新して再確認を受ける。実装とビルドは承認済み、解決まで自走する。症状の基準録画は `results/comparison-takes/20260911T235327-031115Z/camera.avi` の10秒付近から（ユーザー指定）。
 
-- **手接触**：SDK 3.7.0の実アバターコピーで標準10形状、許可6通り、Custom/Disabledと明示参照の保持を確認。左右接触・1800ステップ安定性・900フレーム録画経路・実Playerの動作/RGBA/Spout登録検査成功。新secondaryPhysics.version=2、旧version=1は従来のまま読む。利用者は新プラグインで再書き出しが必要。実人物の接触の見た目・本家物理との完全一致は未確認。仕様/数値/制限はSECONDARY_MOTION。テスト用新tcapは `results/hand-collision/hand-collision.tcap`。`builds/player/avatars/haolan.tcap`にも同じファイルを反映し、旧検証アバターは`results/hand-collision/previous-test-avatar.tcap`へ保存。デスクトップtanakacap-test.batは録画+auto-customへ戻した。検証手順はDEVELOPMENT。
+- **手接触**：SDK 3.7.0の実アバターコピーで標準10形状、許可6通り、Custom/Disabledと明示参照の保持を確認。左右接触・1800ステップ安定性・900フレーム録画経路・実Playerの動作/RGBA/Spout登録検査成功。新secondaryPhysics.version=2、旧version=1は従来のまま読む。利用者は新プラグインで再書き出しが必要。実人物の接触の見た目・本家物理との完全一致は未確認。仕様/数値/制限はSECONDARY_MOTION。エージェント生成tcapは衣装・表示状態がユーザーのアバターと異なったため削除済み。以後はデスクトップのユーザー提供 `avatar.tcap` を使用する。デスクトップtanakacap-test.batは録画+auto-customへ戻した。検証手順はDEVELOPMENT。
 - **色修正**：描画をGammaからLinearへ統一し、指定tcapの花が白・茎が茶色になる症状を修正。builds/release-playerとbuilds/playerは手接触も含む修正版、配布済み0.1.5は旧版のまま。素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、原本は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。原本は変更しない。比較画像/ログは`results/material-color/`、手検証用コピーは`results/hand-collision/project`。RGB/アルファ転送検査成功、実際のOBSシーン・ユーザーの見た目評価は未確認。
 
 - v0.1.5を公開済み。ビルド・全343テスト・Git全履歴と配布ZIPの混入検査は成功。ユーザー編集済みの`release/RELEASE_NOTES_0.1.5.md`を使用。公開した2ZIPのサイズ・SHA256と本文を照合済み。詳細はPROGRESS末尾。
@@ -62,7 +62,7 @@
 
 | 用途 | 場所 |
 | --- | --- |
-| 通常の検証アバター | `builds/player/avatars/haolan.tcap`。手衝突対応で再書き出した改変済みHAOLANにauto-customを適用。廃止済みデモ専用キーは使わない |
+| 通常の検証アバター | `builds/player/avatars/haolan.tcap`。ユーザー提供の `C:/Users/LLMTEST/Desktop/avatar.tcap` と同一（SHA256 `0ADC289B5B2B1C871573FEF108C6AAC0EB8310F82ED7F95D34D52872C67D2C44`）。auto-customを適用。エージェントが独自に再書き出したアバターへ戻さない。廃止済みデモ専用キーは使わない |
 | 今回の症状のアバター | `builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap`（改変済みHAOLAN）。人工入力の調査結果は`results/hand-sides-modified-20260923/`、配布版は`results/hand-sides-release-20260923/` |
 | 円周ヨー・ひとつ前の撮影の動画 | `results/avatar-videos/head-yaw-previous-full-20260924/after.mp4`。9/21撮影の全901フレーム約30秒。同階層`side-by-side.mp4`は左=旧ヨー＋固定、右=円周ヨー＋可変。入力は`results/head-yaw-previous-full-20260924/`。`previous-take`名の旧出力は40フレームの試行なので使わない |
 | 円周ヨー＋可変追従の9/23撮影動画 | `results/avatar-videos/head-yaw-circle-20260923/after.mp4`。比較は同階層`side-by-side.mp4`、左=旧比率ヨー＋固定追従、右=円周ヨー＋可変追従。両手はどちらも絶対値化、改変済みHAOLAN/auto-custom、901フレーム約30秒。入力は`results/head-yaw-video-20260923/` |

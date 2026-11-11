@@ -13,21 +13,23 @@ namespace TanakaCap {
    driver.enabled=false;motion.externalClock=true;
    var head=a.GetBoneTransform(HumanBodyBones.Head);var chest=a.GetBoneTransform(HumanBodyBones.Chest);
    var headRest=head.localRotation;var chestRest=chest.localRotation;
-   var all=GetComponentsInChildren<Transform>(true);var positions=all.Select(t=>t.localPosition).ToArray();
+   var all=motion.SimulatedBones;var positions=all.Select(t=>t.localPosition).ToArray();
    var primary=Enumerable.Range(0,(int)HumanBodyBones.LastBone).Select(i=>a.GetBoneTransform((HumanBodyBones)i)).Where(t=>t).ToArray();
    var rotations=primary.Select(t=>t.localRotation).ToArray();
    var report=new Report{bones=motion.BoneCount};string path=args[index+1];Directory.CreateDirectory(Path.GetDirectoryName(path));
+   using(var trace=new StreamWriter(path+".poses.txt"))
    for(int frame=0;frame<960;frame++) {
     float dt=frame%3==0?1f/30:1f/60;float t=frame/60f;
     motion.Restore();head.localRotation=headRest*Quaternion.Euler(0,frame<420?28*Mathf.Sin(t*2):0,0);
     chest.localRotation=chestRest*Quaternion.Euler(0,0,frame<420?9*Mathf.Sin(t*2):0);
     for(int j=0;j<primary.Length;j++)rotations[j]=primary[j].localRotation;
     motion.Step(dt);
+    trace.WriteLine("FRAME "+frame);trace.WriteLine(motion.PoseDiagnostics());
     report.maxAngle=Mathf.Max(report.maxAngle,motion.MaxAngle);report.maxStepMs=Mathf.Max(report.maxStepMs,motion.LastStepMilliseconds);
     for(int j=0;j<all.Length;j++)report.maxLocalPositionError=Mathf.Max(report.maxLocalPositionError,Vector3.Distance(positions[j],all[j].localPosition));
     for(int j=0;j<primary.Length;j++)report.maxPrimaryError=Mathf.Max(report.maxPrimaryError,Quaternion.Angle(rotations[j],primary[j].localRotation));
     if(frame==165){yield return null;Snapshot(path+".on.png");motion.Restore();yield return null;Snapshot(path+".off.png");}
-    report.frames++;if(frame%60==0)yield return null;
+    report.frames++;yield return null;
    }
    File.WriteAllText(path+".bones.txt",motion.Diagnostics());report.settledAngle=motion.MaxAngle;report.settledSpeed=motion.MaxTipSpeed;motion.motionEnabled=false;motion.Step(1f/60);report.offRestored=motion.MaxAngle<.1f;
    File.WriteAllText(path,JsonUtility.ToJson(report,true));

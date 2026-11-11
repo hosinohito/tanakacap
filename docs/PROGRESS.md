@@ -2783,3 +2783,25 @@ Unity起動時のsandbox由来ライセンス補助プロセスを終了し通�
 builds/release-playerは試行版へ再ビルド済み（unity-build-checked.log）。一時的な新規cs検出前のコンパイルエラー後、再コンパイルと最終ビルド成功、実Playerの追加検査マーカーも確認。公開中止したZIPは再生成していない。ui-settings.jsonの録画選択を指定9/11へ更新し、変更前をresults/arm-release-fix/ui-settings-before.jsonへ保存。
 
 通常検証用builds/playerへ試行Playerを反映しAssembly-CSharp.dllのSHA256一致を確認。tools/update-desktop-launcher.ps1で既存bat更新済み。test.batは保存済み9/11録画を開き、実カメラを使用しない。
+
+## 2026-11-11：検証アバターの訂正と横伸展区間の確認
+
+ユーザーが9/11録画15〜30秒は実際に真横へ腕を伸ばしていると確認。左右それぞれの肩軸・外側到達量・上腕前腕の画像上の直線性から、弱い平面伸展事前分布を加える候補を実装。学習長は縮めず、画像XYを維持し、急な深度切替を平滑化。モデルZなしの単眼の姿勢事前分布であり、斜め前への直線伸展との曖昧性は残る。Python349テスト成功、録画品質は新アバターで再評価する。
+
+エージェントがforExports/Phys_Haolan.prefabから書き出した手接触検証tcapは、衣装がなくメガネが表示され、従来のユーザー状態と異なるとの指摘。ユーザー指定で生成tcap2コピー（results/hand-collision/hand-collision.tcap、builds/player/avatars/haolan.tcapの旧内容）と、それを描画した画像・動画21点を削除。数値ログ・実写・ユーザー原本は保持。削除済み動画への過去のリンクは無効。ユーザー提供のC:/Users/LLMTEST/Desktop/avatar.tcapをbuilds/player/avatars/haolan.tcapへコピー、SHA256 0ADC289B5B2B1C871573FEF108C6AAC0EB8310F82ED7F95D34D52872C67D2C44一致確認。0.1.6/avatars/avatar.tcapも同一ユーザーファイルなので削除しない。ローカルUIのアバター選択を更新。以後このユーザー提供版で検証し、勝手に別prefabから再生成しない。
+
+## 2026-11-11：揺れ物の暴れの修正
+
+ユーザーが `results/arm-release-fix/user-avatar/` の髪・アクセサリーの暴れを指摘。リリース梱包を停止。生成途中の `builds/releases/0.1.6-reviewed-candidate` は公開不可。ユーザー提供tcap（SHA256 0ADC289B5B2B1C871573FEF108C6AAC0EB8310F82ED7F95D34D52872C67D2C44）を読み込んで調査し、変更しなかった。
+
+手接触OFF・全接触OFFの人工試験および録画診断でも急回転を確認。コライダーの削除では解消しない。先端の位置拘束による補正量を速度へ戻す旧方式と、動画生成時にfloat録画時刻の端数から生じる極小物理ステップを切り分けた。接線速度保持だけ、基点補間だけ、刻み数増加だけ、直接角加速度積分は録画で反転が残るか悪化し不採用。最終的に球面の平衡方向と角応答を分離し、接触・角度制限の補正を速度に加算しない方式と、動画の固定60fps物理刻みを採用。元の骨長・制限・許可された接触は保持。方式の詳細はSECONDARY_MOTION。
+
+同一9/11録画・同一ユーザーアバター、40.03秒/1201枚/30fps/101骨で、フレーム間回転の全骨最大179.99度→34.00度、各骨p95の最大179.29度→9.88度。結果 `results/secondary-audit/baseline-video.mp4`、`verified.mp4`、`comparison.mp4`（左旧/右新）、`.secondary.txt`、`.secondary.summary.json`。左右でパーティクルの乱数・実フレーム時間は一致せず、雪の粒の位置は比較対象外。全編デコードと16秒のアバター構図を確認。大幅な反転の改善であって、本家再現精度や実人物品質の合格率ではない。
+
+人工プローブ960フレームでは最大変位39.61度、静止後速度0.00000452m/s、シミュレーション対象骨のローカル位置誤差0、本体回転誤差0、OFF復元成功。旧プローブは60回に1回しかUnityのフレームを進めずConstraintを更新しない欠陥があったため、毎回進めるよう訂正。また全Transform位置検査は本来位置を動かすConstraintまで誤って失敗扱いするため、シミュレーション対象骨に限定した。修正前プローブの結果は参考切り分けのみ。結果 `results/secondary-audit/verified.json`。
+
+新たな人工回帰検査は骨長1/10/100mm×30/60/120fps、移動後の収束、骨位置・角度制限・OFF復元、標準手への継続接触と離した後の復帰。Unityビルド時に成功（secondary-audit-build-final.log）。Python350テスト成功。Exporterの明示コライダー無効状態の取りこぼしも修正、元の標準形状計算とSDK公開Editorの指配置・サイズ上限を照合。ユーザー提供tcapは再書き出しせずに症状を改善。新Exporterの実改変プロジェクトからの再書き出しは未実施（別prefabによる衣装状態の変更を避けるため）。
+
+以前の腕比較の補足：横伸展判定と深度枝連続化を追加、同一アバター15〜30秒の肘相対ねじり中央値は左148.73→48.81度、右132.76→35.01度。これは本家/実人物の正解との角度誤差ではない。全編の急変は残り、完全な腕品質保証はしない。比較はuser-avatarにあるが、揺れ物の旧計算を含むため新しい比較はsecondary-auditを使う。
+
+最終ビルドは `results/secondary-audit-build-delivery.log` で安定性・接触・復帰検査を再確認。builds/playerへ同期し、実受信/描画/腕/画像位置の動作検査成功（delivery-smoke.png関連ファイル）。デスクトップ検証bat更新、使用tcapのSHA256不変を再確認。動画の詳細骨トレースは明示的な--secondary-trace指定時のみ出力する。配布ZIP・公開は再開していない。

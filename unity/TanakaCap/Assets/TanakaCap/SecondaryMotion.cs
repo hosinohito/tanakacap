@@ -8,7 +8,7 @@ namespace TanakaCap {
  public class SecondaryMotion : MonoBehaviour {
   class Node {
    public Transform bone;public SecondaryBone settings;public SecondaryChain chain;public Quaternion rest,previousRest;
-   public Vector3 tip,velocity,anchor,initialGravityLocal;public float pull,spring,stiffness,gravity,falloff,immobile,radius,maxX,maxZ;
+   public Vector3 tip,velocity,anchor,initialGravityLocal,angularVelocity,baseVelocity;public float pull,spring,stiffness,gravity,falloff,immobile,radius,maxX,maxZ;
    public Quaternion limitRotation;
   }
   class Collider {public Transform transform;public SecondaryCollider settings;public bool active;public Vector3 center,axis,fallback;public float radius,half;}
@@ -17,11 +17,15 @@ namespace TanakaCap {
   RootState[] roots;Vector3 previousRoot;
   public bool motionEnabled=true,externalClock;
   public bool referenceDamping=true;
+  public bool diagnosticNoHands,diagnosticNoCollisions;
+  public string PoseDiagnostics()=>string.Join("\n",nodes.Select(n=>n.settings.path+"|"+n.bone.localRotation.ToString("F6")+"|"+n.velocity.magnitude.ToString("R")+"|"+n.anchor.ToString("F6")+"|"+n.bone.position.ToString("F6")+"|"+n.tip.ToString("F6")));
+
   public int BoneCount=>nodes.Count;
+  public Transform[] SimulatedBones=>nodes.Select(n=>n.bone).ToArray();
   public float MaxAngle=>nodes.Count==0?0:nodes.Max(n=>Quaternion.Angle(n.rest,n.bone.localRotation));
   public float MaxTipSpeed=>nodes.Count==0?0:nodes.Max(n=>n.velocity.magnitude);
   public float LastStepMilliseconds {get;private set;}
-  public string Diagnostics(){return string.Join("\n",nodes.Select(n=>n.settings.path+" angle="+Quaternion.Angle(n.rest,n.bone.localRotation)+" radius="+(n.radius*Scale(n.bone))+" tip="+n.tip+" colliders="+string.Join(";",n.chain.colliders.Select(i=>colliders[i].settings.path+" center="+colliders[i].transform.TransformPoint(colliders[i].settings.position)+" radius="+(colliders[i].settings.radius*Scale(colliders[i].transform))))));}
+  public string Diagnostics(){return string.Join("\n",nodes.Select(n=>n.settings.path+" length="+n.bone.TransformVector(n.settings.tail).magnitude+" scale="+Scale(n.bone)+" speed="+n.velocity.magnitude+" angle="+Quaternion.Angle(n.rest,n.bone.localRotation)+" radius="+(n.radius*Scale(n.bone))+" tip="+n.tip+" colliders="+string.Join(";",n.chain.colliders.Select(i=>colliders[i].settings.path+" center="+colliders[i].transform.TransformPoint(colliders[i].settings.position)+" radius="+(colliders[i].settings.radius*Scale(colliders[i].transform))))));}
   static float Curve(float value,SecondaryCurve curve,float t)=>value*(curve==null||curve.keys.Length==0?1:curve.Build().Evaluate(t));
   // Clamp the evaluated physical parameter, not the curve keys: tangents may overshoot.
   public static float SampleParameter(float basis,SecondaryCurve curve,float depth,float min,float max,string context) {
@@ -36,7 +40,7 @@ namespace TanakaCap {
   }
   public void Initialize(SecondaryPhysicsData data,Animator animator) {
    if((data.version!=1&&data.version!=2)||data.bones.Length>4096||data.chains.Length>512||data.colliders.Length>1024)throw new Exception("Unsupported secondary physics data");
-   var human=new HashSet<Transform>();for(int i=0;i<(int)HumanBodyBones.LastBone;i++){var b=animator.GetBoneTransform((HumanBodyBones)i);if(b)human.Add(b);}
+   var human=new HashSet<Transform>();for(int i=0;animator&&i<(int)HumanBodyBones.LastBone;i++){var b=animator.GetBoneTransform((HumanBodyBones)i);if(b)human.Add(b);}
    roots=new RootState[data.chains.Length];for(int i=0;i<roots.Length;i++){var t=Find(data.chains[i].root);roots[i]=new RootState{parent=t.parent?t.parent:transform};}
    foreach(var c in data.colliders){if(!Finite(c.radius)||c.radius<0||!Finite(c.height)||c.height<0||!Finite(c.position)||!Finite(c.rotation)||c.shapeType<0||c.shapeType>2||(c.standardHand&&(!Finite(c.maxWorldSize)||c.maxWorldSize<=0)))throw new Exception("Invalid secondary collider");colliders.Add(new Collider{transform=Find(c.path),settings=c});}
    var seen=new HashSet<Transform>();var rejectedChains=new HashSet<int>();
@@ -65,6 +69,11 @@ namespace TanakaCap {
    nodes.Sort((a,b)=>Depth(a.bone).CompareTo(Depth(b.bone)));ResetState();
    motionEnabled=Array.IndexOf(Environment.GetCommandLineArgs(),"--no-secondary-motion")<0;
    referenceDamping=Array.IndexOf(Environment.GetCommandLineArgs(),"--legacy-secondary-response")<0;
+   var args=Environment.GetCommandLineArgs();
+   if(Array.IndexOf(args,"--secondary-check")>=0||Array.IndexOf(args,"--render-replay")>=0){
+    diagnosticNoHands=Array.IndexOf(args,"--diagnostic-no-hand-collisions")>=0;
+    diagnosticNoCollisions=Array.IndexOf(args,"--diagnostic-no-collisions")>=0;
+   }
    Debug.Log("TANAKACAP_SECONDARY_READY bones="+nodes.Count+" chains="+roots.Length+" colliders="+colliders.Count+" enabled="+motionEnabled);
   }
   Transform Find(string path){var t=string.IsNullOrEmpty(path)?transform:transform.Find(path);if(!t)throw new Exception("Missing secondary transform: "+path);return t;}
@@ -74,7 +83,7 @@ namespace TanakaCap {
   static bool Finite(Quaternion q)=>Finite(q.x)&&Finite(q.y)&&Finite(q.z)&&Finite(q.w);
   static float Scale(Transform t){var s=t.lossyScale;return Mathf.Max(Mathf.Abs(s.x),Mathf.Abs(s.y),Mathf.Abs(s.z));}
   public void Restore(){foreach(var n in nodes)if(n.bone)n.bone.localRotation=n.rest;}
-  public void ResetState(){Restore();foreach(var n in nodes){n.tip=n.bone.TransformPoint(n.settings.tail);n.velocity=Vector3.zero;n.anchor=n.bone.position;n.previousRest=n.bone.rotation;}if(roots!=null)foreach(var r in roots)r.previousInverse=r.parent.worldToLocalMatrix;previousRoot=transform.position;}
+  public void ResetState(){Restore();foreach(var n in nodes){n.tip=n.bone.TransformPoint(n.settings.tail);n.velocity=Vector3.zero;n.angularVelocity=Vector3.zero;n.baseVelocity=Vector3.zero;n.anchor=n.bone.position;n.previousRest=n.bone.rotation;}if(roots!=null)foreach(var r in roots)r.previousInverse=r.parent.worldToLocalMatrix;previousRoot=transform.position;}
   void Update(){if(Input.GetKeyDown(KeyCode.F6)){motionEnabled=!motionEnabled;ResetState();}if(!externalClock)Restore();}
   void OnDisable(){Restore();}
   void LateUpdate(){if(!externalClock)Step(Time.unscaledDeltaTime);}
@@ -123,6 +132,15 @@ namespace TanakaCap {
    if(c.insideBounds?length>target:length<target)return (length>1e-8f?away/length:collider.fallback)*(target-length);
    return Vector3.zero;
   }
+  static void RemoveAngularIntoConstraint(ref Vector3 velocity,Vector3 before,Vector3 after){
+   var correction=Vector3.Cross(before,after);
+   RemoveBlockedVelocity(ref velocity,correction);
+  }
+  static void RemoveBlockedVelocity(ref Vector3 velocity,Vector3 correction){
+   if(correction.sqrMagnitude<1e-16f)return;
+   var normal=correction.normalized;float inward=Vector3.Dot(velocity,normal);
+   if(inward<0)velocity-=normal*inward;
+  }
   public void Step(float delta) {
    long start=System.Diagnostics.Stopwatch.GetTimestamp();
    if(!motionEnabled||!Finite(delta)||delta<=0||delta>.15f){ResetState();return;}
@@ -130,34 +148,59 @@ namespace TanakaCap {
    foreach(var collider in colliders)if(collider.settings.standardHand)PrepareCollider(collider);
    var worldMovement=transform.position-previousRoot;
    foreach(var n in nodes){
-    if(!n.bone.gameObject.activeInHierarchy){if(n.chain.resetWhenDisabled){n.tip=n.bone.TransformPoint(n.settings.tail);n.velocity=Vector3.zero;n.anchor=n.bone.position;}continue;}
+    if(!n.bone.gameObject.activeInHierarchy){if(n.chain.resetWhenDisabled){n.tip=n.bone.TransformPoint(n.settings.tail);n.velocity=Vector3.zero;n.angularVelocity=Vector3.zero;n.baseVelocity=Vector3.zero;n.anchor=n.bone.position;}continue;}
     if(n.chain.isAnimated)n.rest=n.bone.localRotation;
     n.bone.localRotation=n.rest;var restWorld=n.bone.rotation;
     Vector3 anchor=n.bone.position,restTip=n.bone.TransformPoint(n.settings.tail),restDirection=restTip-anchor;float length=restDirection.magnitude;if(length<1e-5f)continue;
     var root=roots[n.settings.chain];
     Vector3 transported=n.chain.immobileType==0?root.parent.localToWorldMatrix.MultiplyPoint3x4(root.previousInverse.MultiplyPoint3x4(n.tip)):n.tip+worldMovement;
     n.tip=Vector3.Lerp(n.tip,transported,n.immobile);
-    if((anchor-n.anchor).magnitude>.4f){n.tip=restTip;n.velocity=Vector3.zero;}
+    var transportedAnchor=n.chain.immobileType==0?root.parent.localToWorldMatrix.MultiplyPoint3x4(root.previousInverse.MultiplyPoint3x4(n.anchor)):n.anchor+worldMovement;
+    n.anchor=Vector3.Lerp(n.anchor,transportedAnchor,n.immobile);
+    Vector3 direction=(n.tip-n.anchor).normalized;
+    if(direction.sqrMagnitude<.5f)direction=restDirection.normalized;
+    var baseVelocity=(anchor-n.anchor)/delta;
+    var acceleration=(baseVelocity-n.baseVelocity)/delta;
+    if((anchor-n.anchor).magnitude>.4f){direction=restDirection.normalized;acceleration=Vector3.zero;n.angularVelocity=Vector3.zero;}
+    n.baseVelocity=baseVelocity;
     float frequency=n.pull<=0?0:.5f+8*Mathf.Sqrt(n.pull);float w=2*Mathf.PI*frequency;
     float damping=n.chain.integrationType==0?Mathf.Lerp(1.1f,.12f,n.spring):Mathf.Lerp(1,.055f,n.spring);
+    float drag=Mathf.Max(1,2*(referenceDamping?1.5f:1f)*damping*w);
     float radius=n.radius*Scale(n.bone);
-    for(int j=0;j<steps;j++){
-     Vector3 before=n.tip;Vector3 targetDirection=restDirection.normalized;
-     if(n.chain.integrationType==1){var previousDirection=n.chain.version>=1?n.previousRest*n.settings.tail:restDirection;targetDirection=Vector3.Slerp(targetDirection,previousDirection.normalized,n.stiffness);}
-     if(n.chain.version>=1){var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;if(gravity.sqrMagnitude>1e-10f)targetDirection=Vector3.Slerp(targetDirection,(n.gravity>=0?gravity:-gravity).normalized,Mathf.Clamp01(Mathf.Abs(n.gravity)*gravity.magnitude));}
-     n.velocity+=(anchor+targetDirection*length-n.tip)*(w*w*dt);
-     if(n.chain.version==0){var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;n.velocity+=gravity*(n.gravity*9.81f*dt);}
-     n.velocity*=Mathf.Exp(-Mathf.Max(1,2*(referenceDamping?1.5f:1f)*damping*w)*dt);n.tip+=n.velocity*dt;
-     n.tip=anchor+Limit(n,n.tip-anchor,restWorld)*length;
-     // Authored explicit colliders and permitted standard hands, sampled along each segment.
+    var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;
+    var force=-acceleration+(n.chain.version==0?gravity*(n.gravity*9.81f):Vector3.zero);
+    int nodeSteps=steps;
+    dt=delta/nodeSteps;
+    for(int j=0;j<nodeSteps;j++){
+     var target=restDirection.normalized;
+     if(n.chain.integrationType==1)target=Vector3.Slerp(target,(n.chain.version>=1?n.previousRest*n.settings.tail:restDirection).normalized,n.stiffness);
+     if(n.chain.version>=1&&gravity.sqrMagnitude>1e-10f)target=Vector3.Slerp(target,(n.gravity>=0?gravity:-gravity).normalized,Mathf.Clamp01(Mathf.Abs(n.gravity)*gravity.magnitude));
+     // Solve the force equilibrium on the fixed-length sphere first, then
+     // integrate its angular response. Direct position projection/dt injects
+     // energy at short segments, contacts and moving anchors.
+     var equilibrium=target*(w*w)+force/length;
+     if(equilibrium.sqrMagnitude>1e-12f)target=equilibrium.normalized;
+     var error=Quaternion.FromToRotation(direction,target);error.ToAngleAxis(out float degrees,out Vector3 axis);if(degrees>180)degrees-=360;
+     float response=w>0?w:2*Mathf.PI*.5f;
+     var torque=equilibrium.sqrMagnitude>1e-12f?axis*(degrees*Mathf.Deg2Rad*response*response):Vector3.zero;
+     n.angularVelocity=(n.angularVelocity+torque*dt)/(1+drag*dt+w*w*dt*dt);
+     float speed=n.angularVelocity.magnitude;
+     if(speed>1e-8f)direction=Quaternion.AngleAxis(speed*dt*Mathf.Rad2Deg,n.angularVelocity/speed)*direction;
+     var free=direction;
+     direction=Limit(n,direction,restWorld);
+     RemoveAngularIntoConstraint(ref n.angularVelocity,free,direction);
+     n.tip=anchor+direction*length;
      for(int iteration=0;iteration<2;iteration++){
-      foreach(int ci in n.chain.colliders){var c=colliders[ci];// An immovable anchor outside an inside volume cannot be projected by rotating its child.
-       int samples=c.settings.bonesAsSpheres||c.settings.insideBounds?1:4;for(int sample=1;sample<=samples;sample++){float u=sample/(float)samples;var p=Vector3.Lerp(anchor,n.tip,u);var correction=PointCorrection(p,radius,c);n.tip+=correction/u;}}
-      n.tip=anchor+Limit(n,n.tip-anchor,restWorld)*length;
+      foreach(int ci in n.chain.colliders){var c=colliders[ci];if(diagnosticNoCollisions||(diagnosticNoHands&&c.settings.standardHand))continue;
+       int samples=c.settings.bonesAsSpheres||c.settings.insideBounds?1:4;
+       for(int sample=1;sample<=samples;sample++){float u=sample/(float)samples;var correction=PointCorrection(Vector3.Lerp(anchor,n.tip,u),radius,c);n.tip+=correction/u;}
+      }
+      free=direction;direction=Limit(n,n.tip-anchor,restWorld);RemoveAngularIntoConstraint(ref n.angularVelocity,free,direction);n.tip=anchor+direction*length;
      }
-     n.velocity=(n.tip-before)/dt;
+     n.angularVelocity=Vector3.ProjectOnPlane(n.angularVelocity,direction);
     }
-    if(!Finite(n.tip)||!Finite(n.velocity)){n.tip=restTip;n.velocity=Vector3.zero;}
+    n.velocity=Vector3.Cross(n.angularVelocity,direction)*length;
+    if(!Finite(n.tip)||!Finite(n.velocity)||!Finite(n.angularVelocity)){n.tip=restTip;n.velocity=Vector3.zero;n.angularVelocity=Vector3.zero;n.baseVelocity=Vector3.zero;}
     n.bone.rotation=Quaternion.FromToRotation(restDirection,n.tip-anchor)*restWorld;n.anchor=anchor;n.previousRest=n.bone.rotation;
    }
    foreach(var r in roots)r.previousInverse=r.parent.worldToLocalMatrix;previousRoot=transform.position;

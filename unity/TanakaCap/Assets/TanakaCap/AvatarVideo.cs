@@ -107,6 +107,7 @@ namespace TanakaCap
                 Arguments="-hide_banner -loglevel error -n -f rawvideo -pixel_format rgb24 -video_size 1280x720 -framerate 30 -i pipe:0 -vf vflip -an -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p -movflags +faststart "+VideoQuote(output),
                 UseShellExecute=false,CreateNoWindow=true,RedirectStandardInput=true,RedirectStandardError=true
             };
+            using(var secondaryTrace=Array.IndexOf(Environment.GetCommandLineArgs(),"--secondary-trace")>=0?new StreamWriter(output+".secondary.txt"):null)
             using(var process=new System.Diagnostics.Process { StartInfo=start })
             {
                 process.ErrorDataReceived+=(sender,eventArgs)=>{if(eventArgs.Data!=null)lock(errors)errors.AppendLine(eventArgs.Data);};
@@ -117,11 +118,14 @@ namespace TanakaCap
                     for(int frame=0;frame<frames;frame++)
                     {
                         double time=frame/30.0;
-                        while(index+1<rows.Count && times[index+1]<=time)
+                        // Fixed simulation ticks: splitting at float packet timestamps creates
+                        // sub-microsecond residual steps, amplifying constraint corrections.
+                        while(simulation+1.0/60<=time+1e-9)
                         {
-                            VideoStep(times[index+1]-simulation);simulation=times[index+1];current=rows[++index].packet;
+                            simulation+=1.0/60;
+                            while(index+1<rows.Count && times[index+1]<=simulation+1e-9)current=rows[++index].packet;
+                            VideoStep(1.0/60);
                         }
-                        VideoStep(time-simulation);simulation=time;
                         // Unity refreshes skinned meshes once per engine frame.
                         // Manual Camera.Render calls inside one frame reuse stale skinning.
                         yield return null;
@@ -133,6 +137,7 @@ namespace TanakaCap
                             rightUpperRotation=right.upper.localRotation,rightLowerRotation=right.lower.localRotation,
                             leftHandRotation=left.hand.localRotation,rightHandRotation=right.hand.localRotation,
                             leftFingers=FingerAngles(left),rightFingers=FingerAngles(right)});
+                        var secondary=GetComponent<SecondaryMotion>();if(secondary&&secondaryTrace!=null){secondaryTrace.WriteLine("FRAME "+frame);secondaryTrace.WriteLine(secondary.PoseDiagnostics());}
                         camera.Render();RenderTexture.active=target;
                         pixels.ReadPixels(new Rect(0,0,1280,720),0,0,false);
                         var bytes=pixels.GetRawTextureData();

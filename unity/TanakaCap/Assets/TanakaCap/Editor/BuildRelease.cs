@@ -16,6 +16,7 @@ namespace TanakaCap.Editor {
    if(PlayerSettings.colorSpace!=ColorSpace.Linear)throw new Exception("TanakaCap requires Linear color space. Set Player Settings > Color Space to Linear before building.");
    ColorTransferChecks.Run();
    HandCollisionChecks.Run();
+   SecondaryStabilityChecks.Run();
    FaceExpressionChecks.Run();
    AvatarMaterialChecks.Run();
    var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);

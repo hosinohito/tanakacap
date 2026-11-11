@@ -95,6 +95,7 @@ namespace TanakaCap.Editor {
      if(id=="0"){warnings.Add("Null PhysBone collider reference: "+root);continue;}
      if(!colliderIds.TryGetValue(id,out int ci)){
       var cr=r.Lookup(id);if(cr==null)throw new Exception("Missing PhysBone collider "+id);
+      if(cr.Number("m_Enabled",1)==0){warnings.Add("Disabled PhysBone collider omitted: "+cr.Root()+" source="+id);continue;}
       var cc=new SecondaryCollider{path=cr.Root(),sourceId=id,shapeType=(int)cr.Number("shapeType"),insideBounds=cr.Number("insideBounds")!=0,bonesAsSpheres=cr.Number("bonesAsSpheres")!=0,radius=cr.Number("radius"),height=cr.Number("height"),position=cr.Vector("position"),rotation=cr.Rotation("rotation")};
       if(cc.shapeType<0||cc.shapeType>2)throw new Exception("Unsupported collider shape "+cc.shapeType);
       ci=colliders.Count;colliders.Add(cc);colliderIds.Add(id,ci);

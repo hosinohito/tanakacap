@@ -215,10 +215,15 @@ Player SettingsのColor SpaceはLinearを維持する。BuildRelease/BuildPlayer
 
 `-Method HandCollisionRuntimeAudit.Run -Log runtime-audit` で左右の接触、設定OFF、移動・回転・非表示・復帰・瞬間移動、骨長の維持と処理時間を検査する。`tools/diagnostics/check_recorded_session.py --avatar <tcap> --video <録画avi> --output <結果json>` は通常UIのプロセス制御で900フレームを処理し、推論完了と受信を確認する。カメラ取得・実写表示は行わない。
 
-現在のデスクトップtanakacap-test.batは `run-ui.ps1 -AutoCustom -RecordedTest`。標準のローカル検証アバター `builds/player/avatars/haolan.tcap` は手衝突対応の再書き出し版。以前の検証ファイルは `results/hand-collision/previous-test-avatar.tcap` に保存している。全検証素材は公開対象外。
+現在のデスクトップtanakacap-test.batは `run-ui.ps1 -AutoCustom -RecordedTest`。標準のローカル検証アバター `builds/player/avatars/haolan.tcap` はデスクトップのユーザー提供最新版avatar.tcapのコピー。エージェント生成版は削除済み。以前の検証ファイルは `results/hand-collision/previous-test-avatar.tcap` に保存している。全検証素材は公開対象外。
 
 ### 腕・画像内位置の開発中検証
 
 現在のローカル録画選択は results/comparison-takes/20260911T235327-031115Z/camera.avi。builds/player と builds/release-player は腕の修正候補を含む検証版で、公開用完成版ではない。画像内位置は「実験」タブの「映像内の位置に追従」で切り替える（既定OFF）。PythonとPlayerを同時更新する。
 
 tools/diagnostics/record_arm_release_baseline.py は指定録画の1200観測を保存し、tools/diagnostics/reprocess_arm_release.py は同一観測・30fpsの旧5dcce24/現行奥行き方式を再計算する。現状この2スクリプトはHANDOFFの指定録画用。実写を表示しない。Playerの --render-replay <jsonl> --video-output <新規mp4> --ffmpeg <exe> でアバター動画を出力する。位置追従・ねじり分担の実骨検査は --snapshot <png> --motion-check で実行し、ログの TANAKACAP_IMAGE_POSITION_CHECK_OK と TANAKACAP_TWIST_DISTRIBUTION_CHECK_OK を確認する。数値の成功だけで録画の見た目を合格扱いしない。
+
+
+### 揺れ物の診断
+
+Playerの `--secondary-check <新規json>` は現在のアバターで人工運動・収束・骨位置を検査する。`--render-replay` に `--secondary-trace` を加えると、動画横の `.secondary.txt` へ骨ごとの回転と速度を保存する。`python tools/diagnostics/analyze_secondary_trace.py <trace>` でフレーム間変化を集計できる。`--diagnostic-no-hand-collisions` / `--diagnostic-no-collisions` は上記診断時だけ有効。通常UIの設定には加えない。最新比較はHANDOFF参照。tcapを診断用に改変せず、実写は表示しない。
