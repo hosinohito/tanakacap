@@ -2767,3 +2767,5 @@ Unity起動時のsandbox由来ライセンス補助プロセスを終了し通�
 最適化前の0.1.6候補は公開せずresults/hand-collision/pre-optimization-releaseへ保管。最終Playerと利用説明書で再梱包。release/RELEASE_NOTES_0.1.6.mdを利用者向けの編集用下書きとして作成。ユーザーの編集完了前にはGitHub公開しない。
 
 最終梱包中にディスク容量不足で失敗。最適化前候補と失敗した今回の0.1.6生成物だけを削除して容量を回復し、検証済みPlayerから再梱包。原本・実写・既存リリースを保持。
+
+最終0.1.6ビルド完了。release-report.json記載の2ZIP（2,085,008,347 bytes / 162,031,872 bytes）の整合性検査成功。Git全履歴・両ZIPの実写/アバター/個人設定混入は0件（results/hand-collision/release-privacy-audit.json）。配布Assembly-CSharp.dllは最終ビルドとSHA256一致、使い方.txtは原本と一致。ライセンス梱包検査エラー0。GitHubへは未プッシュ/未公開で、リリースノートの編集完了待ち。
