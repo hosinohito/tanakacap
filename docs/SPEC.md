@@ -661,3 +661,5 @@
 ## 描画色空間の要件
 
 VRC由来のLinear色空間で書き出されたシェーダー・マテリアルを扱うため、TanakaCap PlayerはLinear色空間でビルドする。Gammaへの意図しない変更はビルド時に検出する。素材の色を個別に塗り替える補正は行わない。プレビューとSpoutの転送でRGBの二重変換を起こさず、透過用アルファを維持する。照明・環境反射が異なる任意のVRChatワールドとの完全な見た目一致は保証対象にしない。
+
+2026-11-11：VRC Descriptorの標準手・指コライダーとPhysBoneの自己衝突許可を引き継ぐ。AutomaticはSDK公開APIからコピー上で解決、Custom/Disabledを保持。旧tcapへ推測追加せず再書き出しする。SDK本体はPlayerに含めない。詳細はSECONDARY_MOTION.md。

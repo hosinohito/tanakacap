@@ -8,13 +8,14 @@ namespace TanakaCap.Editor {
   public static void BuildExporter(){
    SecondaryConstraintChecks.Run();
    Directory.CreateDirectory("../../builds/release-player");
-   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/AvatarShaderCompatibility.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
+   AssetDatabase.ExportPackage(new[]{"Assets/TanakaCap/LICENSE.txt","Assets/TanakaCap/AvatarPackage.cs","Assets/TanakaCap/FaceExpressions.cs","Assets/TanakaCap/Editor/FaceProfileExporter.cs","Assets/TanakaCap/Editor/AvatarExporter.cs","Assets/TanakaCap/Editor/AvatarShaderCompatibility.cs","Assets/TanakaCap/Editor/SecondaryMotionExporter.cs","Assets/TanakaCap/Editor/StandardHandColliderExporter.cs"},"../../builds/release-player/TanakaCapExporter.unitypackage",ExportPackageOptions.Default);
    Debug.Log("TANAKACAP_EXPORTER_BUILD_OK");
   }
   public static void Build(){
    // VRChat avatar bundles are authored in Linear color space.
    if(PlayerSettings.colorSpace!=ColorSpace.Linear)throw new Exception("TanakaCap requires Linear color space. Set Player Settings > Color Space to Linear before building.");
    ColorTransferChecks.Run();
+   HandCollisionChecks.Run();
    FaceExpressionChecks.Run();
    AvatarMaterialChecks.Run();
    var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);

@@ -39,7 +39,7 @@ F6で表示中の揺れをON/OFF。`--no-secondary-motion`で起動時OFF。追�
 
 ## 未対応と検証の限界
 
-- VRChat標準/グローバル/他人との衝突、掴み/ポーズ、Stretch/Squish、Animatorパラメーター出力は未対応として書き出し警告に残す。原本の全ギミック互換ではない。
+- 他ユーザー・ワールドとの衝突、掴み/ポーズ、Stretch/Squish、Animatorパラメーター出力は未対応として書き出し警告に残す。原本の全ギミック互換ではない。
 - 実HAOLANが使うのはAdvanced、Angle/Hinge、Inside Capsule。Simplified/Polar/Plane/新版1.1やSDKありの読み込み経路は実素材で未評価。非一様scaleには最大軸scaleの保守的近似を使う。
 - 本家VRChatと同じ入力軌跡を使った比較は未実施。次は通常利用での見た目評価と、VRChat内の合法的な実行結果との比較により復元時間/振幅を校正する。現段階を動作一致の合格とは扱わない。
 
@@ -56,16 +56,35 @@ F6で表示中の揺れをON/OFF。`--no-secondary-motion`で起動時OFF。追�
 本家SDKでの同一骨比較を実施し、独自減衰を1.5倍へ調整。復元周波数は比較で悪化したため維持。-LegacySecondaryResponseで旧減衰へ復帰。比較条件・数値・未達は[本家比較](PHYSBONE_REFERENCE.md)を参照。本文の本家比較未実施は今回以前の状態。
 
 
-## 追加予定：手による揺れ物への接触（未実装）
+## 手による揺れ物への接触
 
-ユーザー指定：VRChat標準の手・指コライダーとPhysBone側の衝突設定を引き継いで再現する。独自寸法のコライダーを一律追加する当初案は撤回。これは実装課題の仕様確定であり、まだ実装していない。
+ユーザー指定：VRChat標準の手・指コライダーとPhysBone側の衝突設定を引き継いで再現する。独自寸法のコライダーを一律追加する当初案は撤回。Exporterと独立ソルバーに実装。
 
 [公式仕様](https://creators.vrchat.com/common-components/physbones/)のStandard CollidersではAvatar Descriptorに標準コライダーを定義し、未調整時は自動設定、手・指をグローバルPhysBoneコライダーとして使う。指の対象は人差し指・中指・薬指・小指であり、独断で親指を追加しない。
 
 - 書き出し時にAvatar Descriptorの左右の手・指のAutomatic/Custom/Disabled、参照Transform、位置・回転・半径・高さ等を取得する。Customは元値、Disabledは無効を保持。AutomaticはSDKが生成する有効設定をコピー側で取得できるか確認し、取得不能を独自寸法で黙って補わず警告する。原本は変更しない。
 - PhysBoneのAllow Collision（True/False/Other）と自分への衝突許可を保存し、手との衝突を許可したチェーンだけに適用する。Falseは明示Collidersのみ、Otherは自己フィルターに従う。明示コライダーとの関係は対象SDK版と公式仕様で確認し、一律に無効化／有効化しない。
-- 現行Exporterは明示Collidersだけを取り込み、Descriptorを省略し、Allow Collisionも保存していない。この情報を失った既存tcapから元設定を正確に復元することはできない。再書き出しが必要になる前提で設計し、旧パッケージに手衝突を推測追加しない。
+- 0.1.5以前のExporterは明示Collidersだけを取り込み、Descriptorを省略し、Allow Collisionも保存していない。この情報を失った既存tcapから元設定を正確に復元することはできない。再書き出しが必要になる前提で設計し、旧パッケージに手衝突を推測追加しない。
 - 表示に使う手・指の最終姿勢（平滑化・頭との接触補正後）へ追従し、左右独立で計算する。SDK本体をPlayerへ持ち込まず、保存した形状と許可設定を独立ソルバーで扱う。
 - 検証：Automatic/Custom/Disabled、Allow Collisionの各選択と自己許可、左右独立、元の明示コライダー維持。欠測・復帰・瞬間移動、速い手のすり抜け、振動、骨長・角度制限との競合、追加負荷を人工入力と録画で評価する。設定の再現と本家の物理挙動の完全一致は区別する。
 
-つかむ／固定する操作、他ユーザー・ワールドとの衝突、布の面衝突はこの課題に含めない。実装順序は未定。過去の「揺れ物追加調整終了」は、この新規依頼を除く既存調整に対して維持する。
+つかむ／固定する操作、他ユーザー・ワールドとの衝突、布の面衝突はこの課題に含めない。過去の「揺れ物追加調整終了」は、この新規依頼を除く既存調整に対して維持する。
+
+### 保存形式と更新順序
+
+新しいsecondaryPhysics.versionは2。旧version=1は従来どおり読み込む。新しい書き出しは新しいPlayerと組み合わせる。
+StandardHandColliderExporterは書き出しコピーのDescriptorを読み、SDKの公開CalcPalmCollider/CalcFingerCollider APIでAutomaticと参照骨を解決する。Customの寸法を保持し、Disabledは省く。取得できない骨/API/状態はレポートへ理由を残す。SDKのDLLやソルバーは配布Playerに含めない。
+
+標準形状はsourceId/sourceStateとともに保存。掌は位置・回転を手のTransformから計算し、指は親骨から対象骨への向きでカプセルを更新する。SDKのCOLLIDER_MAX_SIZEに従い半径と掌の高さを制限する。非一様スケールは従来どおり最大軸による近似。
+
+Allow Collision False/True/Otherを保存し、TrueまたはOtherかつallowSelfのチェーンへ標準コライダーの参照を追加する。既存の明示コライダー参照は保持する。標準手形状は最終Humanoid姿勢を反映したStepの開始時に一度計算し、離れた点は境界球で除外。揺れ物に付いた明示コライダーは従来どおり衝突判定時に更新する。非表示の手・指は接触しない。
+
+衝突はサンプル点による離散判定で、1フレーム間に薄い揺れ物を通過する速い手の連続衝突を保証しない。骨長・角度制限と衝突が両立しない場合は元の骨制限を優先する。本家VRChatのソルバーとの完全一致ではない。
+
+### 手接触の検証結果（2026-11-11）
+
+SDK 3.7.0の改変済みHAOLANコピーで標準10形状を取得。True/False/Other×自己許可の6通り、Custom寸法・Disabled、明示参照の維持を確認。新tcapは42チェーン・96セグメント・26コライダー（標準10を含む）。左右それぞれの人工接触でOFF=0度、ON=約6.56度の変位を確認。
+
+900ステップ×ON/OFFで瞬間移動、非表示・復帰、0.5秒中断、リセット、ローカル骨長の維持を確認。Editorでの平均はOFF約0.314ms、ON約1.320ms（最大5.524ms）。30/60fps混在の人工入力、単一アバターであり一般性能の保証ではない。初回実装はON平均14.567msだったため、標準形状キャッシュと境界球除外で削減。詳細ログは `results/hand-collision/runtime-cached.log`。
+
+最新録画900フレームを通常UIと同じプロセス制御で処理し正常終了・受信を確認（`recorded-session.json`）。新tcapの実Playerで動作経路検査とRGBA/Spout登録検査、旧0.1.5 tcapの読み込み・透過検査も成功。実人物による接触の見た目評価と本家VRChatとの挙動一致は未確認。

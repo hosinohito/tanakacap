@@ -12,7 +12,9 @@
 
 ## 現在の作業・公開状態
 
-- lilToonアクセサリーの色修正：描画側をGammaからLinearへ変更し、意図しないGammaビルドを拒否。指定tcapの花が白・茎が茶色になる症状を旧Playerで確認し、修正Playerでピンク・金色の描画を確認。元VRCプロジェクトとtcapは変更なし。builds/release-playerとbuilds/playerは修正版、配布済み0.1.5は旧版のまま。ZIP作成・公開は未指示。検証素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、書出し元は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。比較画像・ログは`results/material-color/`。デスクトップのtanakacap-test.batはこのtcapを修正Playerで表示するカメラなしの色確認用へ変更済み。RGB/アルファのシェーダー転送検査成功。実際のOBSシーン・ユーザーの見た目評価は未確認。詳細はPROGRESSの2026-11-11。
+- **0.1.6公開準備中・ユーザーのリリースノート編集待ち**。手・指の標準コライダーとPhysBone自己衝突許可の継承を実装し、色空間修正と合わせてビルド。編集用下書きは `release/RELEASE_NOTES_0.1.6.md`。編集完了の明示前に公開しない。成果物は `builds/releases/0.1.6/`、公開対象はrelease-report.jsonのassetsのみ。最適化前候補は公開せず、容量不足のため削除済み。現在のユーザー指示はプロジェクト内編集・ビルド作業を承認済みとして確認を挟まず進めること。
+- **手接触**：SDK 3.7.0の実アバターコピーで標準10形状、許可6通り、Custom/Disabledと明示参照の保持を確認。左右接触・1800ステップ安定性・900フレーム録画経路・実Playerの動作/RGBA/Spout登録検査成功。新secondaryPhysics.version=2、旧version=1は従来のまま読む。利用者は新プラグインで再書き出しが必要。実人物の接触の見た目・本家物理との完全一致は未確認。仕様/数値/制限はSECONDARY_MOTION。テスト用新tcapは `results/hand-collision/hand-collision.tcap`。`builds/player/avatars/haolan.tcap`にも同じファイルを反映し、旧検証アバターは`results/hand-collision/previous-test-avatar.tcap`へ保存。デスクトップtanakacap-test.batは録画+auto-customへ戻した。検証手順はDEVELOPMENT。
+- **色修正**：描画をGammaからLinearへ統一し、指定tcapの花が白・茎が茶色になる症状を修正。builds/release-playerとbuilds/playerは手接触も含む修正版、配布済み0.1.5は旧版のまま。素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、原本は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。原本は変更しない。比較画像/ログは`results/material-color/`、手検証用コピーは`results/hand-collision/project`。RGB/アルファ転送検査成功、実際のOBSシーン・ユーザーの見た目評価は未確認。
 
 - v0.1.5を公開済み。ビルド・全343テスト・Git全履歴と配布ZIPの混入検査は成功。ユーザー編集済みの`release/RELEASE_NOTES_0.1.5.md`を使用。公開した2ZIPのサイズ・SHA256と本文を照合済み。詳細はPROGRESS末尾。
 
@@ -20,7 +22,7 @@
 - 顔ヨーは通常PnP経路で円周上の両目の投影弦長からacosで復元する方式を実装。正面10観測で基準取得、PnPの眼中心面距離で接近を補正。鼻は左右判定のみ。頭のピッチ・ヨー・ロール共通で可変速度追従を有効化（UI既定・ローカル保存値・通常PSランチャー）。[仕様と限界](docs/HEAD_YAW_AUDIT.md)。円周モデルの解釈はユーザー承認済み。最新901観測で数値確認、新旧比較動画で見た目の確認待ち。既存Playerで動作、再ビルド不要。
 - ユーザー指定：別PCでのコピー・操作方法は、再度指示があるまで案内しない。
 - READMEは公開入口、DEVELOPMENTは開発手順、HANDOFFは現在状態、PROGRESSは履歴に分離。別のCodexが再開できる情報を残すことが必須。
-- 配布済み最新版は[v0.1.5](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.5)。ローカル成果物は`builds/releases/0.1.5/TanakaCap/`。通常設定で作成し、個人設定・実写・アバターは同梱していない。Exporterはv0.1.3から変更なし。
+- 配布済み最新版は[v0.1.5](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.5)。ローカル成果物は`builds/releases/0.1.5/TanakaCap/`。通常設定で作成し、個人設定・実写・アバターは同梱していない。公開済みExporterはv0.1.3から変更なし。0.1.6候補では標準手コライダー対応を追加。
 - リポジトリは`hosinohito/tanakacap`。この環境の作業ブランチ`master`から公開先`main`へプッシュする。履歴から旧アバターシーンを除去済み。再度の履歴書き換えは不要。[公開データ監査](docs/RELEASE_PRIVACY.md)を維持する。
 - 配布モデルとランタイムの条件は監査済み。独自コードMIT。過去文書の「ライセンス未確定」を再開時の残件へ戻さない。根拠は[モデル](docs/MODEL_LICENSE_DECISIONS.md)・[ランタイム](docs/RUNTIME_LICENSE_DECISIONS.md)。
 
@@ -48,7 +50,7 @@
 - **指の振動、欠測・復帰**：人工入力と動作検証は済んでいるが、実人物の品質評価は未完了。最新の指試験に使った録画短区間には有効な指観測がなかった。
 - **瞼**：入力の閉眼値が小さく平滑化で減衰することを確認。検出失敗と断定していない。ユーザー指定で目の課題は保留。[監査](docs/EYELID_INPUT_AUDIT.md)。瞬きに伴う頭ピッチの話は対象外指定。
 - **汎用性・長時間品質**：他アバター、別PC、他カメラ、通常OBSシーン、最新構成の長時間安定性・端から端の遅延は、個別の検証範囲を越えて合格扱いしない。[検証](docs/PHASE4_VALIDATION.md)。
-- **追加開発**：VRChatのDescriptor標準手・指コライダーとPhysBoneのAllow Collision／自己許可を引き継ぐ接触機能を課題登録（未実装）。独自寸法の一律追加案は撤回。現行tcapは必要な設定を保存していないため再書き出しが必要になる。[範囲・検証条件](docs/SECONDARY_MOTION.md#追加予定手による揺れ物への接触未実装)。従来の揺れ物追加調整は終了指定を維持。音声口パクは将来課題。舌・デモ専用アバター経路は撤去済みで復活させない。手続き的なデモモーション入力は維持する。
+- **追加開発**：標準手・指コライダーの継承は実装・人工/録画検証済み（上記）。従来の揺れ物追加調整終了は今回の新規依頼以外に維持。音声口パクは将来課題。舌・デモ専用アバター経路は撤去済みで復活させない。手続き的なデモモーション入力は維持する。
 - 次の機能実装はユーザーの指示・見た目評価を受けてから選ぶ。フェーズ全体を完了扱いしない。[フェーズ文書](docs/IMPLEMENTATION_PHASES.md)内の古い未実装一覧は、現在の上記状態・機能仕様と照合する。
 
 ## このPCの検証素材・実行方法
@@ -57,7 +59,7 @@
 
 | 用途 | 場所 |
 | --- | --- |
-| 通常の検証アバター | `builds/player/avatars/haolan.tcap`。通常アバターにauto-customを適用。廃止済みデモ専用キーは使わない |
+| 通常の検証アバター | `builds/player/avatars/haolan.tcap`。手衝突対応で再書き出した改変済みHAOLANにauto-customを適用。廃止済みデモ専用キーは使わない |
 | 今回の症状のアバター | `builds/releases/0.1.3/TanakaCap/avatars/avatar.tcap`（改変済みHAOLAN）。人工入力の調査結果は`results/hand-sides-modified-20260923/`、配布版は`results/hand-sides-release-20260923/` |
 | 円周ヨー・ひとつ前の撮影の動画 | `results/avatar-videos/head-yaw-previous-full-20260924/after.mp4`。9/21撮影の全901フレーム約30秒。同階層`side-by-side.mp4`は左=旧ヨー＋固定、右=円周ヨー＋可変。入力は`results/head-yaw-previous-full-20260924/`。`previous-take`名の旧出力は40フレームの試行なので使わない |
 | 円周ヨー＋可変追従の9/23撮影動画 | `results/avatar-videos/head-yaw-circle-20260923/after.mp4`。比較は同階層`side-by-side.mp4`、左=旧比率ヨー＋固定追従、右=円周ヨー＋可変追従。両手はどちらも絶対値化、改変済みHAOLAN/auto-custom、901フレーム約30秒。入力は`results/head-yaw-video-20260923/` |

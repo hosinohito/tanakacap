@@ -2754,3 +2754,16 @@ ColorTransferChecksで既知RGBA(192,96,32,128)をAA・プレビュー・Spout�
 ## 2026-11-11：手の接触課題をVRC設定の再現へ訂正
 
 ユーザーの指摘と公式PhysBones仕様を確認。手・指はDescriptorの標準コライダーを利用し、Allow Collisionと自己許可を再現する課題へ変更。直前の独自寸法生成・再書き出し不要を優先する案は撤回。現行ExporterはDescriptorを省略し衝突許可も保存しないため、既存tcapだけでは復元できない。Automatic/Custom/Disabledと許可設定の取得・保存・適用・検証を担当仕様へ記載。今回も課題仕様の更新のみ、実装なし。
+
+
+## 2026-11-11：標準手コライダーの継承と0.1.6準備
+
+Descriptorの公開APIからAutomatic形状を解決、Custom/DisabledとPhysBone自己衝突許可を保存するExporterを実装。新secondaryPhysicsはversion=2、旧version=1は従来どおり読み込む。手・指の最終Transformへ追従し、親指は独断で追加しない。SDK本体は配布しない。
+
+原本をresults/hand-collision/projectへコピーして検証。設定6通り、Custom/Disabled、左右接触、900ステップ×2の安定性・負荷検査成功。最初のON平均14.567msをキャッシュ/境界球除外で1.320msへ改善。詳細数値と制限はSECONDARY_MOTIONへ記載。Unityビルドの色転送/手接触/表情/マテリアル/Constraint検査、Python343テスト成功。最新9/23録画900フレームの通常経路と実Playerの新旧tcap・RGBA/Spout登録試験成功。原本は変更せず、旧検証tcapを保存して新しい検証用へ切替。デスクトップbatを録画+auto-customへ戻した。
+
+Unity起動時のsandbox由来ライセンス補助プロセスを終了し通常環境で成功。依存DLLのACLが別Windowsユーザーに限定されビルドが失敗したため、承認済み範囲で.venvの読み取り/実行権限を補完。依存ファイルのSHA検査は復旧後成功、依存バージョン変更なし。
+
+最適化前の0.1.6候補は公開せずresults/hand-collision/pre-optimization-releaseへ保管。最終Playerと利用説明書で再梱包。release/RELEASE_NOTES_0.1.6.mdを利用者向けの編集用下書きとして作成。ユーザーの編集完了前にはGitHub公開しない。
+
+最終梱包中にディスク容量不足で失敗。最適化前候補と失敗した今回の0.1.6生成物だけを削除して容量を回復し、検証済みPlayerから再梱包。原本・実写・既存リリースを保持。

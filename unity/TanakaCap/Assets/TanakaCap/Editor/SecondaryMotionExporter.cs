@@ -14,6 +14,7 @@ namespace TanakaCap.Editor {
    public abstract string Text(string name);public abstract string[] References(string name);
    public abstract string Resolve(string reference);public abstract Reader Lookup(string reference);
    public abstract string Owner();public abstract SecondaryCurve Curve(string name);
+   public virtual bool CollisionSelf()=>Number("allowCollision",-1)==1;
    public virtual Vector3 Vector(string name){string s=Text(name);return new Vector3(Axis(s,"x"),Axis(s,"y"),Axis(s,"z"));}
    public virtual Quaternion Rotation(string name){string s=Text(name);return new Quaternion(Axis(s,"x"),Axis(s,"y"),Axis(s,"z"),Axis(s,"w",1));}
    public string Root(){var refs=References("rootTransform");return refs.Length==0||refs[0]=="0"?Owner():Resolve(refs[0]);}
@@ -24,6 +25,7 @@ namespace TanakaCap.Editor {
    SerializedObject so;Transform avatar;Dictionary<string,Live> objects;
    public Live(Component c,Transform root,Dictionary<string,Live> map){so=new SerializedObject(c);avatar=root;objects=map;id=c.GetInstanceID().ToString();}
    public override float Number(string n,float d=0){var p=so.FindProperty(n);if(p==null)return d;if(p.propertyType==SerializedPropertyType.Boolean)return p.boolValue?1:0;if(p.propertyType==SerializedPropertyType.Float)return p.floatValue;return p.intValue;}
+   public override bool CollisionSelf(){var p=so.FindProperty("allowCollision");if(p==null)return false;int mode=p.intValue;return mode==1||(mode==2&&(so.FindProperty("collisionFilter.allowSelf")?.boolValue??false));}
    public override string Text(string n)=>"";
    public override Vector3 Vector(string n)=>so.FindProperty(n)?.vector3Value??Vector3.zero;
    public override Quaternion Rotation(string n)=>so.FindProperty(n)?.quaternionValue??Quaternion.identity;
@@ -39,6 +41,7 @@ namespace TanakaCap.Editor {
    public string body,type;public Dictionary<string,Yaml> objects;
    public override string Text(string n){var m=Regex.Match(body,@"^  "+Regex.Escape(n)+@":\s*([^\r\n]*)",RegexOptions.Multiline);return m.Success?m.Groups[1].Value:"";}
    public override float Number(string n,float d=0)=>Parse(Text(n),d);
+   public override bool CollisionSelf(){int mode=(int)Number("allowCollision",-1);var filter=Regex.Match(body,@"^  collisionFilter:\n((?:    [^\n]*\n)*)",RegexOptions.Multiline);return mode==1||(mode==2&&Regex.IsMatch(filter.Value,@"^    allowSelf: 1\s*$",RegexOptions.Multiline));}
    public override string[] References(string n){var m=Regex.Match(body,@"^  "+Regex.Escape(n)+@":([^\n]*\n(?:  -[^\n]*\n)*)",RegexOptions.Multiline);return Regex.Matches(m.Value,@"fileID: (-?\d+)").Cast<Match>().Select(x=>x.Groups[1].Value).ToArray();}
    string Ref(string n)=>References(n).FirstOrDefault()??"0";
    string FullPath(string reference,int depth=0){if(reference=="0")return "";if(depth>256||!objects.TryGetValue(reference,out var t)||t.type!="4")throw new Exception("Unsupported prefab transform reference "+reference);var go=objects[t.Ref("m_GameObject")];return FullPath(t.Ref("m_Father"),depth+1)+"/"+go.Text("m_Name");}
@@ -72,6 +75,7 @@ namespace TanakaCap.Editor {
    return docs.Values.Where(x=>x.type=="114"&&x.Text("m_Script").Contains("fileID: 1661641543,")&&x.Text("m_Script").Contains("2a2c05204084d904aa4945ccff20d8e5")).Cast<Reader>().ToList();
   }
   public static SecondaryPhysicsData Collect(GameObject source,GameObject copy,List<string> warnings){
+   var standardHands=StandardHandColliderExporter.Collect(copy,warnings);
    var readers=Read(source,warnings).Where(r=>r.Number("m_Enabled",1)!=0).OrderBy(r=>r.Root().Count(ch=>ch=='/')+(r.Root().Length==0?0:1)).ToList();var chains=new List<SecondaryChain>();var colliders=new List<SecondaryCollider>();var bones=new List<SecondaryBone>();
    var activeRoots=new HashSet<string>(readers.Select(r=>r.Root()));
    var colliderIds=new Dictionary<string,int>();var roots=new HashSet<string>();var owned=new HashSet<string>();
@@ -81,6 +85,7 @@ namespace TanakaCap.Editor {
     var root=r.Root();var t=string.IsNullOrEmpty(root)?copy.transform:copy.transform.Find(root);if(!t)throw new Exception("PhysBone root missing: "+root);
     if(!roots.Add(root)){warnings.Add("Duplicate PhysBone root omitted (first component wins): "+root+" source="+r.id);continue;}
     var c=new SecondaryChain{root=root,sourceId=r.id,sourceMode=r is Live?"serialized-component":"text-prefab",
+     allowCollision=(int)r.Number("allowCollision",-1),collisionAllowSelf=r.CollisionSelf(),
      version=(int)r.Number("version"),integrationType=(int)r.Number("integrationType"),multiChildType=(int)r.Number("multiChildType"),immobileType=(int)r.Number("immobileType"),limitType=(int)r.Number("limitType"),
      endpointPosition=r.Vector("endpointPosition"),limitRotation=r.Vector("limitRotation"),isAnimated=r.Number("isAnimated")!=0,resetWhenDisabled=r.Number("resetWhenDisabled")!=0,
      ignored=r.References("ignoreTransforms").Where(x=>x!="0").Select(r.Resolve).ToArray()};
@@ -101,9 +106,11 @@ namespace TanakaCap.Editor {
     if(c.isAnimated)warnings.Add("Animated PhysBone: base transforms supported, original Animator controllers are not exported: "+root);
     if(r.Number("stretchMotion")!=0||r.Number("maxStretch")!=0||r.Number("maxSquish")!=0)warnings.Add("Stretch/squish not simulated (bone lengths preserved): "+root);
    }
-   warnings.Add("Independent PhysBone-parameter conversion: "+chains.Count+" chains / "+bones.Count+" segments / "+colliders.Count+" explicit colliders. Force mapping, curve depth and collision response approximate; not the VRChat solver. No global/player collisions, grab/pose or animator parameters.");
+   int handStart=colliders.Count;colliders.AddRange(standardHands);
+   foreach(var chain in chains)if(chain.collisionAllowSelf)chain.colliders=chain.colliders.Concat(Enumerable.Range(handStart,standardHands.Count)).ToArray();
+   warnings.Add("Independent PhysBone-parameter conversion: "+chains.Count+" chains / "+bones.Count+" segments / "+colliders.Count+" explicit colliders. Force mapping, curve depth and collision response approximate; not the VRChat solver. Standard own-hand collisions follow exported permissions; no other-player/world collisions, grab/pose or animator parameters.");
    if(chains.Count==0)warnings.Add("No readable PhysBone chains; secondary motion unavailable.");
-   return new SecondaryPhysicsData{chains=chains.ToArray(),bones=bones.ToArray(),colliders=colliders.ToArray()};
+   return new SecondaryPhysicsData{version=2,chains=chains.ToArray(),bones=bones.ToArray(),colliders=colliders.ToArray()};
   }
   internal static List<Tuple<Transform,Vector3,int>> CollectSegments(Transform root,Transform avatar,SecondaryChain c,HashSet<string> activeRoots,HashSet<Transform> human,List<string> warnings){
     var selected=new List<Tuple<Transform,Vector3,int>>();

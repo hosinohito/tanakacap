@@ -14,9 +14,11 @@ namespace TanakaCap {
   public SecondaryCurve pullCurve,springCurve,stiffnessCurve,gravityCurve,gravityFalloffCurve,immobileCurve,radiusCurve,maxAngleXCurve,maxAngleZCurve,limitRotationXCurve,limitRotationYCurve,limitRotationZCurve;
   public int[] colliders=new int[0];
   public bool isAnimated,resetWhenDisabled;
+  public int allowCollision=-1;public bool collisionAllowSelf;
  }
  [Serializable] public class SecondaryCollider {
   public string path,sourceId;public int shapeType;public bool insideBounds,bonesAsSpheres;
+  public bool standardHand,finger;public string sourceState;public float maxWorldSize;
   public float radius,height;public Vector3 position;public Quaternion rotation=Quaternion.identity;
  }
  [Serializable] public class SecondaryBone {public string path;public Vector3 tail;public int chain;public float depth;}

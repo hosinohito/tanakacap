@@ -11,7 +11,7 @@ namespace TanakaCap {
    public Vector3 tip,velocity,anchor,initialGravityLocal;public float pull,spring,stiffness,gravity,falloff,immobile,radius,maxX,maxZ;
    public Quaternion limitRotation;
   }
-  class Collider {public Transform transform;public SecondaryCollider settings;}
+  class Collider {public Transform transform;public SecondaryCollider settings;public bool active;public Vector3 center,axis,fallback;public float radius,half;}
   class RootState {public Transform parent;public Matrix4x4 previousInverse;}
   readonly List<Node> nodes=new List<Node>();readonly List<Collider> colliders=new List<Collider>();
   RootState[] roots;Vector3 previousRoot;
@@ -35,10 +35,10 @@ namespace TanakaCap {
    return bounded;
   }
   public void Initialize(SecondaryPhysicsData data,Animator animator) {
-   if(data.version!=1||data.bones.Length>4096||data.chains.Length>512||data.colliders.Length>1024)throw new Exception("Unsupported secondary physics data");
+   if((data.version!=1&&data.version!=2)||data.bones.Length>4096||data.chains.Length>512||data.colliders.Length>1024)throw new Exception("Unsupported secondary physics data");
    var human=new HashSet<Transform>();for(int i=0;i<(int)HumanBodyBones.LastBone;i++){var b=animator.GetBoneTransform((HumanBodyBones)i);if(b)human.Add(b);}
    roots=new RootState[data.chains.Length];for(int i=0;i<roots.Length;i++){var t=Find(data.chains[i].root);roots[i]=new RootState{parent=t.parent?t.parent:transform};}
-   foreach(var c in data.colliders){if(!Finite(c.radius)||c.radius<0||!Finite(c.height)||c.height<0||!Finite(c.position)||!Finite(c.rotation)||c.shapeType<0||c.shapeType>2)throw new Exception("Invalid secondary collider");colliders.Add(new Collider{transform=Find(c.path),settings=c});}
+   foreach(var c in data.colliders){if(!Finite(c.radius)||c.radius<0||!Finite(c.height)||c.height<0||!Finite(c.position)||!Finite(c.rotation)||c.shapeType<0||c.shapeType>2||(c.standardHand&&(!Finite(c.maxWorldSize)||c.maxWorldSize<=0)))throw new Exception("Invalid secondary collider");colliders.Add(new Collider{transform=Find(c.path),settings=c});}
    var seen=new HashSet<Transform>();var rejectedChains=new HashSet<int>();
    foreach(var s in data.bones) {
     if(rejectedChains.Contains(s.chain))continue;
@@ -88,19 +88,46 @@ namespace TanakaCap {
    else {float pitch=Mathf.Clamp(Mathf.Atan2(local.z,local.y)*Mathf.Rad2Deg,-n.maxX,n.maxX)*Mathf.Deg2Rad;float yaw=Mathf.Clamp(Mathf.Asin(Mathf.Clamp(local.x,-1,1))*Mathf.Rad2Deg,-n.maxZ,n.maxZ)*Mathf.Deg2Rad;local=new Vector3(Mathf.Sin(yaw),Mathf.Cos(yaw)*Mathf.Cos(pitch),Mathf.Cos(yaw)*Mathf.Sin(pitch));}
    return (frame*local).normalized;
   }
+  // Standard hands follow only the final humanoid pose, so cache them once per Step.
+  // Explicit colliders can follow simulated bones and are refreshed at the point of use.
+  static void PrepareCollider(Collider collider){
+   var c=collider.settings;var t=collider.transform;collider.active=t.gameObject.activeInHierarchy;
+   if(!collider.active)return;
+   float scale=Scale(t);var center=t.TransformPoint(c.position);var rotation=t.rotation*c.rotation;
+   float radius=c.radius*scale,height=c.height*scale;
+   if(c.standardHand){
+    radius=Mathf.Min(radius,c.maxWorldSize*.5f);
+    if(c.finger){
+     if(!t.parent){collider.active=false;return;}
+     var direction=t.position-t.parent.position;
+     if(direction.sqrMagnitude<1e-12f){collider.active=false;return;}
+     center=t.parent.position+direction.normalized*height*.5f;
+     rotation=Quaternion.FromToRotation(Vector3.up,direction);
+    }else height=Mathf.Min(height,c.maxWorldSize);
+   }
+   collider.center=center;collider.axis=rotation*Vector3.up;collider.fallback=rotation*Vector3.right;
+   collider.radius=radius;collider.half=c.shapeType==1?Mathf.Max(0,height*.5f-radius):0;
+  }
+  public static Vector3 CollisionCorrection(Vector3 point,float boneRadius,SecondaryCollider settings,Transform bone){
+   var collider=new Collider{settings=settings,transform=bone};PrepareCollider(collider);return PointCorrection(point,boneRadius,collider);
+  }
   static Vector3 PointCorrection(Vector3 point,float boneRadius,Collider collider){
-   var c=collider.settings;var t=collider.transform;float scale=Scale(t);var center=t.TransformPoint(c.position);var rotation=t.rotation*c.rotation;
-   if(c.shapeType==2){var normal=rotation*Vector3.up;float d=Vector3.Dot(point-center,normal);return d<boneRadius?normal*(boneRadius-d):Vector3.zero;}
-   float radius=c.radius*scale;float half=c.shapeType==1?Mathf.Max(0,c.height*scale*.5f-radius):0;
-   var axis=rotation*Vector3.up;var closest=center+axis*Mathf.Clamp(Vector3.Dot(point-center,axis),-half,half);
-   var away=point-closest;float length=away.magnitude;float target=c.insideBounds?Mathf.Max(0,radius-boneRadius):radius+boneRadius;
-   if(c.insideBounds?length>target:length<target)return (length>1e-8f?away/length:rotation*Vector3.right)*(target-length);
+   var c=collider.settings;if(!c.standardHand)PrepareCollider(collider);
+   if(!collider.active)return Vector3.zero;
+   var offset=point-collider.center;
+   if(c.shapeType==2){float d=Vector3.Dot(offset,collider.axis);return d<boneRadius?collider.axis*(boneRadius-d):Vector3.zero;}
+   float bound=collider.half+collider.radius+boneRadius;
+   if(!c.insideBounds&&offset.sqrMagnitude>=bound*bound)return Vector3.zero;
+   var away=offset-collider.axis*Mathf.Clamp(Vector3.Dot(offset,collider.axis),-collider.half,collider.half);
+   float length=away.magnitude;float target=c.insideBounds?Mathf.Max(0,collider.radius-boneRadius):collider.radius+boneRadius;
+   if(c.insideBounds?length>target:length<target)return (length>1e-8f?away/length:collider.fallback)*(target-length);
    return Vector3.zero;
   }
   public void Step(float delta) {
    long start=System.Diagnostics.Stopwatch.GetTimestamp();
    if(!motionEnabled||!Finite(delta)||delta<=0||delta>.15f){ResetState();return;}
    delta=Mathf.Min(delta,1f/15);int steps=Mathf.CeilToInt(delta*120);float dt=delta/steps;
+   foreach(var collider in colliders)if(collider.settings.standardHand)PrepareCollider(collider);
    var worldMovement=transform.position-previousRoot;
    foreach(var n in nodes){
     if(!n.bone.gameObject.activeInHierarchy){if(n.chain.resetWhenDisabled){n.tip=n.bone.TransformPoint(n.settings.tail);n.velocity=Vector3.zero;n.anchor=n.bone.position;}continue;}
@@ -122,7 +149,7 @@ namespace TanakaCap {
      if(n.chain.version==0){var gravity=Vector3.down-(restWorld*n.initialGravityLocal)*n.falloff;n.velocity+=gravity*(n.gravity*9.81f*dt);}
      n.velocity*=Mathf.Exp(-Mathf.Max(1,2*(referenceDamping?1.5f:1f)*damping*w)*dt);n.tip+=n.velocity*dt;
      n.tip=anchor+Limit(n,n.tip-anchor,restWorld)*length;
-     // Explicit original colliders, with sampled segment capsules (not mesh collisions).
+     // Authored explicit colliders and permitted standard hands, sampled along each segment.
      for(int iteration=0;iteration<2;iteration++){
       foreach(int ci in n.chain.colliders){var c=colliders[ci];// An immovable anchor outside an inside volume cannot be projected by rotating its child.
        int samples=c.settings.bonesAsSpheres||c.settings.insideBounds?1:4;for(int sample=1;sample<=samples;sample++){float u=sample/(float)samples;var p=Vector3.Lerp(anchor,n.tip,u);var correction=PointCorrection(p,radius,c);n.tip+=correction/u;}}

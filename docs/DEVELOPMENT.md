@@ -207,3 +207,12 @@ Player SettingsのColor SpaceはLinearを維持する。BuildRelease/BuildPlayer
 `tools/update-desktop-launcher.ps1 -MaterialAvatar <tcap>`はデスクトップのtanakacap-test.batをアバターの色確認用に切り替える。builds/release-playerを使用し、推論・カメラ取得なしでプレビューとSpoutを出力する。引数なしで更新すると従来の録画UI検証へ戻る。
 
 色空間の背景：[UnityのLinear/Gammaワークフロー](https://docs.unity.cn/Manual/LinearRendering-LinearOrGammaWorkflow.html)。実際の原因と検証結果はPROGRESSの2026-11-11を参照。
+
+
+### 標準手コライダーの検証
+
+`tools/diagnostics/audit_hand_collision.ps1 -SourceProject <VRC改変プロジェクト>` はAssets/Packages/ProjectSettingsを `results/hand-collision/project` へコピーし、原本を編集せずSDKの公開API・許可設定を検証する。既存コピーがあれば再利用する。現在のfixtureはコピー内の `Assets/forExports/Phys_Haolan.prefab`。SDK 3.7.0 / Unity 2022.3.22f1で評価済み。書き出し先 `results/hand-collision/hand-collision.tcap` が存在すると上書きせず止まるため、再書き出し時は旧ファイルを別名で保管する。
+
+`-Method HandCollisionRuntimeAudit.Run -Log runtime-audit` で左右の接触、設定OFF、移動・回転・非表示・復帰・瞬間移動、骨長の維持と処理時間を検査する。`tools/diagnostics/check_recorded_session.py --avatar <tcap> --video <録画avi> --output <結果json>` は通常UIのプロセス制御で900フレームを処理し、推論完了と受信を確認する。カメラ取得・実写表示は行わない。
+
+現在のデスクトップtanakacap-test.batは `run-ui.ps1 -AutoCustom -RecordedTest`。標準のローカル検証アバター `builds/player/avatars/haolan.tcap` は手衝突対応の再書き出し版。以前の検証ファイルは `results/hand-collision/previous-test-avatar.tcap` に保存している。全検証素材は公開対象外。
