@@ -5,6 +5,7 @@ NUMERIC={
  'mouth_lip_depth_scale':('口の基準形状の奥行き',1.5,.5,2.),
 }
 OPTIONS={
+ 'image_position':('映像内の位置に追従','off',{'off':'しない','on':'左右・上下に移動'}),
  'head_pose_mode':('頭角度','pnp',{'pnp':'PnP（基準形状から推定）','size2d':'2D比率（顔の大きさから推定）','legacy':'従来2D','depth3d':'3D深度','pnp_depthmouth':'PnP・口に3D深度'}),
  'precision':('演算精度','fp16',{'fp16':'FP16','fp32':'FP32'}),
  'observation_mode':('観測の平均','overlap',{'overlap':'4フレーム（3平均を重複）','blocks':'6フレーム（3平均を分離）','direct':'2フレーム（平均なし）'}),

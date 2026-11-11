@@ -8,6 +8,37 @@ namespace TanakaCap
         bool legacyArmRotation;
         float armTwistLimit=ForearmTwistLimit;
 
+        static void RestoreDistributedTwist(Arm arm)
+        {
+            if(!arm.twistDistributed)return;
+            var lower=arm.lower.rotation;var hand=arm.hand.rotation;
+            arm.upper.localRotation=arm.upperBeforeDistribution;
+            arm.lower.rotation=lower;arm.hand.rotation=hand;
+            arm.twistDistributed=false;
+        }
+
+        public static float UpperTwistShare(float bendDegrees,float twist)
+        {
+            // Near extension, the elbow plane is underdetermined. Share palm
+            // roll with the humerus rather than twisting only the elbow seam.
+            return twist*.65f*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(10,60,bendDegrees)));
+        }
+
+        void DistributeArmTwist(Arm arm)
+        {
+            if(legacyArmRotation)return;
+            var upperAxis=(arm.lower.position-arm.upper.position).normalized;
+            var lowerAxis=(arm.hand.position-arm.lower.position).normalized;
+            float target=UpperTwistShare(Vector3.Angle(upperAxis,lowerAxis),arm.twist);
+            arm.upperTwistShare=Mathf.MoveTowards(arm.upperTwistShare,target,360*FrameDelta);
+            arm.upperBeforeDistribution=arm.upper.localRotation;
+            var lower=arm.lower.rotation;var hand=arm.hand.rotation;
+            arm.upper.rotation=Quaternion.AngleAxis(arm.upperTwistShare,upperAxis)*arm.upper.rotation;
+            // Keep solved bone endpoints and palm orientation exactly unchanged.
+            arm.lower.rotation=lower;arm.hand.rotation=hand;
+            arm.twistDistributed=true;
+        }
+
         void ConfigureArmRotation(string[] args)
         {
             int option=Array.IndexOf(args,"--arm-rotation");

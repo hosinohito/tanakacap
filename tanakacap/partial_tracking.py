@@ -4,11 +4,12 @@ import socket
 import time
 import uuid
 
-FACE_PARTS = ('head', 'face_distance', 'mouth', 'brows', 'eyelids')
+FACE_PARTS = ('head', 'face_distance', 'face_position', 'mouth', 'brows', 'eyelids')
 BODY_PARTS = ('torso', 'left_arm', 'right_arm', 'left_palm', 'right_palm', 'left_fingers', 'right_fingers')
 PART_FIELDS = {
     'head': ('headPitch', 'headYaw', 'headRoll'),
     'face_distance': ('faceDistanceRatio',),
+    'face_position': ('faceImagePosition',),
     'mouth': ('mouth', 'mouthWidth', 'mouthRound', 'mouthSmile', 'mouthContourTracked',
               'mouthLeftCorner', 'mouthRightCorner', 'mouthBow', 'mouthShift'),
     'brows': ('browLeftInner', 'browLeftOuter', 'browRightInner', 'browRightOuter'),
@@ -29,8 +30,8 @@ def part_state(pose, part, disabled):
         valid = pose.get('headTracked', pose.get('faceTracked', False))
     elif part in ('mouth', 'eyelids'):
         valid = pose.get('faceTracked', False)
-    elif part in ('brows', 'face_distance', 'gaze', 'torso'):
-        flag = dict(brows='browTracked', face_distance='faceDistanceTracked', gaze='gazeTracked', torso='torsoTracked')[part]
+    elif part in ('brows', 'face_distance', 'face_position', 'gaze', 'torso'):
+        flag = dict(brows='browTracked', face_distance='faceDistanceTracked', face_position='faceImagePositionTracked', gaze='gazeTracked', torso='torsoTracked')[part]
         valid = pose.get(flag, False)
     else:
         side, kind = part.split('_')

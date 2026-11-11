@@ -50,7 +50,7 @@ def test_shared_face_matches_live_sequence_and_fingerprint(tmp_path):
     face=SharedFace(settings,tmp_path);pose=HeadPose();f=FaceFilter(3,1);d=FaceDistance(3,1);image=np.zeros((720,1280,3),np.uint8)
     for i in range(35):
         xy,scores=projected(pitch=0 if i<20 else 15);now=i/30
-        p=packet_from_landmarks(xy,scores,i);pose.update(xy,scores,p,(1280,720));f.update(p,now);d.update(xy,scores,p,now)
+        p=packet_from_landmarks(xy,scores,i);pose.update(xy,scores,p,(1280,720));f.update(p,now);d.update(xy,scores,p,now,(1280,720))
         assert clean(face.update(image,xy,scores,i,now))==clean(p)
     assert fingerprint(settings)==fingerprint(settings)
     assert fingerprint(settings)['sha256']!=fingerprint({**settings,'face_distance_filter':'legacy'})['sha256']

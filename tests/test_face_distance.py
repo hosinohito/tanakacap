@@ -5,6 +5,20 @@ from test_face_scale import add_face
 from test_body3d import body
 
 
+def test_image_translation_changes_only_xy_and_missing_face_is_not_a_zero_target():
+    xy,s,_,_=body();add_face(xy,s)
+    model=FaceDistance(mode='legacy');p=dict(faceTracked=True,headYaw=0.,headPitch=0.)
+    for i in range(20):model.update(xy,s,p,i/30,(1280,720))
+    before=p['faceImagePosition'].copy();ratio=p['faceDistanceRatio']
+    for i in range(20,40):model.update(xy+[128,72],s,p,i/30,(1280,720))
+    assert p['faceImagePosition']['x']==pytest.approx(before['x']+.1)
+    assert p['faceImagePosition']['y']==pytest.approx(before['y']-.1)
+    assert p['faceDistanceRatio']==pytest.approx(ratio)
+    p['faceTracked']=False
+    model.update(xy,s,p,2.,(1280,720))
+    assert not p['faceImagePositionTracked']
+
+
 def test_distance_approach_retreat_ignores_jaw_roll_and_holds_on_loss():
     xy,s,_,_=body();add_face(xy,s)
     model=FaceDistance(3,1,mode="legacy")

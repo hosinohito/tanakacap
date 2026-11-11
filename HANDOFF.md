@@ -12,7 +12,10 @@
 
 ## 現在の作業・公開状態
 
-- **0.1.6ビルド・監査完了／リリースノート編集待ち**。手・指の標準コライダーとPhysBone自己衝突許可の継承を実装し、色空間修正と合わせてビルド。編集用下書きは `release/RELEASE_NOTES_0.1.6.md`。編集完了の明示前に公開しない。成果物は `builds/releases/0.1.6/`、公開対象はrelease-report.jsonのassetsのみ。2分割ZIPのCRC・ライセンス梱包・Git全履歴/ZIP混入監査は成功（禁止データ0件）。監査結果は `results/hand-collision/release-privacy-audit.json`。GitHubへのプッシュ・公開はまだ行っていない。最適化前候補は公開せず、容量不足のため削除済み。現在のユーザー指示はプロジェクト内編集・ビルド作業を承認済みとして確認を挟まず進めること。
+- **進行中の試行**：画像内位置オプションは実装・人工検査済み、腕の2課題は未解決。`builds/release-player`に試行版をビルド済み。指定9/11録画の旧/試行比較は `results/arm-release-fix/20260911T235327-031115Z/comparison-provisional.mp4`（左旧・右試行）。15〜30秒で実際に真横へ伸ばしたかユーザーへ確認中。投影長が直前の学習最大より約3割短くなっており、モデルの画像座標／長さ学習／奥行き復元を継続調査する。上腕へのねじり分担だけでは解消しなかった。詳細はPROGRESS末尾。未公開、リリースノートの再確認はまだ。
+
+- **今回の0.1.6候補の公開はユーザー指定で中止**。GitHubには未公開・未プッシュ。既存の色修正・標準手接触は保持し、(1)腕を真横に広げると斜め前へ出る問題、(2)肘がねじ切れて見える問題、(3)画像内の左右・上下位置へアバターを移動する既定OFFオプション（顔サイズ由来の前後移動と競合させない）を修正・実装・検証してから同じリリースへ含める。旧候補 `builds/releases/0.1.6/` を公開しない。リリースノート `release/RELEASE_NOTES_0.1.6.md` は修正完了後に更新して再確認を受ける。実装とビルドは承認済み、解決まで自走する。症状の基準録画は `results/comparison-takes/20260911T235327-031115Z/camera.avi` の10秒付近から（ユーザー指定）。
+
 - **手接触**：SDK 3.7.0の実アバターコピーで標準10形状、許可6通り、Custom/Disabledと明示参照の保持を確認。左右接触・1800ステップ安定性・900フレーム録画経路・実Playerの動作/RGBA/Spout登録検査成功。新secondaryPhysics.version=2、旧version=1は従来のまま読む。利用者は新プラグインで再書き出しが必要。実人物の接触の見た目・本家物理との完全一致は未確認。仕様/数値/制限はSECONDARY_MOTION。テスト用新tcapは `results/hand-collision/hand-collision.tcap`。`builds/player/avatars/haolan.tcap`にも同じファイルを反映し、旧検証アバターは`results/hand-collision/previous-test-avatar.tcap`へ保存。デスクトップtanakacap-test.batは録画+auto-customへ戻した。検証手順はDEVELOPMENT。
 - **色修正**：描画をGammaからLinearへ統一し、指定tcapの花が白・茎が茶色になる症状を修正。builds/release-playerとbuilds/playerは手接触も含む修正版、配布済み0.1.5は旧版のまま。素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、原本は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。原本は変更しない。比較画像/ログは`results/material-color/`、手検証用コピーは`results/hand-collision/project`。RGB/アルファ転送検査成功、実際のOBSシーン・ユーザーの見た目評価は未確認。
 

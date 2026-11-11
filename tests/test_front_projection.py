@@ -55,3 +55,18 @@ def test_lower_bound_calibration_does_not_flatten_observed_forward_reach():
     assert result[1,2]>.18
     np.testing.assert_allclose(result[:,:2],bones[:,:2])
     assert np.linalg.norm(result[1])>=np.linalg.norm(bones[1])-1e-10
+
+
+def test_supported_full_extension_rejects_spurious_model_depth():
+    for sign in (-1,1):
+        bones=np.array([[sign*.30,0,.18],[sign*.28,0,-.16]])
+        result=FrontProjection().solve(bones,[.30,.28],1.)
+        np.testing.assert_allclose(result[:,:2],bones[:,:2])
+        np.testing.assert_allclose(result[:,2],0,atol=1e-8)
+
+
+def test_supported_shortening_uses_length_not_model_z_floor():
+    bones=np.array([[.24,0,.28],[.224,0,.27]])
+    result=FrontProjection().solve(bones,[.30,.28],1.)
+    np.testing.assert_allclose(np.linalg.norm(result,axis=1),[.30,.28],atol=1e-8)
+    np.testing.assert_allclose(result[:,:2],bones[:,:2])

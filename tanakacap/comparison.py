@@ -88,7 +88,7 @@ class SharedFace:
             self.pose.update(xy,scores,p,image.shape[1::-1],**extra)
         self.pose_ms=(time.perf_counter()-start)*1000
         if self.gaze:self.gaze.update(image,xy,scores,p,now)
-        self.filter.update(p,now);self.distance.update(xy,scores,p,now)
+        self.filter.update(p,now);self.distance.update(xy,scores,p,now,image.shape[1::-1])
         return p
 
 class Metrics:

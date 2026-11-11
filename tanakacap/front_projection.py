@@ -30,10 +30,15 @@ class FrontProjection:
         planar = np.linalg.norm(bones[:, :2], axis=1)
         # Online maxima are lower bounds. Never shrink a longer valid XY
         # observation to enforce a stale length, nor shorten calibration.
-        # A supported maximum projection is a lower bound, not an exact
-        # anatomical length. Preserve plausible observed depth when that bound
-        # is still too short; otherwise an early genuine reach gets flattened.
-        observed_z = np.clip(bones[:, 2], -lengths, lengths)
+        # Once a segment fits the supported projection, its Z magnitude comes
+        # from that length, not a second, incompatible model-length estimate.
+        # Otherwise even a fully extended planar arm inherits spurious model Z.
+        # During a newly longer observation the lower bound is still catching up
+        # (ten supporting samples); gradually retain model depth only there.
+        ratio = planar / lengths
+        bootstrap = np.clip((ratio-1.)/.1, 0., 1.)
+        bootstrap = bootstrap*bootstrap*(3.-2.*bootstrap)
+        observed_z = np.clip(bones[:, 2], -lengths, lengths)*bootstrap
         effective = np.maximum(lengths, np.hypot(planar, observed_z))
         magnitudes = np.sqrt(np.maximum(0, effective**2-planar**2))
         candidates = []
@@ -61,7 +66,7 @@ class FrontProjection:
         cost, result, cosine = min(candidates, key=lambda item:item[0])
         self.previous = result.copy()
         self.details = dict(reason='fit', projected=planar.tolist(), supported=lengths.tolist(),
-            effective=effective.tolist(), model_z=bones[:, 2].tolist(), solved_z=result[:, 2].tolist(),
+            effective=effective.tolist(), bootstrap_depth_weight=bootstrap.tolist(), model_z=bones[:, 2].tolist(), solved_z=result[:, 2].tolist(),
             bend_degrees=float(np.degrees(np.arccos(cosine))), cost=cost,
             length_error=float(np.max(np.abs(np.linalg.norm(result,axis=1)-effective))))
         return result

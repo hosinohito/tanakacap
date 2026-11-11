@@ -5,6 +5,15 @@ from tanakacap.camera_display import DISPLAY_FLAG
 from tanakacap.live_status import LiveStatus
 
 
+def test_image_position_is_opt_in_and_available_without_body_network():
+    for mode in ui.MODES:
+        config=dict(ui.DEFAULT,source='video',video='test.avi',mode=mode)
+        player,_=ui.commands(config,40001,40002)
+        assert '--follow-image-position' not in player
+        player,_=ui.commands(dict(config,image_position='on'),40001,40002)
+        assert '--follow-image-position' in player
+
+
 def test_recorded_test_selects_video_without_requiring_a_camera(tmp_path,monkeypatch):
     project_root=ui.ROOT
     monkeypatch.setattr(ui,'ROOT',tmp_path)

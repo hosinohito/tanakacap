@@ -5,6 +5,12 @@ from tanakacap.partial_tracking import LocalSender, FACE_PARTS, BODY_PARTS, PART
 from tanakacap.control_panel import part_rate_text
 
 
+def test_image_position_is_independent_of_disabled_body_distance():
+    pose=dict(faceImagePositionTracked=True,faceDistanceTracked=True)
+    assert part_state(pose,'face_position',('face_distance',))=='valid'
+    assert part_state(pose,'face_distance',('face_distance',))=='disabled'
+
+
 def test_groups_are_sent_before_later_work_and_share_frame():
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as receiver:
         receiver.bind(('127.0.0.1',0)); receiver.settimeout(.2)

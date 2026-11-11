@@ -53,6 +53,7 @@ namespace TanakaCap
         {
             Add("head","headPitch headYaw headRoll");
             Add("face_distance","faceDistanceRatio");
+            Add("face_position","faceImagePosition");
             Add("mouth","mouth mouthWidth mouthRound mouthSmile mouthContourTracked mouthLeftCorner mouthRightCorner mouthBow mouthShift");
             Add("brows","browLeftInner browLeftOuter browRightInner browRightOuter");
             Add("eyelids","leftBlink rightBlink");
@@ -86,7 +87,7 @@ namespace TanakaCap
                 !Finite(update.streamStarted)||update.streamStarted<0||!Finite(update.observationAge)||update.observationAge<0||
                 !Finite(update.inputReadTime)||!Finite(update.inputSentTime)||update.inputReadTime<0||
                 update.inputSentTime<update.inputReadTime||update.packetSequence<1||update.frameId<0||
-                update.parts==null||update.parts.Length==0||update.parts.Length>13)return false;
+                update.parts==null||update.parts.Length==0||update.parts.Length>14)return false;
             if(stream!=update.streamId)
             {
                 // Both processes use the same host monotonic clock. A delayed old
@@ -138,7 +139,7 @@ namespace TanakaCap
             // Values persist; only independently fresh parts are applied by the driver.
             target.sequence=FrameId;target.inputReadTime=InputReadTime;target.inputSentTime=InputSentTime;
             target.headTracked=Active("head",now);target.faceTracked=target.headTracked||Active("mouth",now)||Active("eyelids",now)||Active("brows",now);
-            target.faceDistanceTracked=Active("face_distance",now);target.gazeTracked=Active("gaze",now);target.browTracked=Active("brows",now);
+            target.faceDistanceTracked=Active("face_distance",now);target.faceImagePositionTracked=Active("face_position",now);target.gazeTracked=Active("gaze",now);target.browTracked=Active("brows",now);
             target.torsoTracked=Active("torso",now);
             target.leftArmTracked=Active("left_arm",now);target.rightArmTracked=Active("right_arm",now);
             target.leftHandTracked=Active("left_palm",now);target.rightHandTracked=Active("right_palm",now);

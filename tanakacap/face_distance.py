@@ -14,8 +14,9 @@ class FaceDistance:
         self.gate=DirectionGate(.02 if mode=='stable' else .008,float('inf'),block,stride)
         self.diagnostics={}
 
-    def update(self, points, scores, packet, now):
+    def update(self, points, scores, packet, now, image_size=None):
         packet.update(faceDistanceTracked=False,faceDistanceRatio=1.)
+        packet.update(faceImagePositionTracked=False,faceImagePosition=dict(x=0.,y=0.,z=0.))
         valid=packet.get('faceTracked') and abs(packet['headYaw'])<30 and abs(packet['headPitch'])<25
         # Learn near frontal; otherwise a turned startup can inflate the scale
         # when the person later looks straight at the camera.
@@ -37,6 +38,14 @@ class FaceDistance:
                     ratio=float(np.exp(self.filtered))
                 else:ratio=target
                 packet.update(faceDistanceTracked=True,faceDistanceRatio=ratio)
+                if image_size is not None:
+                    # Rigid upper-face centre, independent of jaw opening and model Z.
+                    centre=np.asarray(points)[np.array([27,28,29,30,36,39,42,45])+23].mean(axis=0)
+                    size=np.asarray(image_size,dtype=float)
+                    if size.shape==(2,) and np.isfinite(size).all() and (size>0).all():
+                        position=centre/size
+                        packet.update(faceImagePositionTracked=True,
+                                      faceImagePosition=dict(x=float(position[0]),y=float(1-position[1]),z=0.))
         else:self.gate.reset()
         self.time=now
         self.diagnostics=dict(filter_mode=self.mode,scale_details=self.scale.details if valid else {},status=self.scale.status if valid else 'face_pose_or_missing',

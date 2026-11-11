@@ -269,7 +269,7 @@ def benchmark(args):
                     face_filter.update(packet,time.perf_counter())
                     timing['face_filter_ms']=(time.perf_counter()-filter_start)*1000
                     distance_start=time.perf_counter()
-                    face_distance.update(points,scores,packet,distance_start)
+                    face_distance.update(points,scores,packet,distance_start,image.shape[1::-1])
                     timing['face_distance_ms']=(time.perf_counter()-distance_start)*1000
                     timing['pipeline_ms']+=timing['face_distance_ms']
                     packet['inputReadTime']=acquired

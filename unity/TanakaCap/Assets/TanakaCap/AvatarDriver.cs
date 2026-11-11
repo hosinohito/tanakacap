@@ -24,6 +24,8 @@ namespace TanakaCap
         public float gazeYaw,gazePitch;
         public bool faceDistanceTracked;
         public float faceDistanceRatio;
+        public bool faceImagePositionTracked;
+        public Vector3 faceImagePosition;
         public float leftCrossBody,rightCrossBody;
         public Vector3 leftElbow, leftWrist, rightElbow, rightWrist;
         public bool leftHandTracked, rightHandTracked;
@@ -96,6 +98,8 @@ namespace TanakaCap
         Quaternion leftEyeRest,rightEyeRest;
         Vector2 gazeAngles;
         bool faceDistanceEnabled=true;
+        bool followImagePosition,imagePositionEstablished;
+        Vector3 imagePosition;
         Vector3 rootRestPosition,depthDirection;
         float initialFaceDepth,faceDistanceRatio=1;
         bool seatedDistance=true,distanceEstablished,seatedLeanLimited;
@@ -159,6 +163,9 @@ namespace TanakaCap
             public Vector3 upperDirection, lowerDirection;
             public Quaternion lowerUntwisted;
             public float twist;
+            public float upperTwistShare;
+            public bool twistDistributed;
+            public Quaternion upperBeforeDistribution;
             public float requestedTwist;
             public Quaternion handBeforeSolve;
             public Finger[] fingers;
@@ -340,6 +347,7 @@ namespace TanakaCap
                 MouthCornerEmphasis=emphasis;
             }
             faceDistanceEnabled=Array.IndexOf(args,"--no-face-distance")<0;
+            followImagePosition=Array.IndexOf(args,"--follow-image-position")>=0;
             seatedDistance=Array.IndexOf(args,"--face-distance-translate")<0;
             framedDistance=seatedDistance && Array.IndexOf(args,"--face-distance-seated")<0;
             ConfigureHandContact(args);
@@ -456,10 +464,11 @@ namespace TanakaCap
         {
             if(videoMode && probeDelta<=0)return;
             if (!head) return;
+            RestoreDistributedTwist(left);RestoreDistributedTwist(right);
             if(!demo && !videoMode && parts.Owns(current))current=parts.Snapshot(Time.unscaledTime);
             float t = 1-Mathf.Exp(-FrameDelta*16);
             bool live = current != null && current.tracked && Time.unscaledTime-lastReceived < .3f;
-            if(!live && !demo){DriveArmsWithLoss(new TrackingPacket(),false);DriveGaze(null,false,FrameDelta);TraceHands(false);return;}
+            if(!live && !demo){DriveArmsWithLoss(new TrackingPacket(),false);DistributeArmTwist(left);DistributeArmTwist(right);DriveGaze(null,false,FrameDelta);TraceHands(false);return;}
             var p = live ? current : new TrackingPacket();
             if (demo) p = motionDemo ? ProceduralMotion.Sample(Time.time) : new TrackingPacket { tracked=true, faceTracked=true,
                 headYaw=25*Mathf.Sin(Time.time), headRoll=10*Mathf.Sin(Time.time*.6f),
@@ -495,10 +504,12 @@ namespace TanakaCap
             float faceT=headActive ? HeadFollowAmount(Quaternion.Angle(head.rotation,headTarget),FrameDelta,adaptiveHeadFollow) : t;
             if (headActive) head.rotation = Quaternion.Slerp(head.rotation,headTarget,faceT);
             ApplyFaceFraming(p,live);
+            ApplyImagePosition(p,live,FrameDelta);
             expressions.Begin();
             DriveGaze(p,live,FrameDelta);
 
             DriveArmsWithLoss(p,live || demo);
+            DistributeArmTwist(left);DistributeArmTwist(right);
             TraceHands(live || demo);
             if(PartActive("mouth",p.faceTracked)) mouth = Mathf.Lerp(mouth,Mathf.Clamp01(p.mouth),faceT);
             if(PartActive("mouth",p.faceTracked)) mouthWidth = Mathf.Lerp(mouthWidth,Mathf.Clamp(p.mouthWidth,-1,1),faceT);
@@ -578,6 +589,28 @@ namespace TanakaCap
             transform.position+=depthDirection*(wantedDepth-actualDepth);
             float wantedY=initialHeadCameraY*wantedDepth/initialFaceDepth;
             transform.position+=camera.up*(wantedY-Vector3.Dot(head.position-camera.position,camera.up));
+        }
+
+        void ApplyImagePosition(TrackingPacket packet,bool live,float dt)
+        {
+            if(!followImagePosition || !Camera.main)return;
+            var camera=Camera.main;
+            var currentPosition=camera.WorldToViewportPoint(head.position);
+            if(currentPosition.z<=0)return;
+            if(live && packet.faceImagePositionTracked)
+            {
+                var target=packet.faceImagePosition;
+                if(float.IsNaN(target.x)||float.IsInfinity(target.x)||float.IsNaN(target.y)||float.IsInfinity(target.y))return;
+                if(!imagePositionEstablished)imagePosition=currentPosition;
+                float blend=1-Mathf.Exp(-Mathf.Max(0,dt)*12);
+                imagePosition=Vector3.Lerp(imagePosition,new Vector3(Mathf.Clamp01(target.x),Mathf.Clamp01(target.y),0),blend);
+                imagePositionEstablished=true;
+            }
+            if(!imagePositionEstablished)return;
+            // Preserve the depth already chosen by face size. Move only in the
+            // camera plane, after seated framing so neither correction overwrites the other.
+            var wanted=camera.ViewportToWorldPoint(new Vector3(imagePosition.x,imagePosition.y,currentPosition.z));
+            transform.position+=wanted-head.position;
         }
 
         static Quaternion TorsoRotation(Vector3 angles,bool seated)
@@ -1440,6 +1473,8 @@ namespace TanakaCap
             CheckFaceDistance();
             CheckSeatedPose();
             CheckFramedPose();
+            CheckImagePosition();
+            CheckDistributedTwist();
             var reports=new System.Collections.Generic.List<MotionPath>();
             probeDelta=1f/60;
             foreach(bool isLeft in new[]{true,false}) foreach(bool wrap in new[]{false,true})

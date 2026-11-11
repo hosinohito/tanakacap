@@ -15,7 +15,7 @@ from .player_diagnostics import PlayerDiagnostics
 from .development_log import DevelopmentLog
 
 ROOT=Path(__file__).resolve().parents[1]
-PART_LABELS={'head':'頭','face_distance':'前後位置','mouth':'口','brows':'眉','eyelids':'まぶた','gaze':'目線',
+PART_LABELS={'head':'頭','face_distance':'前後位置','face_position':'画面内位置','mouth':'口','brows':'眉','eyelids':'まぶた','gaze':'目線',
              'torso':'胴体','left_arm':'左腕','right_arm':'右腕','left_palm':'左掌','right_palm':'右掌',
              'left_fingers':'左指','right_fingers':'右指'}
 
@@ -101,6 +101,7 @@ def commands(config, port, status_port, player_pid=0):
     else:player+=['--render-fps',str(cap)]
     if not c['aa']:player+=['--no-edge-aa']
     if not c['preview']:player+=['--no-preview']
+    if c['image_position']=='on':player+=['--follow-image-position']
     if c['preview'] and c['background']!='none':player+=['--preview-background',c['background']]
     for key,value,flag in [('gaze_response','legacy','--legacy-gaze-response'),('head_follow','adaptive','--adaptive-head-follow'),('brow_follow','direct','--no-adaptive-brow-follow')]:
         if c[key]==value:player+=[flag]
