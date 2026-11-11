@@ -6,6 +6,7 @@ namespace TanakaCap
     public partial class AvatarDriver
     {
         bool legacyArmRotation;
+        bool diagnosticNoTwistDistribution;
         float armTwistLimit=ForearmTwistLimit;
 
         static void RestoreDistributedTwist(Arm arm)
@@ -26,7 +27,7 @@ namespace TanakaCap
 
         void DistributeArmTwist(Arm arm)
         {
-            if(legacyArmRotation)return;
+            if(legacyArmRotation || diagnosticNoTwistDistribution)return;
             var upperAxis=(arm.lower.position-arm.upper.position).normalized;
             var lowerAxis=(arm.hand.position-arm.lower.position).normalized;
             float target=UpperTwistShare(Vector3.Angle(upperAxis,lowerAxis),arm.twist);
@@ -41,6 +42,9 @@ namespace TanakaCap
 
         void ConfigureArmRotation(string[] args)
         {
+            diagnosticNoTwistDistribution=Array.IndexOf(args,"--diagnostic-no-twist-distribution")>=0;
+            if(diagnosticNoTwistDistribution && Array.IndexOf(args,"--render-replay")<0)
+                throw new ArgumentException("Twist distribution comparison requires offline replay");
             int option=Array.IndexOf(args,"--arm-rotation");
             if(option>=0)
             {

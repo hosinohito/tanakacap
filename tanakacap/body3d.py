@@ -17,7 +17,7 @@ from .visibility import screen_visibility
 from .face_scale import FaceScale
 from .arm_scale import ArmScale
 from .torso_yaw import elbow_yaw, elbow_agreement, shoulder_yaw_magnitude, ShoulderWidthReference
-from .body_geometry import DepthAssist, visible_hand_inward, cross_body_amount
+from .body_geometry import DepthAssist, visible_hand_inward, cross_body_amount, lateral_extension_evidence
 
 
 class BodyRetarget:
@@ -324,7 +324,8 @@ class BodyRetarget:
                 # confirmed model observations, not our previous reconstructed Z.
                 values[:,2]=observed_depth
                 filtered=np.stack([values[0],values[1]-values[0]])*.36
-                fitted=self.projector[side].solve(filtered,assist.lengths.value,now)
+                evidence=lateral_extension_evidence(xy,scores,side)
+                fitted=self.projector[side].solve(filtered,assist.lengths.value,now,lateral_evidence=evidence)
                 self.diagnostics[side+'_projection']=self.projector[side].details.copy()
                 if fitted is None:
                     self.diagnostics[side]='projection_unavailable'

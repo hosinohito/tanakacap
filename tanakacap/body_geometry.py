@@ -26,6 +26,29 @@ def cross_body_amount(xy,scores,side):
     return float(np.clip((fraction-.35)/.30,0,1))
 
 
+def lateral_extension_evidence(xy, scores, side):
+    """Soft planar prior for a visibly extended lateral arm, relative to shoulders.
+
+    This is a monocular pose prior, not measured depth. Do not let a stale
+    maximum length invent a folded elbow in a sustained straight lateral pose.
+    """
+    shoulder, elbow, wrist, other=(5,7,9,6) if side=='left' else (6,8,10,5)
+    ids=[shoulder,elbow,wrist,other]
+    p=np.asarray(xy,dtype=float);s=np.asarray(scores)
+    if not np.isfinite(p[ids]).all() or not np.isfinite(s[ids]).all() or (s[ids]<.3).any():return 0.
+    outward=p[shoulder]-p[other];span=np.linalg.norm(outward)
+    a=p[elbow]-p[shoulder];b=p[wrist]-p[elbow]
+    lengths=np.linalg.norm([a,b],axis=1)
+    if span<30 or (lengths<10).any():return 0.
+    axis=outward/span
+    def ramp(x,lo,hi):
+        t=float(np.clip((x-lo)/(hi-lo),0,1));return t*t*(3-2*t)
+    alignment=min(float(a@axis/lengths[0]),float(b@axis/lengths[1]))
+    straight=float(a@b/np.prod(lengths))
+    reach=float((a+b)@axis/span)
+    return ramp(alignment,.92,.985)*ramp(straight,.95,.995)*ramp(reach,.55,.78)
+
+
 class SupportedLengths:
     """Largest per-segment lower bound supported by >=10 samples in 5 seconds."""
     def __init__(self):

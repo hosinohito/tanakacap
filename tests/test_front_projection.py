@@ -1,5 +1,24 @@
 import numpy as np
 from tanakacap.front_projection import FrontProjection
+from tanakacap.body_geometry import lateral_extension_evidence
+
+
+def test_lateral_prior_preserves_image_geometry_without_shortening_learned_lengths():
+    p=np.zeros((133,2));s=np.ones(133)
+    p[5]=[400,300];p[6]=[200,300];p[7]=[490,300];p[9]=[570,300]
+    assert lateral_extension_evidence(p,s,'left')==1
+    solver=FrontProjection();lengths=np.array([.3,.28]);bones=np.array([[.2,0,.15],[.18,0,-.4]])
+    for i in range(90):result=solver.solve(bones,lengths,i/30,lateral_evidence=1)
+    np.testing.assert_allclose(result[:,:2],bones[:,:2])
+    assert np.max(abs(result[:,2]))<1e-6
+    np.testing.assert_equal(lengths,[.3,.28])
+    # Raising/bending the forearm and an inward reach are not lateral extension.
+    p[9]=[490,200];assert lateral_extension_evidence(p,s,'left')==0
+    p[9]=[300,300];assert lateral_extension_evidence(p,s,'left')==0
+    # Opposite wrist/fingers do not contribute to this side's evidence.
+    p[9]=[570,300];p[10]=[9999,9999]
+    assert lateral_extension_evidence(p,s,'left')==1
+    s[7]=0;assert lateral_extension_evidence(p,s,'left')==0
 
 
 def test_short_outward_forearm_gets_depth_without_moving_image_points():
@@ -70,3 +89,14 @@ def test_supported_shortening_uses_length_not_model_z_floor():
     result=FrontProjection().solve(bones,[.30,.28],1.)
     np.testing.assert_allclose(np.linalg.norm(result,axis=1),[.30,.28],atol=1e-8)
     np.testing.assert_allclose(result[:,:2],bones[:,:2])
+
+
+def test_depth_branch_change_is_continuous_and_keeps_wrist_in_front():
+    solver=FrontProjection();lengths=np.array([.3,.3])
+    before=solver.solve([[.2,0,.2],[.23,0,-.19]],lengths,0)
+    for i in range(1,25):
+        result=solver.solve([[.23,0,.19],[.18,0,.24]],lengths,i/30)
+        assert np.max(np.abs(result[:,2]-before[:,2])/lengths)<=4/30+1e-8
+        assert result[:,2].sum()>=-1e-8
+        before=result
+    assert result[1,2]>0

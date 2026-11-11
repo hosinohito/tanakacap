@@ -12,20 +12,25 @@ class FrontProjection:
         self.previous = None
         self.time = None
         self.details = {}
+        self.lateral_weight = 0.
 
     def reset(self):
         self.previous = None
         self.time = None
+        self.lateral_weight = 0.
 
-    def solve(self, bones, lengths, now):
+    def solve(self, bones, lengths, now, lateral_evidence=0.):
         bones = np.asarray(bones, float)
         lengths = np.asarray(lengths, float)
         self.details = {}
         if bones.shape != (2, 3) or lengths.shape != (2,) or not np.isfinite(bones).all() or not np.isfinite(lengths).all() or (lengths < .07).any():
             self.details['reason'] = 'lengths_unavailable'
             return None
+        dt=0. if self.time is None else max(0.,min(.1,now-self.time))
         if self.time is None or now-self.time > .3:
             self.previous = None
+            self.lateral_weight=0.
+        self.lateral_weight+=(float(np.clip(lateral_evidence,0,1))-self.lateral_weight)*(-np.expm1(-dt*12))
         self.time = now
         planar = np.linalg.norm(bones[:, :2], axis=1)
         # Online maxima are lower bounds. Never shrink a longer valid XY
@@ -64,9 +69,19 @@ class FrontProjection:
             self.details['reason'] = 'no_feasible_front_branch'
             return None
         cost, result, cosine = min(candidates, key=lambda item:item[0])
+        result[:,2]*=1-self.lateral_weight
+        if self.previous is not None and dt>0:
+            # A feasible depth branch may disappear when the wrist crosses the
+            # shoulder plane. Never flip the whole forearm depth in one sample.
+            # A shared blend preserves the front-wrist half-space during transit.
+            delta=result[:,2]-self.previous[:,2]
+            relative=float(np.max(np.abs(delta)/effective))
+            blend=min(1.,4.*dt/max(relative,1e-12))
+            result[:,2]=self.previous[:,2]+blend*delta
         self.previous = result.copy()
         self.details = dict(reason='fit', projected=planar.tolist(), supported=lengths.tolist(),
             effective=effective.tolist(), bootstrap_depth_weight=bootstrap.tolist(), model_z=bones[:, 2].tolist(), solved_z=result[:, 2].tolist(),
-            bend_degrees=float(np.degrees(np.arccos(cosine))), cost=cost,
+            lateral_weight=self.lateral_weight,
+            bend_degrees=float(np.degrees(np.arccos(np.clip(result[0]@result[1]/max(1e-12,np.prod(np.linalg.norm(result,axis=1))),-1,1)))), cost=cost,
             length_error=float(np.max(np.abs(np.linalg.norm(result,axis=1)-effective))))
         return result
