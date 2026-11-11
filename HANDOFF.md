@@ -12,20 +12,20 @@
 
 ## 現在の作業・公開状態
 
-- **0.1.6公開作業中（ユーザー承認済み）**。最新ユーザー提供tcapを変更せず、位置拘束からの速度増幅を角応答の方式へ変更し、動画物理刻みを固定。40秒/101骨の急回転最大179.99→34.00度、骨別p95最大179.29→9.88度。人工の収束/骨位置/手接触検査、Python350テスト成功。`results/secondary-audit/comparison.mp4` は左旧・右修正、`verified.mp4` は修正のみ。衣装状態はユーザー提供版。Exporterは無効コライダーを除外するよう修正。元tcapの再生成はしていない。builds/playerとbuilds/release-playerを最終ビルドへ更新し、実Playerの動作検査成功。デスクトップtanakacap-test.batは9/11録画＋最新版ユーザーアバターで検証できる。詳細・失敗試案はPROGRESS末尾、方式はSECONDARY_MOTION。ユーザーが「ok、リリースして」と承認。`builds/releases/0.1.6-final` の原本再ビルド・2ZIP作成・混入検査は成功。release-report.json記載のpart01/part02のみ公開し、oversize-local-only.zipは公開しない。監査はresults/public-data-audit-0.1.6-final.json、0件。旧0.1.6と途中候補は削除済み。GitHub認証が消えており、tools/set-release-token.ps1で再保存するよう依頼中。トークンをチャットに貼らせない。公開API上は0.1.6未公開。
+- **[v0.1.6を正式公開済み](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.6)**。ユーザーが比較後に公開を承認。原本再ビルド・Python350テスト・揺れ物/接触の人工検査・実Player検査・混入監査を実施。配布物は `builds/releases/0.1.6-final/release-report.json` 記載のpart01/part02だけ。GitHub上のサイズ・SHA256・承認済み本文を照合済み。公開タグのコミットはd6fa30f。旧0.1.6/途中候補はユーザー指示で削除済み。oversize-local-only.zipは非公開。監査はresults/public-data-audit-0.1.6-final.json、0件。
+- **現在の検証環境**：builds/playerとbuilds/release-playerは修正版。ユーザー提供tcapの原本は不変。デスクトップtanakacap-test.batは9/11録画＋最新版ユーザーアバター。揺れ物比較は `results/secondary-audit/comparison.mp4`（左旧/右新）、`verified.mp4`（新のみ）。方式はSECONDARY_MOTION、検証値・失敗試案はPROGRESS末尾。本家との完全一致・他アバターでの品質は未確認。
 
 - **0.1.6の内容**：色・標準手接触、腕の横伸展・肘ねじれの改善、画像内XY位置追従（既定OFF）、揺れ物安定化。リリースノート `release/RELEASE_NOTES_0.1.6.md` は承認済み。旧候補を再利用せず新しい配布物を使用する。指定録画は `results/comparison-takes/20260911T235327-031115Z/camera.avi`。
 
 - **手接触**：SDK 3.7.0の実アバターコピーで標準10形状、許可6通り、Custom/Disabledと明示参照の保持を確認。左右接触・1800ステップ安定性・900フレーム録画経路・実Playerの動作/RGBA/Spout登録検査成功。新secondaryPhysics.version=2、旧version=1は従来のまま読む。利用者は新プラグインで再書き出しが必要。実人物の接触の見た目・本家物理との完全一致は未確認。仕様/数値/制限はSECONDARY_MOTION。エージェント生成tcapは衣装・表示状態がユーザーのアバターと異なったため削除済み。以後はデスクトップのユーザー提供 `avatar.tcap` を使用する。デスクトップtanakacap-test.batは録画+auto-customへ戻した。検証手順はDEVELOPMENT。
 - **色修正**：描画をGammaからLinearへ統一し、指定tcapの花が白・茎が茶色になる症状を修正。builds/release-playerとbuilds/playerは手接触も含む修正版、配布済み0.1.5は旧版のまま。素材は`builds/releases/0.1.5/TanakaCap/avatars/hanalan.tcap`（綴り注意）、原本は`D:/work/vrc_projects/haoranRurukuPazyamaGorone - コピー`。原本は変更しない。比較画像/ログは`results/material-color/`、手検証用コピーは`results/hand-collision/project`。RGB/アルファ転送検査成功、実際のOBSシーン・ユーザーの見た目評価は未確認。
 
-- v0.1.5を公開済み。ビルド・全343テスト・Git全履歴と配布ZIPの混入検査は成功。ユーザー編集済みの`release/RELEASE_NOTES_0.1.5.md`を使用。公開した2ZIPのサイズ・SHA256と本文を照合済み。詳細はPROGRESS末尾。
 
 - 現在の課題は反対手ロール時の掌ピッチ変動と左指の握り追従不良。ユーザーのカメラ試験ログまで総合調査済み。送受信値の混線なし、片側目標固定の実骨試験でも直接連動なし。左指は有効なのに3Dの逆曲げ判定→0制限で握りが消える具体例あり。共通顔尺度だけの影響は最大約1.4度で主因ではない。推定の相対Z/掌基準と符号付き屈曲の解釈が優先調査対象。前腕±160度の到達可能角への復帰は修正・901観測/実骨/動作検査済み。[根拠と限界](docs/HAND_SIDE_AUDIT.md#カメラ試験の総合原因調査)。通常hingeの上限復帰に加え、両手5指の曲げ角度の絶対値化をユーザー指定で実装（左符号反転試行を置換し、右にも採用）。見た目確認待ち。関節別の元符号を調査し、一律の逆判定ではないことを確認（親指MCP・中指DIPは正側が多い）。保存元録画4本7,842フレームも共通条件で検証済み。1本は指の有効観測不足、残り3本でも動画・関節で傾向が異なり全反転の一般的妥当性は未成立。[全録画結果](docs/HAND_SIDE_AUDIT.md#全保存録画での関節別検証2026-09-23)。[関節別結果](docs/HAND_SIDE_AUDIT.md#左指ごと関節ごとの元の符号2026-09-23)。ユーザーが動画7秒台の異常を指摘し、7.7秒台の反対端への大回りを修正の副作用として確認。回転品質は合格ではなく再設計待ち。今回の右指停止の指摘はユーザーが勘違いとして撤回（以前からの左指屈曲課題とは別）。[最新調査](docs/HAND_SIDE_AUDIT.md#現在動画の指と7秒台の回り直し)。v0.1.5として公開指示あり。
 - 顔ヨーは通常PnP経路で円周上の両目の投影弦長からacosで復元する方式を実装。正面10観測で基準取得、PnPの眼中心面距離で接近を補正。鼻は左右判定のみ。頭のピッチ・ヨー・ロール共通で可変速度追従を有効化（UI既定・ローカル保存値・通常PSランチャー）。[仕様と限界](docs/HEAD_YAW_AUDIT.md)。円周モデルの解釈はユーザー承認済み。最新901観測で数値確認、新旧比較動画で見た目の確認待ち。既存Playerで動作、再ビルド不要。
 - ユーザー指定：別PCでのコピー・操作方法は、再度指示があるまで案内しない。
 - READMEは公開入口、DEVELOPMENTは開発手順、HANDOFFは現在状態、PROGRESSは履歴に分離。別のCodexが再開できる情報を残すことが必須。
-- 配布済み最新版は[v0.1.5](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.5)。ローカル成果物は`builds/releases/0.1.5/TanakaCap/`。通常設定で作成し、個人設定・実写・アバターは同梱していない。公開済みExporterはv0.1.3から変更なし。0.1.6候補では標準手コライダー対応を追加。
+- 配布済み最新版は[v0.1.6](https://github.com/hosinohito/tanakacap/releases/tag/v0.1.6)。ローカル成果物は`builds/releases/0.1.6-final/TanakaCap/`。個人設定・実写・アバターは同梱していない。Exporterは標準手コライダー対応・無効明示コライダー除外を追加。
 - リポジトリは`hosinohito/tanakacap`。この環境の作業ブランチ`master`から公開先`main`へプッシュする。履歴から旧アバターシーンを除去済み。再度の履歴書き換えは不要。[公開データ監査](docs/RELEASE_PRIVACY.md)を維持する。
 - 配布モデルとランタイムの条件は監査済み。独自コードMIT。過去文書の「ライセンス未確定」を再開時の残件へ戻さない。根拠は[モデル](docs/MODEL_LICENSE_DECISIONS.md)・[ランタイム](docs/RUNTIME_LICENSE_DECISIONS.md)。
 

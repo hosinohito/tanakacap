@@ -2811,3 +2811,7 @@ builds/release-playerは試行版へ再ビルド済み（unity-build-checked.log
 ユーザーがリリースを承認し、既存0.1.6の削除を指示。`builds/releases/0.1.6` と途中生成の `0.1.6-reviewed-candidate` を対象内・reparse不在を確認して削除。中のユーザーtcapはデスクトップ原本とbuilds/playerの同一SHA256コピーを保持。新しい `0.1.6-final` でUnity再ビルドと公開専用梱包を実施。全Git履歴の混入検査は0件。段階時点のavatarsは空、設定は配布既定、ランタイム読込とライセンス同梱検査成功。GitHub公開APIには旧0.1.6なし。保存済みDPAPIトークン・CLI認証・対象リポジトリのGit認証が見つからず、非表示入力スクリプトで再保存を依頼。秘密値は表示していない。
 
 0.1.6-finalの再ビルド・ポータブルランタイム検査・ライセンス検査・CRC検査完了。公開対象はpart01（2,085,012,024 bytes、SHA256 47614770d5c375d96dc2d0483a7c8947ee89cd3d36103a11995f58a1e6e990fa）とpart02（162,031,940 bytes、SHA256 c8dd8de29ef4a5ab9fe8ea24cfd1a4b9ea4a3d8223f4467b9c663eb3fb7c1b43）。全Git履歴と両ZIPの混入監査 `results/public-data-audit-0.1.6-final.json` はpassed/0件。oversize-local-only.zipは公開禁止。認証未保存のため、この時点ではGitHubへのpush/tag/releaseは未実行。
+
+## 2026-11-11：v0.1.6正式公開
+
+ユーザーがGitHubトークンを非表示入力で再保存し認証成功。全履歴/ZIPの検査済みソースd6fa30fをmainへfast-forward push。リリース下書きへpart01/part02だけをアップロードし、GitHub APIのsizeとsha256 digestをrelease-report.jsonと、本文を承認済みRELEASE_NOTES_0.1.6.mdと照合して一致。draft=false・prerelease=false・latestとして正式公開。公開URL：https://github.com/hosinohito/tanakacap/releases/tag/v0.1.6 。旧0.1.6はリモートに存在せず、ローカル旧候補は削除済み。配布物にユーザーtcap・実写・個人設定は含まない。認証値はログやGitへ保存していない（既存Git除外のDPAPI暗号化ファイルのみ）。
