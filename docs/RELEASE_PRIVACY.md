@@ -22,3 +22,7 @@ Gitの復旧用bundleはGit管理外の`results/pre-public-history-cleanup.bundl
 ## v0.1.5の再検査（2026-09-24）
 
 公開専用ビルドから再生成し、上記の設定・アバター・実写・Exporter・Tcl画像・Git履歴の検査を再実行。結果は0件、passed。履歴の再書換えは不要。監査：`results/public-data-audit-0.1.5-final.json`。公開対象は`builds/releases/0.1.5/release-report.json`のpart01/part02のみ。
+
+## v0.1.6の再検査（2026-11-11）
+
+旧候補を削除し、`builds/releases/0.1.6-final` を原本から再ビルド。全Git履歴と公開対象part01/part02の監査は0件・passed。avatarsは空、UI設定は配布既定、Exporterはソース/ライセンスのみ。監査結果は `results/public-data-audit-0.1.6-final.json`。サイズとSHA256は同候補のrelease-report.json。公開には同reportの2ZIPだけを使う。

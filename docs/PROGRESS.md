@@ -2805,3 +2805,9 @@ builds/release-playerは試行版へ再ビルド済み（unity-build-checked.log
 以前の腕比較の補足：横伸展判定と深度枝連続化を追加、同一アバター15〜30秒の肘相対ねじり中央値は左148.73→48.81度、右132.76→35.01度。これは本家/実人物の正解との角度誤差ではない。全編の急変は残り、完全な腕品質保証はしない。比較はuser-avatarにあるが、揺れ物の旧計算を含むため新しい比較はsecondary-auditを使う。
 
 最終ビルドは `results/secondary-audit-build-delivery.log` で安定性・接触・復帰検査を再確認。builds/playerへ同期し、実受信/描画/腕/画像位置の動作検査成功（delivery-smoke.png関連ファイル）。デスクトップ検証bat更新、使用tcapのSHA256不変を再確認。動画の詳細骨トレースは明示的な--secondary-trace指定時のみ出力する。配布ZIP・公開は再開していない。
+
+## 2026-11-11：0.1.6公開の承認と旧候補削除
+
+ユーザーがリリースを承認し、既存0.1.6の削除を指示。`builds/releases/0.1.6` と途中生成の `0.1.6-reviewed-candidate` を対象内・reparse不在を確認して削除。中のユーザーtcapはデスクトップ原本とbuilds/playerの同一SHA256コピーを保持。新しい `0.1.6-final` でUnity再ビルドと公開専用梱包を実施。全Git履歴の混入検査は0件。段階時点のavatarsは空、設定は配布既定、ランタイム読込とライセンス同梱検査成功。GitHub公開APIには旧0.1.6なし。保存済みDPAPIトークン・CLI認証・対象リポジトリのGit認証が見つからず、非表示入力スクリプトで再保存を依頼。秘密値は表示していない。
+
+0.1.6-finalの再ビルド・ポータブルランタイム検査・ライセンス検査・CRC検査完了。公開対象はpart01（2,085,012,024 bytes、SHA256 47614770d5c375d96dc2d0483a7c8947ee89cd3d36103a11995f58a1e6e990fa）とpart02（162,031,940 bytes、SHA256 c8dd8de29ef4a5ab9fe8ea24cfd1a4b9ea4a3d8223f4467b9c663eb3fb7c1b43）。全Git履歴と両ZIPの混入監査 `results/public-data-audit-0.1.6-final.json` はpassed/0件。oversize-local-only.zipは公開禁止。認証未保存のため、この時点ではGitHubへのpush/tag/releaseは未実行。
